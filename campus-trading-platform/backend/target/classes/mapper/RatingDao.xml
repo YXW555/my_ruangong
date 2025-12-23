@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.second.hand.trading.server.dao.RatingDao">
+  <resultMap id="BaseResultMap" type="com.second.hand.trading.server.entity.RatingModel">
+    <id column="id" jdbcType="BIGINT" property="id"/>
+    <result column="order_id" jdbcType="BIGINT" property="orderId"/>
+    <result column="buyer_id" jdbcType="BIGINT" property="buyerId"/>
+    <result column="seller_id" jdbcType="BIGINT" property="sellerId"/>
+    <result column="rating" jdbcType="INTEGER" property="rating"/>
+    <result column="comment" jdbcType="VARCHAR" property="comment"/>
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, order_id, buyer_id, seller_id, rating, comment, create_time
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id"
+          parameterType="com.second.hand.trading.server.entity.RatingModel"
+          useGeneratedKeys="true">
+    insert into sh_rating (order_id, buyer_id, seller_id, rating, comment, create_time)
+    values (#{orderId,jdbcType=BIGINT},
+            #{buyerId,jdbcType=BIGINT},
+            #{sellerId,jdbcType=BIGINT},
+            #{rating,jdbcType=INTEGER},
+            #{comment,jdbcType=VARCHAR},
+            #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="selectByOrderId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_rating
+    where order_id = #{orderId,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectBySellerId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_rating
+    where seller_id = #{sellerId,jdbcType=BIGINT}
+    order by create_time desc
+  </select>
+
+  <select id="selectByBuyerId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_rating
+    where buyer_id = #{buyerId,jdbcType=BIGINT}
+    order by create_time desc
+  </select>
+
+  <select id="getAverageRating" resultType="java.lang.Double">
+    select AVG(rating)
+    from sh_rating
+    where seller_id = #{sellerId,jdbcType=BIGINT}
+  </select>
+
+  <select id="countBySellerId" resultType="java.lang.Integer">
+    select COUNT(*)
+    from sh_rating
+    where seller_id = #{sellerId,jdbcType=BIGINT}
+  </select>
+</mapper>
+

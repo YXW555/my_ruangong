@@ -2,10 +2,15 @@ package com.second.hand.trading.server.controller;
 
 import com.second.hand.trading.server.enums.ErrorMsg;
 import com.second.hand.trading.server.entity.IdleItemModel;
+import com.second.hand.trading.server.entity.IdleItemPinModel;
+import com.second.hand.trading.server.dao.IdleItemPinDao;
 import com.second.hand.trading.server.service.IdleItemService;
+import com.second.hand.trading.server.service.MembershipService;
 import com.second.hand.trading.server.dto.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Calendar;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -18,14 +23,36 @@ public class IdleItemController {
     @Autowired
     private IdleItemService idleItemService;
 
+    @Autowired
+    private MembershipService membershipService;
+
+    @Autowired
+    private IdleItemPinDao idleItemPinDao;
+
     @PostMapping("add")
     public ResultVo addIdleItem(@CookieValue("shUserId")
                                     @NotNull(message = "登录异常 请重新登录")
                                     @NotEmpty(message = "登录异常 请重新登录") String shUserId,
                                 @RequestBody IdleItemModel idleItemModel){
-        idleItemModel.setUserId(Long.valueOf(shUserId));
+        Long userId = Long.valueOf(shUserId);
+        
+        // 检查会员发布权限
+        if (!membershipService.canPublishItem(userId)) {
+            Byte membershipType = membershipService.getMembershipType(userId);
+            int publishedCount = membershipService.getPublishedCountThisMonth(userId);
+            int limit = membershipType == 1 ? 20 : 10;
+            ResultVo resultVo = ResultVo.fail(ErrorMsg.SYSTEM_ERROR);
+            resultVo.setMsg("您本月已发布" + publishedCount + "个商品，已达到" + limit + "个的限制。开通会员可享受更多发布数量！");
+            return resultVo;
+        }
+        
+        idleItemModel.setUserId(userId);
         idleItemModel.setIdleStatus((byte) 1);
         idleItemModel.setReleaseTime(new Date());
+        // 如果没有设置库存，默认为1
+        if (idleItemModel.getStock() == null || idleItemModel.getStock() <= 0) {
+            idleItemModel.setStock(1);
+        }
         if(idleItemService.addIdleItem(idleItemModel)){
             return ResultVo.success(idleItemModel);
         }
@@ -84,6 +111,55 @@ public class IdleItemController {
                                    @RequestBody IdleItemModel idleItemModel){
         idleItemModel.setUserId(Long.valueOf(shUserId));
         if(idleItemService.updateIdleItem(idleItemModel)){
+            return ResultVo.success();
+        }
+        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);
+    }
+
+    /**
+     * 置顶商品
+     */
+    @PostMapping("/pin")
+    public ResultVo pinItem(@CookieValue("shUserId")
+                           @NotNull(message = "登录异常 请重新登录")
+                           @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+                           @RequestParam Long idleItemId,
+                           @RequestParam Integer durationDays) {
+        Long userId = Long.valueOf(shUserId);
+        
+        // 检查会员置顶权限
+        if (!membershipService.canPinItem(userId)) {
+            Byte membershipType = membershipService.getMembershipType(userId);
+            ResultVo resultVo = ResultVo.fail(ErrorMsg.SYSTEM_ERROR);
+            if (membershipType == 0) {
+                resultVo.setMsg("置顶功能仅限会员使用，请先开通会员！");
+            } else {
+                int activePinCount = membershipService.getActivePinCount(userId);
+                int limit = membershipType == 2 ? 15 : 5;
+                resultVo.setMsg("您当前已有" + activePinCount + "个商品在置顶中，已达到" + limit + "个的限制。");
+            }
+            return resultVo;
+        }
+        
+        // 检查商品是否属于当前用户
+        IdleItemModel item = idleItemService.getIdleItem(idleItemId);
+        if (item == null || !item.getUserId().equals(userId)) {
+            return ResultVo.fail(ErrorMsg.PARAM_ERROR);
+        }
+        
+        // 创建置顶记录
+        IdleItemPinModel pin = new IdleItemPinModel();
+        pin.setIdleItemId(idleItemId);
+        pin.setUserId(userId);
+        Date now = new Date();
+        pin.setPinStartTime(now);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.DAY_OF_MONTH, durationDays);
+        pin.setPinEndTime(cal.getTime());
+        pin.setCreateTime(now);
+        
+        if (idleItemPinDao.insert(pin) == 1) {
             return ResultVo.success();
         }
         return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);

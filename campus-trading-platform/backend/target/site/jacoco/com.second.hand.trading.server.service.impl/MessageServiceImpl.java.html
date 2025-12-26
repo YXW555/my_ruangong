@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.service.impl</a> &gt; <span class="el_source">MessageServiceImpl.java</span></div><h1>MessageServiceImpl.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.service.impl;
+
+import com.second.hand.trading.server.dao.IdleItemDao;
+import com.second.hand.trading.server.dao.MessageDao;
+import com.second.hand.trading.server.dao.UserDao;
+import com.second.hand.trading.server.entity.IdleItemModel;
+import com.second.hand.trading.server.entity.MessageModel;
+import com.second.hand.trading.server.entity.UserModel;
+import com.second.hand.trading.server.service.MessageService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+<span class="fc" id="L19">public class MessageServiceImpl implements MessageService {</span>
+
+    @Resource
+    private MessageDao messageDao;
+
+    @Resource
+    private UserDao userDao;
+
+    @Resource
+    private IdleItemDao idleItemDao;
+
+    /**
+     * 增加一条留言
+     * @param messageModel
+     * @return
+     */
+    public boolean addMessage(MessageModel messageModel){
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        return messageDao.insert(messageModel)==1;</span>
+    }
+
+    /**
+     * 删除一条留言，未做用户身份验证
+     * @param id
+     * @return
+     */
+    public boolean deleteMessage(Long id){
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        return messageDao.deleteByPrimaryKey(id)==1;</span>
+    }
+
+    /**
+     * 获取一条留言
+     * @param id
+     * @return
+     */
+    public MessageModel getMessage(Long id){
+<span class="nc" id="L54">        return messageDao.selectByPrimaryKey(id);</span>
+    }
+
+    /**
+     * 获取一个用户收到的所有留言，未做分页查询
+     * 同时查询出用户的信息和闲置的信息
+     * userId建索引
+     * @param userId
+     * @return
+     */
+    public List&lt;MessageModel&gt; getAllMyMessage(Long userId){
+<span class="nc" id="L65">        List&lt;MessageModel&gt; list=messageDao.getMyMessage(userId);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if(list.size()&gt;0){</span>
+<span class="nc" id="L67">            List&lt;Long&gt; idList=new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L69">                idList.add(i.getUserId());</span>
+<span class="nc" id="L70">            }</span>
+<span class="nc" id="L71">            List&lt;UserModel&gt; userList=userDao.findUserByList(idList);</span>
+<span class="nc" id="L72">            Map&lt;Long,UserModel&gt; map=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">            for(UserModel user:userList){</span>
+<span class="nc" id="L74">                map.put(user.getId(),user);</span>
+<span class="nc" id="L75">            }</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L77">                i.setFromU(map.get(i.getUserId()));</span>
+<span class="nc" id="L78">            }</span>
+
+<span class="nc" id="L80">            List&lt;Long&gt; idleIdList=new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L81" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L82">                idleIdList.add(i.getIdleId());</span>
+<span class="nc" id="L83">            }</span>
+<span class="nc" id="L84">            List&lt;IdleItemModel&gt; idleList=idleItemDao.findIdleByList(idleIdList);</span>
+<span class="nc" id="L85">            Map&lt;Long,IdleItemModel&gt; idleMap=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            for(IdleItemModel idle:idleList){</span>
+<span class="nc" id="L87">                idleMap.put(idle.getId(),idle);</span>
+<span class="nc" id="L88">            }</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L90">                i.setIdle(idleMap.get(i.getIdleId()));</span>
+<span class="nc" id="L91">            }</span>
+        }
+<span class="nc" id="L93">        return list;</span>
+    }
+
+    /**
+     * 查询一个闲置下的所有留言，未做分页
+     * 同时查出发送者和接收者的信息
+     * idleId建索引
+     * @param idleId
+     * @return
+     */
+    public List&lt;MessageModel&gt; getAllIdleMessage(Long idleId){
+<span class="nc" id="L104">        List&lt;MessageModel&gt; list=messageDao.getIdleMessage(idleId);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if(list.size()&gt;0){</span>
+<span class="nc" id="L106">            List&lt;Long&gt; idList=new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L108">                idList.add(i.getUserId());</span>
+<span class="nc" id="L109">            }</span>
+<span class="nc" id="L110">            List&lt;UserModel&gt; userList=userDao.findUserByList(idList);</span>
+<span class="nc" id="L111">            Map&lt;Long,UserModel&gt; map=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            for(UserModel user:userList){</span>
+<span class="nc" id="L113">                map.put(user.getId(),user);</span>
+<span class="nc" id="L114">            }</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L116">                i.setFromU(map.get(i.getUserId()));</span>
+<span class="nc" id="L117">            }</span>
+<span class="nc" id="L118">            Map&lt;Long,MessageModel&gt; mesMap=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L120">                mesMap.put(i.getId(),i);</span>
+<span class="nc" id="L121">            }</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            for(MessageModel i:list){</span>
+<span class="nc" id="L123">                MessageModel toM=new MessageModel();</span>
+<span class="nc" id="L124">                UserModel toU=new UserModel();</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if(i.getToMessage()!=null){</span>
+<span class="nc" id="L126">                    toM.setContent(mesMap.get(i.getToMessage()).getContent());</span>
+<span class="nc" id="L127">                    toU.setNickname(map.get(i.getToUser()).getNickname());</span>
+                }
+<span class="nc" id="L129">                i.setToM(toM);</span>
+<span class="nc" id="L130">                i.setToU(toU);</span>
+<span class="nc" id="L131">            }</span>
+        }
+<span class="nc" id="L133">        return list;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

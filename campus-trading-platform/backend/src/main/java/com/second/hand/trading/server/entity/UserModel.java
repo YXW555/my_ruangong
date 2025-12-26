@@ -40,6 +40,21 @@ public class UserModel implements Serializable {
 
     private Byte userStatus;
 
+    /**
+     * 用户角色（0-普通用户，1-经营性卖家，2-管理员）
+     */
+    private Byte userRole;
+
+    /**
+     * 会员类型（0-普通用户，1-基础会员，2-高级会员）
+     */
+    private Byte membershipType;
+
+    /**
+     * 会员到期时间
+     */
+    private Date membershipExpireTime;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -96,6 +111,30 @@ public class UserModel implements Serializable {
 
     public void setUserStatus(Byte userStatus) {
         this.userStatus = userStatus;
+    }
+
+    public Byte getUserRole() {
+        return userRole;
+    }
+
+    public void setUserRole(Byte userRole) {
+        this.userRole = userRole;
+    }
+
+    public Byte getMembershipType() {
+        return membershipType;
+    }
+
+    public void setMembershipType(Byte membershipType) {
+        this.membershipType = membershipType;
+    }
+
+    public Date getMembershipExpireTime() {
+        return membershipExpireTime;
+    }
+
+    public void setMembershipExpireTime(Date membershipExpireTime) {
+        this.membershipExpireTime = membershipExpireTime;
     }
 
     @Override

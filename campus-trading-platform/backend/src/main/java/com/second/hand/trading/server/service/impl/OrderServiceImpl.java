@@ -27,6 +27,9 @@ public class OrderServiceImpl implements OrderService {
     @Resource
     private IdleItemDao idleItemDao;
 
+    @Resource
+    private com.second.hand.trading.server.utils.RedisUtil redisUtil;
+
     /**
      * 新增订单，同时下架闲置
      * 用了事务串行化，后续要优化，修改更新的sql，增加更新条件，而不是在代码中判断条件
@@ -40,34 +43,43 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
 
+    // 使用Redis分布式锁替代本地锁
     private static HashMap<Integer,ReentrantLock> lockMap=new HashMap<>();
     static {
-//        ReentrantLock lock=new ReentrantLock(true);
         for(int i=0;i<100;i++){
             lockMap.put(i,new ReentrantLock(true));
         }
     }
+    
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
     public boolean addOrder(OrderModel orderModel){
-        IdleItemModel idleItemModel=idleItemDao.selectByPrimaryKey(orderModel.getIdleId());
-        System.out.println(idleItemModel.getIdleStatus());
-        if(idleItemModel.getIdleStatus()!=1){
-            return false;
-        }
-        IdleItemModel idleItem=new IdleItemModel();
-        idleItem.setId(orderModel.getIdleId());
-        idleItem.setUserId(idleItemModel.getUserId());
-        idleItem.setIdleStatus((byte)2);
-
-        int key= (int) (orderModel.getIdleId()%100);
-        ReentrantLock lock=lockMap.get(key);
-        boolean flag;
+        // 使用分布式锁防止并发创建订单
+        String lockKey = "lock:order:create:" + orderModel.getIdleId();
+        String requestId = redisUtil.generateRequestId();
+        
         try {
-            lock.lock();
-            flag=addOrderHelp(idleItem,orderModel);
-        }finally {
-            lock.unlock();
+            // 尝试获取锁，5秒超时
+            if (!redisUtil.tryLock(lockKey, requestId, 5)) {
+                throw new RuntimeException("系统繁忙，请稍后重试");
+            }
+            
+            IdleItemModel idleItemModel=idleItemDao.selectByPrimaryKey(orderModel.getIdleId());
+            System.out.println(idleItemModel.getIdleStatus());
+            if(idleItemModel.getIdleStatus()!=1){
+                return false;
+            }
+            IdleItemModel idleItem=new IdleItemModel();
+            idleItem.setId(orderModel.getIdleId());
+            idleItem.setUserId(idleItemModel.getUserId());
+            idleItem.setIdleStatus((byte)2);
+
+            // 执行订单创建逻辑
+            boolean flag = addOrderHelp(idleItem, orderModel);
+            return flag;
+        } finally {
+            // 释放分布式锁
+            redisUtil.releaseLock(lockKey, requestId);
         }
-        return flag;
     }
 
 

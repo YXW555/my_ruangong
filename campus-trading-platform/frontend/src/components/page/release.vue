@@ -291,6 +291,16 @@
                         this.$router.replace({ path: '/details', query: { id: res.data.id } });
                     } else {
                         this.$message.error('发布失败！' + res.msg);
+                        // 如果是发布数量限制，提示开通会员
+                        if (res.msg && res.msg.includes('已达到') && res.msg.includes('限制')) {
+                            this.$confirm(res.msg + '是否前往开通会员？', '提示', {
+                                confirmButtonText: '去开通',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }).then(() => {
+                                this.$router.push('/membership');
+                            }).catch(() => {});
+                        }
                     }
                 }).catch(e => {
                     this.submitting = false;

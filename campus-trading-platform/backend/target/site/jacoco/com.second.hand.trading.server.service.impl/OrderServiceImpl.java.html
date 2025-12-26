@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.service.impl</a> &gt; <span class="el_source">OrderServiceImpl.java</span></div><h1>OrderServiceImpl.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.service.impl;
+
+import com.second.hand.trading.server.dao.IdleItemDao;
+import com.second.hand.trading.server.dao.OrderDao;
+import com.second.hand.trading.server.entity.IdleItemModel;
+import com.second.hand.trading.server.entity.OrderModel;
+import com.second.hand.trading.server.service.OrderService;
+import com.second.hand.trading.server.utils.OrderTask;
+import com.second.hand.trading.server.utils.OrderTaskHandler;
+import com.second.hand.trading.server.dto.PageVo;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
+
+@Service
+<span class="fc" id="L22">public class OrderServiceImpl implements OrderService {</span>
+
+    @Resource
+    private OrderDao orderDao;
+
+    @Resource
+    private IdleItemDao idleItemDao;
+
+    @Resource
+    private com.second.hand.trading.server.utils.RedisUtil redisUtil;
+
+    /**
+     * 新增订单，同时下架闲置
+     * 用了事务串行化，后续要优化，修改更新的sql，增加更新条件，而不是在代码中判断条件
+     * 业务逻辑可优化，改为支付时才下架。
+     * 新功能待做，需要新增订单超时处理
+     * （订单超时：
+     * 1、重新上架闲置；2、修改订单状态；
+     * 3、确保订单取消前不会影响用户的支付，支付前要判断订单状态并加读锁，取消订单时要判断订单状态为未支付才能取消；
+     * 4、保证延期任务一定执行，即确保任务不会因为系统异常而消失）
+     * @param orderModel
+     * @return
+     */
+
+    // 使用Redis分布式锁替代本地锁
+<span class="fc" id="L47">    private static HashMap&lt;Integer,ReentrantLock&gt; lockMap=new HashMap&lt;&gt;();</span>
+    static {
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        for(int i=0;i&lt;100;i++){</span>
+<span class="fc" id="L50">            lockMap.put(i,new ReentrantLock(true));</span>
+        }
+<span class="fc" id="L52">    }</span>
+    
+    @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = Exception.class)
+    public boolean addOrder(OrderModel orderModel){
+        // 使用分布式锁防止并发创建订单
+<span class="nc" id="L57">        String lockKey = &quot;lock:order:create:&quot; + orderModel.getIdleId();</span>
+<span class="nc" id="L58">        String requestId = redisUtil.generateRequestId();</span>
+        
+        try {
+            // 尝试获取锁，5秒超时
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (!redisUtil.tryLock(lockKey, requestId, 5)) {</span>
+<span class="nc" id="L63">                throw new RuntimeException(&quot;系统繁忙，请稍后重试&quot;);</span>
+            }
+            
+<span class="nc" id="L66">            IdleItemModel idleItemModel=idleItemDao.selectByPrimaryKey(orderModel.getIdleId());</span>
+<span class="nc" id="L67">            System.out.println(idleItemModel.getIdleStatus());</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            if(idleItemModel.getIdleStatus()!=1){</span>
+<span class="nc" id="L69">                return false;</span>
+            }
+<span class="nc" id="L71">            IdleItemModel idleItem=new IdleItemModel();</span>
+<span class="nc" id="L72">            idleItem.setId(orderModel.getIdleId());</span>
+<span class="nc" id="L73">            idleItem.setUserId(idleItemModel.getUserId());</span>
+<span class="nc" id="L74">            idleItem.setIdleStatus((byte)2);</span>
+
+            // 执行订单创建逻辑
+<span class="nc" id="L77">            boolean flag = addOrderHelp(idleItem, orderModel);</span>
+<span class="nc" id="L78">            return flag;</span>
+        } finally {
+            // 释放分布式锁
+<span class="nc" id="L81">            redisUtil.releaseLock(lockKey, requestId);</span>
+        }
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean addOrderHelp(IdleItemModel idleItem,OrderModel orderModel){
+<span class="nc" id="L88">        IdleItemModel idleItemModel=idleItemDao.selectByPrimaryKey(orderModel.getIdleId());</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        if(idleItemModel.getIdleStatus()!=1){</span>
+<span class="nc" id="L90">            return false;</span>
+        }
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if(idleItemDao.updateByPrimaryKeySelective(idleItem)==1){</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            if(orderDao.insert(orderModel)==1){</span>
+<span class="nc" id="L94">                orderModel.setOrderStatus((byte) 4);</span>
+                //半小时未支付则取消订单
+<span class="nc" id="L96">                OrderTaskHandler.addOrder(new OrderTask(orderModel,30*60));</span>
+<span class="nc" id="L97">                return true;</span>
+            }else {
+<span class="nc" id="L99">                new RuntimeException();</span>
+            }
+        }
+<span class="nc" id="L102">        return false;</span>
+    }
+
+    /**
+     * 获取订单信息，同时获取对应的闲置信息
+     * @param id
+     * @return
+     */
+    public OrderModel getOrder(Long id){
+<span class="nc" id="L111">        OrderModel orderModel=orderDao.selectByPrimaryKey(id);</span>
+<span class="nc" id="L112">        orderModel.setIdleItem(idleItemDao.selectByPrimaryKey(orderModel.getIdleId()));</span>
+<span class="nc" id="L113">        return orderModel;</span>
+    }
+
+    /**
+     *   根据订单号，查询订单
+     *
+     *
+     * @return*/
+    @Override
+    public PageVo&lt;OrderModel&gt; findOrderByNumber(String searchValue, int page, int nums) {
+<span class="nc" id="L123">        List&lt;OrderModel&gt; list=orderDao.getOrderByNumber(searchValue,(page-1)*nums,nums);</span>
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if(list.size()&gt;0){</span>
+<span class="nc" id="L126">            List&lt;Long&gt; idleIdList=new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            for(OrderModel i:list){</span>
+<span class="nc" id="L128">                idleIdList.add(i.getIdleId());</span>
+<span class="nc" id="L129">            }</span>
+<span class="nc" id="L130">            List&lt;IdleItemModel&gt; idleItemModelList=idleItemDao.findIdleByList(idleIdList);</span>
+<span class="nc" id="L131">            Map&lt;Long,IdleItemModel&gt; map=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">            for(IdleItemModel idle:idleItemModelList){</span>
+<span class="nc" id="L133">                map.put(idle.getId(),idle);</span>
+<span class="nc" id="L134">            }</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            for(OrderModel i:list){</span>
+<span class="nc" id="L136">                i.setIdleItem(map.get(i.getIdleId()));</span>
+<span class="nc" id="L137">            }</span>
+        }
+
+<span class="nc" id="L140">        return new PageVo&lt;OrderModel&gt;(list,1);</span>
+    }
+
+    /**
+     * 更新订单状态，无验证，后期修改为定制的更新sql
+     * 后期改为在支付时下架闲置
+     * @param orderModel
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateOrder(OrderModel orderModel){
+        //不可修改的信息
+<span class="nc" id="L152">        orderModel.setOrderNumber(null);</span>
+<span class="nc" id="L153">        orderModel.setUserId(null);</span>
+<span class="nc" id="L154">        orderModel.setIdleId(null);</span>
+<span class="nc" id="L155">        orderModel.setCreateTime(null);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if(orderModel.getOrderStatus()==4){</span>
+            //取消订单,需要优化，减少数据库查询次数
+<span class="nc" id="L158">            OrderModel o=orderDao.selectByPrimaryKey(orderModel.getId());</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">            if(o.getOrderStatus()!=0){</span>
+<span class="nc" id="L160">                return false;</span>
+            }
+<span class="nc" id="L162">            IdleItemModel idleItemModel=idleItemDao.selectByPrimaryKey(o.getIdleId());</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">            if(idleItemModel.getIdleStatus()==2){</span>
+<span class="nc" id="L164">                IdleItemModel idleItem=new IdleItemModel();</span>
+<span class="nc" id="L165">                idleItem.setId(o.getIdleId());</span>
+<span class="nc" id="L166">                idleItem.setUserId(idleItemModel.getUserId());</span>
+<span class="nc" id="L167">                idleItem.setIdleStatus((byte)1);</span>
+<span class="nc bnc" id="L168" title="All 2 branches missed.">                if(orderDao.updateByPrimaryKeySelective(orderModel)==1){</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">                    if(idleItemDao.updateByPrimaryKeySelective(idleItem)==1){</span>
+<span class="nc" id="L170">                        return true;</span>
+                    }else {
+<span class="nc" id="L172">                        new RuntimeException();</span>
+                    }
+                }
+<span class="nc" id="L175">                return false;</span>
+            }else{
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                if(orderDao.updateByPrimaryKeySelective(orderModel)==1){</span>
+<span class="nc" id="L178">                    return true;</span>
+                }else {
+<span class="nc" id="L180">                    new RuntimeException();</span>
+                }
+            }
+        }
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        return orderDao.updateByPrimaryKeySelective(orderModel)==1;</span>
+    }
+
+    /**
+     * 获取我的所有订单
+     * 同时查询出对应的闲置信息，
+     * 未做分页
+     * userId建索引
+     * @param userId
+     * @return
+     */
+    public List&lt;OrderModel&gt; getMyOrder(Long userId){
+<span class="nc" id="L196">        List&lt;OrderModel&gt; list=orderDao.getMyOrder(userId);</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">        if(list.size()&gt;0){</span>
+<span class="nc" id="L198">            List&lt;Long&gt; idleIdList=new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            for(OrderModel i:list){</span>
+<span class="nc" id="L200">                idleIdList.add(i.getIdleId());</span>
+<span class="nc" id="L201">            }</span>
+<span class="nc" id="L202">            List&lt;IdleItemModel&gt; idleItemModelList=idleItemDao.findIdleByList(idleIdList);</span>
+<span class="nc" id="L203">            Map&lt;Long,IdleItemModel&gt; map=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            for(IdleItemModel idle:idleItemModelList){</span>
+<span class="nc" id="L205">                map.put(idle.getId(),idle);</span>
+<span class="nc" id="L206">            }</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            for(OrderModel i:list){</span>
+<span class="nc" id="L208">                i.setIdleItem(map.get(i.getIdleId()));</span>
+<span class="nc" id="L209">            }</span>
+        }
+<span class="nc" id="L211">        return list;</span>
+    }
+
+    /**
+     * 查询用户卖出的闲置
+     * @param userId
+     * @return
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public List&lt;OrderModel&gt; getMySoldIdle(Long userId){
+<span class="nc" id="L221">        List&lt;IdleItemModel&gt; list=idleItemDao.getAllIdleItem(userId);</span>
+<span class="nc" id="L222">        List&lt;OrderModel&gt; orderList=null;</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        if(list.size()&gt;0){</span>
+<span class="nc" id="L224">            List&lt;Long&gt; idleIdList=new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L225" title="All 2 branches missed.">            for(IdleItemModel i:list){</span>
+<span class="nc" id="L226">                idleIdList.add(i.getId());</span>
+<span class="nc" id="L227">            }</span>
+<span class="nc" id="L228">            orderList=orderDao.findOrderByIdleIdList(idleIdList);</span>
+<span class="nc" id="L229">            Map&lt;Long,IdleItemModel&gt; map=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">            for(IdleItemModel idle:list){</span>
+<span class="nc" id="L231">                map.put(idle.getId(),idle);</span>
+<span class="nc" id="L232">            }</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">            for(OrderModel o:orderList){</span>
+<span class="nc" id="L234">                o.setIdleItem(map.get(o.getIdleId()));</span>
+<span class="nc" id="L235">            }</span>
+        }
+<span class="nc" id="L237">        return orderList;</span>
+    }
+
+    public PageVo&lt;OrderModel&gt; getAllOrder(int page, int nums){
+<span class="nc" id="L241">        List&lt;OrderModel&gt; list=orderDao.getAllOrder((page-1)*nums,nums);</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if(list.size()&gt;0){</span>
+<span class="nc" id="L243">            List&lt;Long&gt; idleIdList=new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            for(OrderModel i:list){</span>
+<span class="nc" id="L245">                idleIdList.add(i.getIdleId());</span>
+<span class="nc" id="L246">            }</span>
+<span class="nc" id="L247">            List&lt;IdleItemModel&gt; idleItemModelList=idleItemDao.findIdleByList(idleIdList);</span>
+<span class="nc" id="L248">            Map&lt;Long,IdleItemModel&gt; map=new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L249" title="All 2 branches missed.">            for(IdleItemModel idle:idleItemModelList){</span>
+<span class="nc" id="L250">                map.put(idle.getId(),idle);</span>
+<span class="nc" id="L251">            }</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">            for(OrderModel i:list){</span>
+<span class="nc" id="L253">                i.setIdleItem(map.get(i.getIdleId()));</span>
+<span class="nc" id="L254">            }</span>
+        }
+<span class="nc" id="L256">        int count=orderDao.countAllOrder();</span>
+<span class="nc" id="L257">        return new PageVo&lt;&gt;(list,count);</span>
+    }
+
+    public boolean deleteOrder(long id){
+<span class="nc bnc" id="L261" title="All 2 branches missed.">        return orderDao.deleteByPrimaryKey(id)==1;</span>
+    }
+
+    /**
+     * 获取总订单数
+     */
+    @Override
+    public int getTotalOrderCount() {
+<span class="nc" id="L269">        return orderDao.countAllOrder();</span>
+    }
+
+    /**
+     * 获取总订单金额
+     */
+    @Override
+    public BigDecimal getTotalOrderAmount() {
+<span class="nc" id="L277">        return orderDao.getTotalOrderAmount();</span>
+    }
+
+    /**
+     * 获取当月订单数
+     */
+    @Override
+    public int getCurrentMonthOrderCount() {
+<span class="nc" id="L285">        Calendar calendar = Calendar.getInstance();</span>
+<span class="nc" id="L286">        calendar.set(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L287">        calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="nc" id="L288">        calendar.set(Calendar.MINUTE, 0);</span>
+<span class="nc" id="L289">        calendar.set(Calendar.SECOND, 0);</span>
+<span class="nc" id="L290">        calendar.set(Calendar.MILLISECOND, 0);</span>
+<span class="nc" id="L291">        Date startDate = calendar.getTime();</span>
+
+<span class="nc" id="L293">        calendar.add(Calendar.MONTH, 1);</span>
+<span class="nc" id="L294">        Date endDate = calendar.getTime();</span>
+
+<span class="nc" id="L296">        return orderDao.getOrderCountByDateRange(startDate, endDate);</span>
+    }
+
+    /**
+     * 获取当月订单金额
+     */
+    @Override
+    public BigDecimal getCurrentMonthOrderAmount() {
+<span class="nc" id="L304">        Calendar calendar = Calendar.getInstance();</span>
+<span class="nc" id="L305">        calendar.set(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L306">        calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="nc" id="L307">        calendar.set(Calendar.MINUTE, 0);</span>
+<span class="nc" id="L308">        calendar.set(Calendar.SECOND, 0);</span>
+<span class="nc" id="L309">        calendar.set(Calendar.MILLISECOND, 0);</span>
+<span class="nc" id="L310">        Date startDate = calendar.getTime();</span>
+
+<span class="nc" id="L312">        calendar.add(Calendar.MONTH, 1);</span>
+<span class="nc" id="L313">        Date endDate = calendar.getTime();</span>
+
+<span class="nc" id="L315">        return orderDao.getOrderAmountByDateRange(startDate, endDate);</span>
+    }
+
+    /**
+     * 获取过去6个月的订单统计数据
+     */
+    @Override
+    public List&lt;Map&lt;String, Object&gt;&gt; getMonthlyOrderStatistics() {
+<span class="nc" id="L323">        List&lt;Map&lt;String, Object&gt;&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L324">        SimpleDateFormat monthFormat = new SimpleDateFormat(&quot;yyyy-MM&quot;);</span>
+
+<span class="nc" id="L326">        Calendar calendar = Calendar.getInstance();</span>
+        // 设置为当前月的第一天
+<span class="nc" id="L328">        calendar.set(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L329">        calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="nc" id="L330">        calendar.set(Calendar.MINUTE, 0);</span>
+<span class="nc" id="L331">        calendar.set(Calendar.SECOND, 0);</span>
+<span class="nc" id="L332">        calendar.set(Calendar.MILLISECOND, 0);</span>
+
+        // 获取过去6个月的数据
+<span class="nc bnc" id="L335" title="All 2 branches missed.">        for (int i = 0; i &lt; 6; i++) {</span>
+<span class="nc" id="L336">            Date endDate = calendar.getTime();</span>
+<span class="nc" id="L337">            calendar.add(Calendar.MONTH, -1);</span>
+<span class="nc" id="L338">            Date startDate = calendar.getTime();</span>
+
+<span class="nc" id="L340">            int orderCount = orderDao.getOrderCountByDateRange(startDate, endDate);</span>
+<span class="nc" id="L341">            BigDecimal orderAmount = orderDao.getOrderAmountByDateRange(startDate, endDate);</span>
+
+<span class="nc" id="L343">            Map&lt;String, Object&gt; monthData = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L344">            monthData.put(&quot;month&quot;, monthFormat.format(endDate));</span>
+<span class="nc" id="L345">            monthData.put(&quot;orderCount&quot;, orderCount);</span>
+<span class="nc" id="L346">            monthData.put(&quot;orderAmount&quot;, orderAmount);</span>
+
+<span class="nc" id="L348">            result.add(0, monthData); // 添加到列表前端，保持时间顺序</span>
+
+<span class="nc" id="L350">            calendar.add(Calendar.MONTH, -1); // 再减去一个月，为下一次循环准备</span>
+        }
+
+<span class="nc" id="L353">        return result;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

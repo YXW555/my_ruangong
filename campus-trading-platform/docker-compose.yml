@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: campus-trading-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: second_hand_trading
+    ports:
+      - "3307:3306"  # 使用 3307 端口避免与本地 MySQL 冲突
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/second_hand_trading.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - campus-trading-network
+
+  # Redis 缓存
+  redis:
+    image: redis:6.2-alpine
+    container_name: campus-trading-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - campus-trading-network
+
+  # 后端服务
+  backend:
+    image: campus-trading-backend:latest
+    container_name: campus-trading-backend
+    ports:
+      - "8081:8080"  # 使用 8081 端口避免与本地后端服务冲突
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/second_hand_trading?useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - campus-trading-network
+    restart: unless-stopped
+
+  # 前端服务
+  frontend:
+    image: campus-trading-frontend:latest
+    container_name: campus-trading-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - campus-trading-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  campus-trading-network:
+    driver: bridge
+

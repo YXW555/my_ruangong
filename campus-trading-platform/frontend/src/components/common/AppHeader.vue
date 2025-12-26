@@ -18,7 +18,7 @@
                 </el-input>
             </div>
             <div class="action-buttons">
-                <el-button type="primary" icon="el-icon-plus" class="publish-btn" @click="toRelease">发布闲置/公告</el-button>
+                <el-button type="primary" icon="el-icon-plus" class="publish-btn" @click="toRelease">{{ releaseButtonText }}</el-button>
                 <el-button type="info" icon="el-icon-chat-dot-round" class="message-btn" @click="toMessage">消息</el-button>
                 
                 <router-link v-if="!isLogin" class="user-name-text login-btn" to="/login">
@@ -68,6 +68,7 @@
                     if(res.status_code===1){
                         this.nickname=res.data.nickname;
                         this.avatar=res.data.avatar;
+                        
                         res.data.signInTime=res.data.signInTime.substring(0,10);
                         this.$globalData.userInfo=res.data;
                         this.isLogin=true;
@@ -76,7 +77,17 @@
             }else {
                 this.nickname=this.$globalData.userInfo.nickname;
                 this.avatar=this.$globalData.userInfo.avatar;
+                
                 this.isLogin=true;
+            }
+        },
+        computed: {
+            userRole() {
+                return this.$globalData.userInfo.userRole || 0;
+            },
+            releaseButtonText() {
+                // userRole: 1 代表经营性卖家
+                return this.userRole === 1 ? '店铺管理' : '发布闲置';
             }
         },
         methods: {
@@ -103,8 +114,15 @@
                 }
             },
             toRelease(){
+                // userRole: 1 代表经营性卖家
+                if (this.userRole === 1) {
+                    if ('/merchant/manage' !== this.$route.path) {
+                        this.$router.push({path: '/merchant/manage'});
+                    }
+                } else {
                 if ('/release' !== this.$route.path) {
                     this.$router.push({path: '/release'});
+                    }
                 }
             },
             loginOut(){

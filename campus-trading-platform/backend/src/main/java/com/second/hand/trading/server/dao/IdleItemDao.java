@@ -43,4 +43,9 @@ public interface IdleItemDao {
      * @return 包含分类ID和对应数量的列表
      */
     List<Map<String, Object>> countItemsByCategory();
+
+    /**
+     * 统计用户在指定时间范围内发布的商品数量
+     */
+    int countByUserIdAndTimeRange(Long userId, java.util.Date startTime, java.util.Date endTime);
 }

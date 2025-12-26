@@ -51,6 +51,9 @@
                                     <div class="item-tag" v-if="getItemCategory(idle.idleLabel)">
                                         {{getItemCategory(idle.idleLabel)}}
                                     </div>
+                                    <div class="item-pin-badge" v-if="idle.isPinned">
+                                        <i class="el-icon-top"></i> 置顶
+                                    </div>
                                 </div>
                                 <div class="item-content">
                                     <h3 class="item-title">{{idle.idleName}}</h3>
@@ -59,9 +62,9 @@
                                         <div class="item-place"><i class="el-icon-location"></i> {{idle.idlePlace}}</div>
                                     </div>
                                     <div class="item-time"><i class="el-icon-time"></i> {{idle.timeStr}}</div>
-                                    <div class="user-info">
-                                        <el-avatar :size="30" :src="idle.user.avatar"></el-avatar>
-                                        <div class="user-nickname">{{idle.user.nickname}}</div>
+                                    <div class="user-info" v-if="idle.user">
+                                        <el-avatar :size="30" :src="idle.user.avatar || ''"></el-avatar>
+                                        <div class="user-nickname">{{idle.user.nickname || '未知用户'}}</div>
                                     </div>
                                 </div>
                             </div>
@@ -144,6 +147,10 @@
                             list[i].timeStr = list[i].releaseTime.substring(0, 10) + " " + list[i].releaseTime.substring(11, 19);
                             let pictureList = JSON.parse(list[i].pictureList);
                             list[i].imgUrl = pictureList.length > 0 ? pictureList[0] : '';
+                            // 如果没有isPinned字段，默认为false
+                            if (list[i].isPinned === undefined) {
+                                list[i].isPinned = false;
+                            }
                         }
                         this.idleList = list;
                         this.totalItem=res.data.count;
@@ -165,6 +172,10 @@
                             list[i].timeStr = list[i].releaseTime.substring(0, 10) + " " + list[i].releaseTime.substring(11, 19);
                             let pictureList = JSON.parse(list[i].pictureList);
                             list[i].imgUrl = pictureList.length > 0 ? pictureList[0] : '';
+                            // 如果没有isPinned字段，默认为false
+                            if (list[i].isPinned === undefined) {
+                                list[i].isPinned = false;
+                            }
                         }
                         this.idleList = list;
                         this.totalItem=res.data.count;
@@ -280,6 +291,27 @@
         padding: 2px 8px;
         border-radius: 12px;
         font-size: 12px;
+    }
+    
+    .item-pin-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(255, 193, 7, 0.95);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+    }
+    
+    .item-pin-badge i {
+        font-size: 14px;
     }
     
     .item-content {

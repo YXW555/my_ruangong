@@ -12,10 +12,11 @@
     <result column="release_time" jdbcType="TIMESTAMP" property="releaseTime" />
     <result column="idle_status" jdbcType="TINYINT" property="idleStatus" />
     <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="stock" jdbcType="INTEGER" property="stock" />
   </resultMap>
   <sql id="Base_Column_List">
     id, idle_name, idle_details, picture_list, idle_price, idle_place, idle_label, release_time,
-    idle_status, user_id
+    idle_status, user_id, stock
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select
@@ -43,9 +44,16 @@
   </select>
   <select id="findIdleItem" resultMap="BaseResultMap">
     select
-    <include refid="Base_Column_List" />
-    from sh_idle_item
-    where (idle_name LIKE "%"#{findValue}"%" or idle_details LIKE "%"#{findValue}"%") and idle_status = 1 order by id desc limit #{begin}, #{nums}
+    i.id, i.idle_name, i.idle_details, i.picture_list, i.idle_price, i.idle_place, 
+    i.idle_label, i.release_time, i.idle_status, i.user_id, i.stock
+    from sh_idle_item i
+    left join sh_idle_item_pin p on i.id = p.idle_item_id 
+        and p.pin_start_time &lt;= NOW() 
+        and p.pin_end_time > NOW()
+    where (i.idle_name LIKE "%"#{findValue}"%" or i.idle_details LIKE "%"#{findValue}"%") 
+        and i.idle_status = 1 
+    order by (p.id IS NOT NULL) desc, i.id desc 
+    limit #{begin}, #{nums}
   </select>
   <select id="findIdleItem1" resultMap="BaseResultMap">
     select
@@ -55,9 +63,15 @@
   </select>
   <select id="findIdleItemByLable" resultMap="BaseResultMap">
     select
-    <include refid="Base_Column_List" />
-    from sh_idle_item
-    where idle_label = #{idleLabel}  and idle_status = 1 order by id desc limit #{begin}, #{nums}
+    i.id, i.idle_name, i.idle_details, i.picture_list, i.idle_price, i.idle_place, 
+    i.idle_label, i.release_time, i.idle_status, i.user_id, i.stock
+    from sh_idle_item i
+    left join sh_idle_item_pin p on i.id = p.idle_item_id 
+        and p.pin_start_time &lt;= NOW() 
+        and p.pin_end_time > NOW()
+    where i.idle_label = #{idleLabel} and i.idle_status = 1 
+    order by (p.id IS NOT NULL) desc, i.id desc 
+    limit #{begin}, #{nums}
   </select>
   <select id="getIdleItemByStatus" resultMap="BaseResultMap">
     select
@@ -81,11 +95,12 @@
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.second.hand.trading.server.entity.IdleItemModel" useGeneratedKeys="true">
     insert into sh_idle_item (idle_name, idle_details, picture_list,
       idle_price, idle_place, idle_label,
-      release_time, idle_status, user_id
+      release_time, idle_status, user_id, stock
       )
     values (#{idleName,jdbcType=VARCHAR}, #{idleDetails,jdbcType=VARCHAR}, #{pictureList,jdbcType=VARCHAR},
       #{idlePrice,jdbcType=DECIMAL}, #{idlePlace,jdbcType=VARCHAR}, #{idleLabel,jdbcType=INTEGER},
-      #{releaseTime,jdbcType=TIMESTAMP}, #{idleStatus,jdbcType=TINYINT}, #{userId,jdbcType=BIGINT}
+      #{releaseTime,jdbcType=TIMESTAMP}, #{idleStatus,jdbcType=TINYINT}, #{userId,jdbcType=BIGINT},
+      #{stock,jdbcType=INTEGER}
       )
   </insert>
   <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.second.hand.trading.server.entity.IdleItemModel" useGeneratedKeys="true">
@@ -118,6 +133,9 @@
       <if test="userId != null">
         user_id,
       </if>
+      <if test="stock != null">
+        stock,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="idleName != null">
@@ -146,6 +164,9 @@
       </if>
       <if test="userId != null">
         #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="stock != null">
+        #{stock,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -176,6 +197,9 @@
       <if test="idleStatus != null">
         idle_status = #{idleStatus,jdbcType=TINYINT},
       </if>
+      <if test="stock != null">
+        stock = #{stock,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -189,7 +213,8 @@
       idle_label = #{idleLabel,jdbcType=INTEGER},
       release_time = #{releaseTime,jdbcType=TIMESTAMP},
       idle_status = #{idleStatus,jdbcType=TINYINT},
-      user_id = #{userId,jdbcType=BIGINT}
+      user_id = #{userId,jdbcType=BIGINT},
+      stock = #{stock,jdbcType=INTEGER}
     where id = #{id,jdbcType=BIGINT}
   </update>
   <select id="countItemsByCategory" resultType="java.util.Map">
@@ -198,5 +223,11 @@
     where idle_status = 1
     group by idle_label
     order by count desc
+  </select>
+  <select id="countByUserIdAndTimeRange" resultType="int">
+    select count(*) from sh_idle_item
+    where user_id = #{userId,jdbcType=BIGINT}
+    and release_time >= #{startTime,jdbcType=TIMESTAMP}
+    and release_time &lt; #{endTime,jdbcType=TIMESTAMP}
   </select>
 </mapper>

@@ -13,11 +13,15 @@
             <p class="order-amount">支付金额: <span class="price">¥{{ price || '0.00' }}</span></p>
           </div>
           <div class="success-description">
-            <p>您的订单已支付成功，感谢您的购买！</p>
-            <p>卖家将尽快为您发货</p>
+            <p v-if="orderType === 'membership'">会员订单支付成功，会员权益已开通！</p>
+            <template v-else>
+              <p>您的订单已支付成功，感谢您的购买！</p>
+              <p>卖家将尽快为您发货</p>
+            </template>
           </div>
           <div class="action-buttons">
-            <el-button type="primary" round @click="goToOrder" icon="el-icon-document">查看订单</el-button>
+            <el-button v-if="orderType !== 'membership'" type="primary" round @click="goToOrder" icon="el-icon-document">查看订单</el-button>
+            <el-button v-if="orderType === 'membership'" type="primary" round @click="goToMembership" icon="el-icon-star-on">查看会员</el-button>
             <el-button round @click="goToHome" icon="el-icon-s-home">返回首页</el-button>
           </div>
         </div>
@@ -43,7 +47,8 @@ export default {
     return {
       orderNo: '',
       price: '',
-      orderId: ''
+      orderId: '',
+      orderType: '' // 'membership' 或普通订单
     }
   },
   mounted() {
@@ -75,9 +80,15 @@ export default {
         console.log('解析后的参数:', params);
         
         // 赋值给组件数据
-        this.orderId = params.name || '';
-        this.orderNo = params.no || '未知订单';
-        this.price = params.price || '0';
+        this.orderId = params.name || this.$route.query.id || '';
+        this.orderNo = params.no || this.$route.query.orderNumber || '未知订单';
+        this.price = params.price || this.$route.query.amount || '0';
+        this.orderType = params.type || this.$route.query.type || '';
+        
+        // 如果是会员订单，激活会员
+        if (this.orderType === 'membership' && this.orderNo) {
+          this.activateMembership();
+        }
         
         // 确保价格正确显示
         if (this.price && !isNaN(parseFloat(this.price))) {
@@ -107,6 +118,27 @@ export default {
     },
     goToHome() {
       window.location.href = `${window.location.origin}/#/`;
+    },
+    activateMembership() {
+      if (!this.orderNo) return;
+      this.$api.activateMembership({ orderNumber: this.orderNo }).then(res => {
+        if (res.status_code === 1) {
+          this.$message.success('会员权益已成功开通！');
+          // 刷新用户信息
+          if (this.$globalData && this.$globalData.userInfo) {
+            this.$api.getUserInfo().then(userRes => {
+              if (userRes.status_code === 1) {
+                this.$globalData.userInfo = userRes.data;
+              }
+            });
+          }
+        }
+      }).catch(() => {
+        // 静默失败，不影响页面显示
+      });
+    },
+    goToMembership() {
+      this.$router.push('/membership');
     }
   }
 }

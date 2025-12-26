@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IdFactoryUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.utils</a> &gt; <span class="el_source">IdFactoryUtil.java</span></div><h1>IdFactoryUtil.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.utils;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+// id自增原子操作
+
+<span class="nc" id="L7">public class IdFactoryUtil {</span>
+
+<span class="nc" id="L9">    private static AtomicInteger orderIdEnd=new AtomicInteger(1);</span>
+<span class="nc" id="L10">    private static AtomicInteger fileIdEnd=new AtomicInteger(1);</span>
+
+    public static String getOrderId(){
+        int newI;
+        int ord;
+        do{
+<span class="nc" id="L16">            ord=orderIdEnd.get();</span>
+<span class="nc" id="L17">            newI=(ord+1)%10000;</span>
+        }
+<span class="nc bnc" id="L19" title="All 2 branches missed.">        while (!orderIdEnd.compareAndSet(ord,newI));</span>
+<span class="nc" id="L20">        return System.currentTimeMillis()+&quot;&quot;+(newI+10000);</span>
+    }
+
+    public static String getFileId(){
+        int newI;
+        int ord;
+        do{
+<span class="nc" id="L27">            ord=fileIdEnd.get();</span>
+<span class="nc" id="L28">            newI=(ord+1)%1000;</span>
+        }
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        while (!fileIdEnd.compareAndSet(ord,newI));</span>
+<span class="nc" id="L31">        return System.currentTimeMillis()+&quot;&quot;+(newI+1000);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

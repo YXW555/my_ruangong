@@ -38,11 +38,11 @@ CREATE TABLE `sh_address`  (
 -- ----------------------------
 -- Records of sh_address
 -- ----------------------------
-INSERT INTO `sh_address` VALUES (36, '王国栋', '12345678910', '男生宿舍', '14号楼', '二层', '205，楼道东边，靠着厕所', 1, 40);
-INSERT INTO `sh_address` VALUES (37, '李佳伟', '98765432110', '男生宿舍', '11号楼', '三层', '305楼道东侧挨着厕所', 1, 36);
-INSERT INTO `sh_address` VALUES (38, '程建国', '18713790195', '男生宿舍', '11号楼', '二层', '205', 1, 37);
-INSERT INTO `sh_address` VALUES (39, '美美', '15263698569', '女生宿舍', '9号楼', '一层', '103 楼道最东边', 1, 38);
-INSERT INTO `sh_address` VALUES (40, '李娜', '15896565656', '女生宿舍', '9号楼', '四层', '406 楼道最东边，按着厕所', 1, 39);
+INSERT INTO `sh_address` VALUES (36, '王国栋', '12345678910', '男生宿舍', '14号楼', '二层', '205，楼道东边，靠着厕所', 1, 40,1);
+INSERT INTO `sh_address` VALUES (37, '李佳伟', '98765432110', '男生宿舍', '11号楼', '三层', '305楼道东侧挨着厕所', 1, 36,1);
+INSERT INTO `sh_address` VALUES (38, '程建国', '18713790195', '男生宿舍', '11号楼', '二层', '205', 1, 37,1);
+INSERT INTO `sh_address` VALUES (39, '美美', '15263698569', '女生宿舍', '9号楼', '一层', '103 楼道最东边', 1, 38,1);
+INSERT INTO `sh_address` VALUES (40, '李娜', '15896565656', '女生宿舍', '9号楼', '四层', '406 楼道最东边，按着厕所', 1, 39,1);
 
 -- ----------------------------
 -- Table structure for sh_admin
@@ -103,6 +103,7 @@ CREATE TABLE `sh_idle_item`  (
   `release_time` datetime NOT NULL COMMENT '发布时间',
   `idle_status` tinyint NOT NULL COMMENT '状态（发布1、下架2、删除0）',
   `user_id` bigint NOT NULL COMMENT '用户主键id',
+  `stock` int NOT NULL DEFAULT 1 COMMENT '库存数量（经营性卖家使用，普通用户默认为1）',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `user_id_index`(`user_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 189 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '二手商品表' ROW_FORMAT = DYNAMIC;
@@ -110,114 +111,114 @@ CREATE TABLE `sh_idle_item`  (
 -- ----------------------------
 -- Records of sh_idle_item
 -- ----------------------------
-INSERT INTO `sh_idle_item` VALUES (81, '三星手机', '二手闲置三星手机', '[\"http://localhost:8080/image?imageName=file164569022369110021.jpg\"]', 1000.00, '14号楼', 1, '2022-02-24 08:10:28', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (82, '折叠手机', '几个月前买的折叠手机，不想要了', '[\"http://localhost:8080/image?imageName=file164569133572210032.jpg\"]', 2999.00, '14号楼', 1, '2022-02-24 08:28:59', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (83, '苹果6', '9成新 好使  需要联系吧  手机都是自己用的 手机很多  都能用 想要哪个都行 图片里选', '[\"http://localhost:8080/image?imageName=file1645691490496100431.jpg\",\"http://localhost:8080/image?imageName=file1645691493727100532.jpg\"]', 2800.00, '14号楼', 1, '2022-02-24 08:31:37', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (84, '新国标电动续航50公里到300公里', '新国标电动自行车，外卖电动自行车，库房直发，高配置电动自行车，全部采用钢丝真空轮胎，液晶仪表，汽车盘刹，LED灯光同城免费送货上门，满意后付款。', '[\"http://localhost:8080/image?imageName=file164569163128810064.jpg\"]', 1980.00, '14号楼', 5, '2022-02-24 08:34:05', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (85, '二手书直接卖', '毕业了不要了', '[\"http://localhost:8080/image?imageName=file164569183716710075.jpg\"]', 26.00, '14号楼', 4, '2022-02-24 08:37:21', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (86, '道德经妙解', '道德经妙解，看了都懂', '[\"http://localhost:8080/image?imageName=file164569192391610086.jpg\"]', 56.00, '14号楼', 4, '2022-02-24 08:38:48', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (87, '从0到1', '创业必看', '[\"http://localhost:8080/image?imageName=file164569201071610097.jpg\"]', 66.00, '14号楼', 4, '2022-02-24 08:40:13', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (88, '海尔老彩电', '家里换新，想要的联系', '[\"http://localhost:8080/image?imageName=file164569214053010108.jpg\"]', 260.00, '14号楼', 2, '2022-02-24 08:42:24', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (89, '伊莱克斯滚筒洗衣机', '伊莱克斯5公斤滚筒洗衣机 二手滚筒洗衣机 二手洗衣机', '[\"http://localhost:8080/image?imageName=file164569235935910119.jpg\"]', 980.00, '3号楼', 2, '2022-02-24 08:46:02', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (90, '惠普4530笔记本电脑', '惠普4530二手笔记本电脑', '[\"http://localhost:8080/image?imageName=file1645692446793101210.jpg\"]', 900.00, '3号楼', 1, '2022-02-24 08:47:36', 2, 37);
-INSERT INTO `sh_idle_item` VALUES (91, '二手Mac电脑', '换新了，需要的赶紧联系', '[\"http://localhost:8080/image?imageName=file1645692559553101311.jpg\"]', 4500.00, '3号楼', 1, '2022-02-24 08:49:25', 2, 37);
-INSERT INTO `sh_idle_item` VALUES (92, '全自动两用帐篷', '全自动两用帐篷，8成新', '[\"http://localhost:8080/image?imageName=file1645692690642101412.jpg\"]', 150.00, '3号楼', 3, '2022-02-24 08:51:34', 2, 37);
-INSERT INTO `sh_idle_item` VALUES (93, '考研圣经', '备考没用完，有想要的可以联系', '[\"http://localhost:8080/image?imageName=file16459478577811002成绩.png\",\"http://localhost:8080/image?imageName=file16459478642741003规划.png\"]', 30.00, '3号楼', 4, '2022-02-27 07:44:36', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (94, '水壶', '即将毕业，低价出售', '[\"http://localhost:8080/image?imageName=file16468958478231007d0c8a786c9177f3e8f2b07bb76cf3bc79f3d566d.jpg\"]', 10.00, '16号楼', 2, '2022-03-10 07:04:13', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (95, '湿巾', '之前买多了，有想要的便宜点卖给你', '[\"http://localhost:8080/image?imageName=file16468959708381008src=http___img.99114.com_group10_M00_46_59_rBADslopuDqAA6FyAAKbYkZTvKI190.jpg&refer=http___img.99114.jfif\"]', 5.00, '16号楼', 2, '2022-03-10 07:06:13', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (96, '湿巾', '之前买多了，低价出售', '[\"http://localhost:8080/image?imageName=file164689617136610091.jpg\"]', 5.00, '16号楼', 2, '2022-03-10 07:09:36', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (97, '拖把', '非常好用', '[\"http://localhost:8080/image?imageName=file16468962121991011132.jpg\",\"http://localhost:8080/image?imageName=file16468962121981010src.jpg\"]', 10.00, '16号楼', 2, '2022-03-10 07:10:21', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (98, '水桶', '打扫宿舍可以用，冲凉水澡可以用', '[\"http://localhost:8080/image?imageName=file1646896286973101223165.jpg\"]', 10.00, '16号楼', 2, '2022-03-10 07:11:32', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (99, '篮球', '乔丹的，买的时候二百多', '[\"http://localhost:8080/image?imageName=file16468963766011014165165.jpg\"]', 60.00, '16号楼', 3, '2022-03-10 07:13:05', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (100, '羽毛球拍', '九成新，没玩过几次，低价出售', '[\"http://localhost:8080/image?imageName=file16468992372591015f.jpg\"]', 40.00, '16号楼', 3, '2022-03-10 08:00:41', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (101, '足球', '最近加了排球队，想买个二手足球，老哥们谁有不想要的足球呀！！', '[\"http://localhost:8080/image?imageName=file16469001406541016123132123231.jpg\"]', -40.00, '16号楼', 5, '2022-03-10 08:15:56', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (102, '来本python', '容易入门的那种', '[\"http://localhost:8080/image?imageName=file16469112956741019书.jpg\"]', 0.00, '14号楼', 5, '2022-03-10 11:21:38', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (103, '足球', '求一个二手足球', '[]', 0.00, '10号楼', 5, '2022-03-10 12:20:29', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (104, '求一副乒乓球拍', '20~30左右', '[]', 0.00, '5号楼', 5, '2022-03-10 13:48:18', 0, 39);
-INSERT INTO `sh_idle_item` VALUES (105, '键盘', '手感超好，八成新', '[\"http://localhost:8080/image?imageName=file16469607002831004jlkj.jpg\",\"http://localhost:8080/image?imageName=file16469607146191005adsf.jpg\"]', 120.00, '11号楼', 1, '2022-03-11 01:05:27', 2, 40);
-INSERT INTO `sh_idle_item` VALUES (106, '平板电脑', '考研必备，七成新，有需要的联系', '[\"http://localhost:8080/image?imageName=file16469608275821006131232.jpg\"]', 1500.00, '11号楼', 1, '2022-03-11 01:07:12', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (107, '速度拳击球', '散打专用，八成新', '[\"http://localhost:8080/image?imageName=file16469610415851007aefsd.jpg\"]', 100.00, '11号楼', 3, '2022-03-11 01:10:44', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (108, '想买本机器学习的书', '那种数学公式比较详细的最好，抱拳了老铁们！！', '[\"http://localhost:8080/image?imageName=file16473369568111002132135.jpg\"]', 0.00, '14号楼', 5, '2022-03-15 09:36:01', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (109, '历史书，八成新', '刚买了不久，不想用了', '[\"http://localhost:8080/image?imageName=file16475926255961002书234asdf.jfif\"]', 50.00, '14号楼', 4, '2022-03-18 08:38:18', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (110, '求一本高等数学的课本', '急求！！！', '[\"http://localhost:8080/image?imageName=file16475929517481003123.jpg\"]', 0.00, '10号楼', 5, '2022-03-18 08:42:47', 1, 38);
-INSERT INTO `sh_idle_item` VALUES (111, '书', '很便宜', '[\"http://localhost:8080/image?imageName=file16476083329261004书66.jfif\"]', 40.00, '12号楼', 2, '2022-03-18 12:59:01', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (112, '113', '213', '[\"http://localhost:8080/image?imageName=file16476083749971005书234.jfif\"]', 123.23, '11号楼', 3, '2022-03-18 12:59:37', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (113, '123', '123456789', '[]', 10.00, '11号楼', 1, '2022-04-11 06:36:47', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (114, '4524', '42524', '[]', 60.00, '8号楼', 2, '2022-05-01 08:19:19', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (115, '178274', '2782782', '[\"http://localhost:8080/image?imageName=file16513932186671002书53.jpg\"]', 60.00, '8号楼', 1, '2022-05-01 08:20:20', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (116, '245', '453', '[\"http://localhost:8080/image?imageName=file16513935068611003T1Jq0gXidvXXXXXXXX.png\"]', 70.00, '8号楼', 2, '2022-05-01 08:25:09', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (117, '212', '1212', '[]', 30.00, '11号楼', 1, '2022-05-01 08:27:09', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (118, '544', '4854', '[]', 30.00, '10号楼', 1, '2022-05-01 08:28:14', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (119, '452', '452', '[\"http://localhost:8080/image?imageName=file16513938440741004T1Jq0gXidvXXXXXXXX.png\"]', 50.00, '7号楼', 4, '2022-05-01 08:30:46', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (120, '752', '17', '[]', 40.00, '8号楼', 4, '2022-05-01 08:32:11', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (121, '524', '52', '[]', 30.00, '8号楼', 3, '2022-05-01 08:38:54', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (122, 'dfas', 'asdf', '[]', 30.00, '13号楼', 3, '2022-05-01 08:39:35', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (123, 'ad', 'asdf', '[]', 20.00, '7号楼', 3, '2022-05-01 08:41:31', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (124, '4425', '452542', '[]', 10.00, '7号楼', 3, '2022-05-01 08:43:59', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (125, 'asdf', 'asdf', '[\"http://localhost:8080/image?imageName=file16513951184911002T1Jq0gXidvXXXXXXXX.png\"]', 100.00, '9号楼', 1, '2022-05-01 08:52:00', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (126, '21', '785785', '[]', 5785.00, '9号楼', 2, '2022-05-01 08:54:45', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (127, '4521', '4252', '[]', 80.00, '9号楼', 1, '2022-05-01 08:55:33', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (128, 'dv', 'dfad', '[]', 20.00, '8号楼', 1, '2022-05-01 08:57:06', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (129, '5234', '452', '[]', 40.00, '11号楼', 4, '2022-05-01 08:58:16', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (130, 'adsf', 'adf', '[]', 20.00, '9号楼', 1, '2022-05-01 08:59:24', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (131, 'asdf', '123', '[]', 20.00, '10号楼', 1, '2022-05-01 09:00:16', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (132, '153', '153', '[]', 190.00, '11号楼', 3, '2022-05-01 09:04:42', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (133, 'adsf', 'adsf', '[]', 10.00, '10号楼', 1, '2022-05-01 09:08:11', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (134, 'dasf', 'asdf', '[]', 20.00, '8号楼', 2, '2022-05-01 09:10:32', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (135, 'Python', '入门级书籍', '[\"http://localhost:8080/image?imageName=file16518880948481002书.jpg\"]', 30.00, '11号楼', 4, '2022-05-07 01:48:17', 1, 36);
-INSERT INTO `sh_idle_item` VALUES (136, 'Java', '自学java就买到它，很好用，九成新', '[\"http://localhost:8080/image?imageName=file16518881435141003书6.jfif\"]', 50.00, '11号楼', 4, '2022-05-07 01:49:06', 1, 36);
-INSERT INTO `sh_idle_item` VALUES (137, '趣学pthon', '有要的老铁联系我，低价出售', '[\"http://localhost:8080/image?imageName=file16518882055951004书1.jfif\"]', 20.00, '11号楼', 4, '2022-05-07 01:50:08', 1, 36);
-INSERT INTO `sh_idle_item` VALUES (138, '机械键盘', '超级好用，入手半年左右，八成新', '[\"http://localhost:8080/image?imageName=file16518882692421005jlkj.jpg\"]', 100.00, '11号楼', 1, '2022-05-07 01:51:12', 1, 36);
-INSERT INTO `sh_idle_item` VALUES (139, '水壶', '马上毕业，水壶低价出售', '[\"http://localhost:8080/image?imageName=file16518883325891006d0c8a786c9177f3e8f2b07bb76cf3bc79f3d566d.jpg\"]', 10.00, '11号楼', 2, '2022-05-07 01:52:14', 1, 36);
-INSERT INTO `sh_idle_item` VALUES (140, '水桶', '有哪位老铁收购，用来洗澡很方便', '[\"http://localhost:8080/image?imageName=file1651888380624100723165.jpg\"]', 10.00, '11号楼', 2, '2022-05-07 01:53:03', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (141, '数控系统手动编程', '低价出售，七成新', '[\"http://localhost:8080/image?imageName=file16518884576041008书3.jfif\"]', 20.00, '14号楼', 4, '2022-05-07 01:54:20', 1, 37);
-INSERT INTO `sh_idle_item` VALUES (142, 'C语言', '大学教材，有学弟学妹需要吗', '[\"http://localhost:8080/image?imageName=file16518885029431009书2.jfif\"]', 20.00, '14号楼', 4, '2022-05-07 01:55:07', 2, 37);
-INSERT INTO `sh_idle_item` VALUES (143, '史记等中国经典书籍', '低价出售，快来抢购把', '[\"http://localhost:8080/image?imageName=file16518885783071010书234asdf.jfif\"]', 30.00, '14号楼', 4, '2022-05-07 01:56:20', 1, 37);
-INSERT INTO `sh_idle_item` VALUES (144, '篮球', '九成新', '[\"http://localhost:8080/image?imageName=file16518886363591011165165.jpg\"]', 100.00, '14号楼', 3, '2022-05-07 01:57:18', 1, 37);
-INSERT INTO `sh_idle_item` VALUES (145, '排球', '八成新', '[\"http://localhost:8080/image?imageName=file16518886662551012123132123231.jpg\"]', 30.00, '14号楼', 3, '2022-05-07 01:57:48', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (146, '乒乓球拍', '外赠两个球，九成新', '[]', 40.00, '14号楼', 3, '2022-05-07 01:58:36', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (147, '乒乓球', '外赠两个球，八成新', '[\"http://localhost:8080/image?imageName=file16518887490211013src=http___img2.niutuku.com_desk_1207_0808_ntk11339.jpg&refer=http___img2.niutuku.jfif\"]', 30.00, '14号楼', 3, '2022-05-07 01:59:12', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (148, '运动器材找我', '详细了解，加我微信wzh126516854', '[\"http://localhost:8080/image?imageName=file16518891114451014165164.jpg\"]', 0.00, '14号楼', 5, '2022-05-07 02:05:16', 1, 37);
-INSERT INTO `sh_idle_item` VALUES (149, '平板电脑', '低价出售，二手平板，用了一年', '[\"http://localhost:8080/image?imageName=file16518892088571015131232.jpg\"]', 2100.00, '2号楼', 1, '2022-05-07 02:06:53', 1, 38);
-INSERT INTO `sh_idle_item` VALUES (150, '笔记本电脑', '九成新，', '[\"http://localhost:8080/image?imageName=file16518892482061016image.jpg\"]', 3156.00, '2号楼', 1, '2022-05-07 02:07:30', 1, 38);
-INSERT INTO `sh_idle_item` VALUES (151, '平板平板！！', '低价出售，全新', '[\"http://localhost:8080/image?imageName=file16518892997971017src=http___mercrt-fd.zol-img.com.cn_t_s640x2000_g6_M00_01_0B_ChMkKmBkAouIOSndAAS1swJOKIAAAMY9gJk6-gABLXL642.jpg&refer=http___mercrt-fd.zol-img.com.jfif\"]', 2000.00, '2号楼', 1, '2022-05-07 02:08:45', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (152, 'wewfa', 'asdfasd', '[]', 20.00, '11号楼', 1, '2022-05-07 02:09:15', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (153, 'asdf', 'adf', '[]', 20.00, '10号楼', 1, '2022-05-07 02:16:44', 0, 36);
-INSERT INTO `sh_idle_item` VALUES (154, 'dfasdf', 'asdfasdf', '[]', 10.00, '8号楼', 1, '2022-05-07 02:16:54', 0, 36);
-INSERT INTO `sh_idle_item` VALUES (155, 'efa', 'asdf', '[]', 20.00, '10号楼', 1, '2022-05-07 02:21:46', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (156, 'dawf', '大师傅', '[]', 20.00, '11号楼', 1, '2022-05-07 02:23:14', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (157, 'dsf', 'asdf', '[]', 10.00, '8号楼', 1, '2022-05-07 02:28:22', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (158, 'dfas', 'adf', '[]', 20.00, '6号楼', 1, '2022-05-07 02:28:31', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (159, '4252', '452', '[]', 20.00, '8号楼', 2, '2022-05-12 12:44:44', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (160, '417', '14', '[]', 40.00, '10号楼', 2, '2022-05-12 12:44:56', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (161, 'adsf', 'adf', '[]', 20.00, '10号楼', 2, '2022-05-12 13:05:40', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (162, 'adf', 'adf', '[]', 20.00, '8号楼', 2, '2022-05-12 13:05:50', 0, 37);
-INSERT INTO `sh_idle_item` VALUES (163, 'adsf', 'asdf', '[]', 30.00, '10号楼', 2, '2022-05-12 13:08:25', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (164, 'asdf', 'adf', '[]', 20.00, '8号楼', 1, '2022-05-12 13:08:36', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (165, 'asdf', 'asdf', '[]', 10.00, '11号楼', 2, '2022-05-12 13:08:45', 0, 40);
-INSERT INTO `sh_idle_item` VALUES (166, '出售哑铃', '宿舍健身必备，低价出售一对', '[\"http://localhost:8080/image?imageName=file16524424818461002src=http___s.xcditu.com_trash_20190701_20191107102718606.jpg&refer=http___s.xcditu.jfif\"]', 60.00, '7号楼', 3, '2022-05-13 11:48:06', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (167, '健身哑铃', '宿舍健身必备！！低价出售！', '[\"http://localhost:8080/image?imageName=file16524425723491004123.png\"]', 50.00, '2号楼', 3, '2022-05-13 11:49:38', 1, 38);
-INSERT INTO `sh_idle_item` VALUES (168, '时尚机械键盘', '好看又好用，九成新，用了不到2个月，紧急出售！！', '[]', 128.00, '2号楼', 1, '2022-05-13 11:51:23', 0, 38);
-INSERT INTO `sh_idle_item` VALUES (169, '机械键盘', '好看又好用，九成新，用了不到2个月，紧急出售！！', '[\"http://localhost:8080/image?imageName=file16524427230081005adsf.jpg\"]', 128.00, '2号楼', 1, '2022-05-13 11:52:06', 1, 38);
-INSERT INTO `sh_idle_item` VALUES (170, '篮球', '5成新，需要的找我', '[\"http://localhost:8080/image?imageName=file16524427826181006165165.jpg\"]', 80.00, '2号楼', 3, '2022-05-13 11:53:07', 1, 38);
-INSERT INTO `sh_idle_item` VALUES (171, '乒乓球拍', '低价出售，很好用，红双喜的！！', '[\"http://localhost:8080/image?imageName=file165244286141110081231213.png\"]', 70.00, '2号楼', 3, '2022-05-13 11:54:27', 1, 38);
-INSERT INTO `sh_idle_item` VALUES (172, '湿巾', '低价出售，可以团购哦！', '[\"http://localhost:8080/image?imageName=file165244302831110091.jpg\"]', 10.00, '9号楼', 2, '2022-05-13 11:57:11', 1, 39);
-INSERT INTO `sh_idle_item` VALUES (173, '拖把', '超级好用，临近毕业低价出售给学弟学妹们^_^', '[\"http://localhost:8080/image?imageName=file16524431015941010132.jpg\",\"http://localhost:8080/image?imageName=file16524431061461011src.jpg\"]', 20.00, '10号楼', 2, '2022-05-13 11:58:30', 1, 39);
-INSERT INTO `sh_idle_item` VALUES (174, '学习用品低价出售！！', '笔记本，笔，学习用品十分全面', '[\"http://localhost:8080/image?imageName=file16524434384781012132.jpg\"]', 0.00, '9号楼', 5, '2022-05-13 12:04:03', 2, 39);
-INSERT INTO `sh_idle_item` VALUES (175, '剑指offer', '面试必备！！', '[\"http://localhost:8080/image?imageName=file16524435432041013书234.jfif\"]', 50.00, '9号楼', 4, '2022-05-13 12:05:47', 1, 39);
-INSERT INTO `sh_idle_item` VALUES (176, 'Java大蓝书', '学Java就用它，低价买给学弟学妹', '[\"http://localhost:8080/image?imageName=file16524436588441014书66.jfif\"]', 20.00, '9号楼', 4, '2022-05-13 12:07:43', 1, 39);
-INSERT INTO `sh_idle_item` VALUES (177, '爱华辅导平板电脑', '低价出售，7成新', '[\"http://localhost:8080/image?imageName=file16524438710431016156.jpg\"]', 300.00, '9号楼', 1, '2022-05-13 12:11:14', 1, 39);
-INSERT INTO `sh_idle_item` VALUES (178, '华为平板', '考研可以用，16G+128G,全新', '[\"http://localhost:8080/image?imageName=file1652443963449101813.jpg\"]', 3200.00, '9号楼', 1, '2022-05-13 12:12:46', 1, 39);
-INSERT INTO `sh_idle_item` VALUES (179, '平板批发价', '买平板找我，靠谱！', '[\"http://localhost:8080/image?imageName=file1652444155511102015.jpg\",\"http://localhost:8080/image?imageName=file165244418977610229256.jpg\"]', 530.00, '12号楼', 1, '2022-05-13 12:16:35', 1, 43);
-INSERT INTO `sh_idle_item` VALUES (180, '键盘', '6成新，用了一年多，低价出售', '[\"http://localhost:8080/image?imageName=file16524442654841023jfi.jpg\"]', 60.00, '12号楼', 1, '2022-05-13 12:17:49', 0, 43);
-INSERT INTO `sh_idle_item` VALUES (181, '黑色机械键盘', '黑轴，多种光效', '[\"http://localhost:8080/image?imageName=file16524842187971002123.gif\"]', 135.00, '14号楼', 1, '2022-05-13 23:23:42', 2, 40);
-INSERT INTO `sh_idle_item` VALUES (182, '水桶', '夏天洗澡可以用', '[\"http://localhost:8080/image?imageName=file1652484350639100323165.jpg\"]', 20.00, '14号楼', 2, '2022-05-13 23:25:55', 2, 40);
-INSERT INTO `sh_idle_item` VALUES (183, '排球', '九成新，低价出售', '[\"http://localhost:8080/image?imageName=file16524844444851004123132123231.jpg\"]', 30.00, '14号楼', 3, '2022-05-13 23:27:28', 2, 40);
-INSERT INTO `sh_idle_item` VALUES (184, 'C语言经典编程282例', '本科辅助教材，有要的学弟学妹可以抢购！！', '[\"http://localhost:8080/image?imageName=file16524845823371005书2.jfif\"]', 10.00, '12号楼', 4, '2022-05-13 23:30:31', 2, 36);
-INSERT INTO `sh_idle_item` VALUES (185, '垃圾桶！！', '低价出售垃圾桶', '[\"http://localhost:8080/image?imageName=file165248474214510061685456.jpg\"]', 5.00, '11号楼', 2, '2022-05-13 23:32:30', 2, 37);
-INSERT INTO `sh_idle_item` VALUES (186, '羽毛球拍', '九成新，就玩过几次，毕业了，低价出售', '[\"http://localhost:8080/image?imageName=file16524848854481007f.jpg\"]', 60.00, '9号楼', 3, '2022-05-13 23:34:49', 2, 38);
-INSERT INTO `sh_idle_item` VALUES (187, '苹果13', '用了一年了，低价出售', '[\"http://localhost:8080/image?imageName=file16524853302661009adf.png\"]', 3400.00, '9号楼', 1, '2022-05-13 23:42:13', 2, 39);
-INSERT INTO `sh_idle_item` VALUES (188, '衣服架', '有需要的没？低价出售！！', '[\"http://localhost:8080/image?imageName=file165248581812010101654856.jpg\"]', 10.00, '12号楼', 2, '2022-05-13 23:50:22', 1, 37);
+INSERT INTO `sh_idle_item` VALUES (81, '三星手机', '二手闲置三星手机', '[\"http://localhost:8080/image?imageName=file164569022369110021.jpg\"]', 1000.00, '14号楼', 1, '2022-02-24 08:10:28', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (82, '折叠手机', '几个月前买的折叠手机，不想要了', '[\"http://localhost:8080/image?imageName=file164569133572210032.jpg\"]', 2999.00, '14号楼', 1, '2022-02-24 08:28:59', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (83, '苹果6', '9成新 好使  需要联系吧  手机都是自己用的 手机很多  都能用 想要哪个都行 图片里选', '[\"http://localhost:8080/image?imageName=file1645691490496100431.jpg\",\"http://localhost:8080/image?imageName=file1645691493727100532.jpg\"]', 2800.00, '14号楼', 1, '2022-02-24 08:31:37', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (84, '新国标电动续航50公里到300公里', '新国标电动自行车，外卖电动自行车，库房直发，高配置电动自行车，全部采用钢丝真空轮胎，液晶仪表，汽车盘刹，LED灯光同城免费送货上门，满意后付款。', '[\"http://localhost:8080/image?imageName=file164569163128810064.jpg\"]', 1980.00, '14号楼', 5, '2022-02-24 08:34:05', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (85, '二手书直接卖', '毕业了不要了', '[\"http://localhost:8080/image?imageName=file164569183716710075.jpg\"]', 26.00, '14号楼', 4, '2022-02-24 08:37:21', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (86, '道德经妙解', '道德经妙解，看了都懂', '[\"http://localhost:8080/image?imageName=file164569192391610086.jpg\"]', 56.00, '14号楼', 4, '2022-02-24 08:38:48', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (87, '从0到1', '创业必看', '[\"http://localhost:8080/image?imageName=file164569201071610097.jpg\"]', 66.00, '14号楼', 4, '2022-02-24 08:40:13', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (88, '海尔老彩电', '家里换新，想要的联系', '[\"http://localhost:8080/image?imageName=file164569214053010108.jpg\"]', 260.00, '14号楼', 2, '2022-02-24 08:42:24', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (89, '伊莱克斯滚筒洗衣机', '伊莱克斯5公斤滚筒洗衣机 二手滚筒洗衣机 二手洗衣机', '[\"http://localhost:8080/image?imageName=file164569235935910119.jpg\"]', 980.00, '3号楼', 2, '2022-02-24 08:46:02', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (90, '惠普4530笔记本电脑', '惠普4530二手笔记本电脑', '[\"http://localhost:8080/image?imageName=file1645692446793101210.jpg\"]', 900.00, '3号楼', 1, '2022-02-24 08:47:36', 2, 37,1);
+INSERT INTO `sh_idle_item` VALUES (91, '二手Mac电脑', '换新了，需要的赶紧联系', '[\"http://localhost:8080/image?imageName=file1645692559553101311.jpg\"]', 4500.00, '3号楼', 1, '2022-02-24 08:49:25', 2, 37,1);
+INSERT INTO `sh_idle_item` VALUES (92, '全自动两用帐篷', '全自动两用帐篷，8成新', '[\"http://localhost:8080/image?imageName=file1645692690642101412.jpg\"]', 150.00, '3号楼', 3, '2022-02-24 08:51:34', 2, 37,1);
+INSERT INTO `sh_idle_item` VALUES (93, '考研圣经', '备考没用完，有想要的可以联系', '[\"http://localhost:8080/image?imageName=file16459478577811002成绩.png\",\"http://localhost:8080/image?imageName=file16459478642741003规划.png\"]', 30.00, '3号楼', 4, '2022-02-27 07:44:36', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (94, '水壶', '即将毕业，低价出售', '[\"http://localhost:8080/image?imageName=file16468958478231007d0c8a786c9177f3e8f2b07bb76cf3bc79f3d566d.jpg\"]', 10.00, '16号楼', 2, '2022-03-10 07:04:13', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (95, '湿巾', '之前买多了，有想要的便宜点卖给你', '[\"http://localhost:8080/image?imageName=file16468959708381008src=http___img.99114.com_group10_M00_46_59_rBADslopuDqAA6FyAAKbYkZTvKI190.jpg&refer=http___img.99114.jfif\"]', 5.00, '16号楼', 2, '2022-03-10 07:06:13', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (96, '湿巾', '之前买多了，低价出售', '[\"http://localhost:8080/image?imageName=file164689617136610091.jpg\"]', 5.00, '16号楼', 2, '2022-03-10 07:09:36', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (97, '拖把', '非常好用', '[\"http://localhost:8080/image?imageName=file16468962121991011132.jpg\",\"http://localhost:8080/image?imageName=file16468962121981010src.jpg\"]', 10.00, '16号楼', 2, '2022-03-10 07:10:21', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (98, '水桶', '打扫宿舍可以用，冲凉水澡可以用', '[\"http://localhost:8080/image?imageName=file1646896286973101223165.jpg\"]', 10.00, '16号楼', 2, '2022-03-10 07:11:32', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (99, '篮球', '乔丹的，买的时候二百多', '[\"http://localhost:8080/image?imageName=file16468963766011014165165.jpg\"]', 60.00, '16号楼', 3, '2022-03-10 07:13:05', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (100, '羽毛球拍', '九成新，没玩过几次，低价出售', '[\"http://localhost:8080/image?imageName=file16468992372591015f.jpg\"]', 40.00, '16号楼', 3, '2022-03-10 08:00:41', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (101, '足球', '最近加了排球队，想买个二手足球，老哥们谁有不想要的足球呀！！', '[\"http://localhost:8080/image?imageName=file16469001406541016123132123231.jpg\"]', -40.00, '16号楼', 5, '2022-03-10 08:15:56', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (102, '来本python', '容易入门的那种', '[\"http://localhost:8080/image?imageName=file16469112956741019书.jpg\"]', 0.00, '14号楼', 5, '2022-03-10 11:21:38', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (103, '足球', '求一个二手足球', '[]', 0.00, '10号楼', 5, '2022-03-10 12:20:29', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (104, '求一副乒乓球拍', '20~30左右', '[]', 0.00, '5号楼', 5, '2022-03-10 13:48:18', 0, 39,1);
+INSERT INTO `sh_idle_item` VALUES (105, '键盘', '手感超好，八成新', '[\"http://localhost:8080/image?imageName=file16469607002831004jlkj.jpg\",\"http://localhost:8080/image?imageName=file16469607146191005adsf.jpg\"]', 120.00, '11号楼', 1, '2022-03-11 01:05:27', 2, 40,1);
+INSERT INTO `sh_idle_item` VALUES (106, '平板电脑', '考研必备，七成新，有需要的联系', '[\"http://localhost:8080/image?imageName=file16469608275821006131232.jpg\"]', 1500.00, '11号楼', 1, '2022-03-11 01:07:12', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (107, '速度拳击球', '散打专用，八成新', '[\"http://localhost:8080/image?imageName=file16469610415851007aefsd.jpg\"]', 100.00, '11号楼', 3, '2022-03-11 01:10:44', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (108, '想买本机器学习的书', '那种数学公式比较详细的最好，抱拳了老铁们！！', '[\"http://localhost:8080/image?imageName=file16473369568111002132135.jpg\"]', 0.00, '14号楼', 5, '2022-03-15 09:36:01', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (109, '历史书，八成新', '刚买了不久，不想用了', '[\"http://localhost:8080/image?imageName=file16475926255961002书234asdf.jfif\"]', 50.00, '14号楼', 4, '2022-03-18 08:38:18', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (110, '求一本高等数学的课本', '急求！！！', '[\"http://localhost:8080/image?imageName=file16475929517481003123.jpg\"]', 0.00, '10号楼', 5, '2022-03-18 08:42:47', 1, 38,1);
+INSERT INTO `sh_idle_item` VALUES (111, '书', '很便宜', '[\"http://localhost:8080/image?imageName=file16476083329261004书66.jfif\"]', 40.00, '12号楼', 2, '2022-03-18 12:59:01', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (112, '113', '213', '[\"http://localhost:8080/image?imageName=file16476083749971005书234.jfif\"]', 123.23, '11号楼', 3, '2022-03-18 12:59:37', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (113, '123', '123456789', '[]', 10.00, '11号楼', 1, '2022-04-11 06:36:47', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (114, '4524', '42524', '[]', 60.00, '8号楼', 2, '2022-05-01 08:19:19', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (115, '178274', '2782782', '[\"http://localhost:8080/image?imageName=file16513932186671002书53.jpg\"]', 60.00, '8号楼', 1, '2022-05-01 08:20:20', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (116, '245', '453', '[\"http://localhost:8080/image?imageName=file16513935068611003T1Jq0gXidvXXXXXXXX.png\"]', 70.00, '8号楼', 2, '2022-05-01 08:25:09', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (117, '212', '1212', '[]', 30.00, '11号楼', 1, '2022-05-01 08:27:09', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (118, '544', '4854', '[]', 30.00, '10号楼', 1, '2022-05-01 08:28:14', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (119, '452', '452', '[\"http://localhost:8080/image?imageName=file16513938440741004T1Jq0gXidvXXXXXXXX.png\"]', 50.00, '7号楼', 4, '2022-05-01 08:30:46', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (120, '752', '17', '[]', 40.00, '8号楼', 4, '2022-05-01 08:32:11', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (121, '524', '52', '[]', 30.00, '8号楼', 3, '2022-05-01 08:38:54', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (122, 'dfas', 'asdf', '[]', 30.00, '13号楼', 3, '2022-05-01 08:39:35', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (123, 'ad', 'asdf', '[]', 20.00, '7号楼', 3, '2022-05-01 08:41:31', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (124, '4425', '452542', '[]', 10.00, '7号楼', 3, '2022-05-01 08:43:59', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (125, 'asdf', 'asdf', '[\"http://localhost:8080/image?imageName=file16513951184911002T1Jq0gXidvXXXXXXXX.png\"]', 100.00, '9号楼', 1, '2022-05-01 08:52:00', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (126, '21', '785785', '[]', 5785.00, '9号楼', 2, '2022-05-01 08:54:45', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (127, '4521', '4252', '[]', 80.00, '9号楼', 1, '2022-05-01 08:55:33', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (128, 'dv', 'dfad', '[]', 20.00, '8号楼', 1, '2022-05-01 08:57:06', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (129, '5234', '452', '[]', 40.00, '11号楼', 4, '2022-05-01 08:58:16', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (130, 'adsf', 'adf', '[]', 20.00, '9号楼', 1, '2022-05-01 08:59:24', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (131, 'asdf', '123', '[]', 20.00, '10号楼', 1, '2022-05-01 09:00:16', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (132, '153', '153', '[]', 190.00, '11号楼', 3, '2022-05-01 09:04:42', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (133, 'adsf', 'adsf', '[]', 10.00, '10号楼', 1, '2022-05-01 09:08:11', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (134, 'dasf', 'asdf', '[]', 20.00, '8号楼', 2, '2022-05-01 09:10:32', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (135, 'Python', '入门级书籍', '[\"http://localhost:8080/image?imageName=file16518880948481002书.jpg\"]', 30.00, '11号楼', 4, '2022-05-07 01:48:17', 1, 36,1);
+INSERT INTO `sh_idle_item` VALUES (136, 'Java', '自学java就买到它，很好用，九成新', '[\"http://localhost:8080/image?imageName=file16518881435141003书6.jfif\"]', 50.00, '11号楼', 4, '2022-05-07 01:49:06', 1, 36,1);
+INSERT INTO `sh_idle_item` VALUES (137, '趣学pthon', '有要的老铁联系我，低价出售', '[\"http://localhost:8080/image?imageName=file16518882055951004书1.jfif\"]', 20.00, '11号楼', 4, '2022-05-07 01:50:08', 1, 36,1);
+INSERT INTO `sh_idle_item` VALUES (138, '机械键盘', '超级好用，入手半年左右，八成新', '[\"http://localhost:8080/image?imageName=file16518882692421005jlkj.jpg\"]', 100.00, '11号楼', 1, '2022-05-07 01:51:12', 1, 36,1);
+INSERT INTO `sh_idle_item` VALUES (139, '水壶', '马上毕业，水壶低价出售', '[\"http://localhost:8080/image?imageName=file16518883325891006d0c8a786c9177f3e8f2b07bb76cf3bc79f3d566d.jpg\"]', 10.00, '11号楼', 2, '2022-05-07 01:52:14', 1, 36,1);
+INSERT INTO `sh_idle_item` VALUES (140, '水桶', '有哪位老铁收购，用来洗澡很方便', '[\"http://localhost:8080/image?imageName=file1651888380624100723165.jpg\"]', 10.00, '11号楼', 2, '2022-05-07 01:53:03', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (141, '数控系统手动编程', '低价出售，七成新', '[\"http://localhost:8080/image?imageName=file16518884576041008书3.jfif\"]', 20.00, '14号楼', 4, '2022-05-07 01:54:20', 1, 37,1);
+INSERT INTO `sh_idle_item` VALUES (142, 'C语言', '大学教材，有学弟学妹需要吗', '[\"http://localhost:8080/image?imageName=file16518885029431009书2.jfif\"]', 20.00, '14号楼', 4, '2022-05-07 01:55:07', 2, 37,1);
+INSERT INTO `sh_idle_item` VALUES (143, '史记等中国经典书籍', '低价出售，快来抢购把', '[\"http://localhost:8080/image?imageName=file16518885783071010书234asdf.jfif\"]', 30.00, '14号楼', 4, '2022-05-07 01:56:20', 1, 37,1);
+INSERT INTO `sh_idle_item` VALUES (144, '篮球', '九成新', '[\"http://localhost:8080/image?imageName=file16518886363591011165165.jpg\"]', 100.00, '14号楼', 3, '2022-05-07 01:57:18', 1, 37,1);
+INSERT INTO `sh_idle_item` VALUES (145, '排球', '八成新', '[\"http://localhost:8080/image?imageName=file16518886662551012123132123231.jpg\"]', 30.00, '14号楼', 3, '2022-05-07 01:57:48', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (146, '乒乓球拍', '外赠两个球，九成新', '[]', 40.00, '14号楼', 3, '2022-05-07 01:58:36', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (147, '乒乓球', '外赠两个球，八成新', '[\"http://localhost:8080/image?imageName=file16518887490211013src=http___img2.niutuku.com_desk_1207_0808_ntk11339.jpg&refer=http___img2.niutuku.jfif\"]', 30.00, '14号楼', 3, '2022-05-07 01:59:12', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (148, '运动器材找我', '详细了解，加我微信wzh126516854', '[\"http://localhost:8080/image?imageName=file16518891114451014165164.jpg\"]', 0.00, '14号楼', 5, '2022-05-07 02:05:16', 1, 37,1);
+INSERT INTO `sh_idle_item` VALUES (149, '平板电脑', '低价出售，二手平板，用了一年', '[\"http://localhost:8080/image?imageName=file16518892088571015131232.jpg\"]', 2100.00, '2号楼', 1, '2022-05-07 02:06:53', 1, 38,1);
+INSERT INTO `sh_idle_item` VALUES (150, '笔记本电脑', '九成新，', '[\"http://localhost:8080/image?imageName=file16518892482061016image.jpg\"]', 3156.00, '2号楼', 1, '2022-05-07 02:07:30', 1, 38,1);
+INSERT INTO `sh_idle_item` VALUES (151, '平板平板！！', '低价出售，全新', '[\"http://localhost:8080/image?imageName=file16518892997971017src=http___mercrt-fd.zol-img.com.cn_t_s640x2000_g6_M00_01_0B_ChMkKmBkAouIOSndAAS1swJOKIAAAMY9gJk6-gABLXL642.jpg&refer=http___mercrt-fd.zol-img.com.jfif\"]', 2000.00, '2号楼', 1, '2022-05-07 02:08:45', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (152, 'wewfa', 'asdfasd', '[]', 20.00, '11号楼', 1, '2022-05-07 02:09:15', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (153, 'asdf', 'adf', '[]', 20.00, '10号楼', 1, '2022-05-07 02:16:44', 0, 36,1);
+INSERT INTO `sh_idle_item` VALUES (154, 'dfasdf', 'asdfasdf', '[]', 10.00, '8号楼', 1, '2022-05-07 02:16:54', 0, 36,1);
+INSERT INTO `sh_idle_item` VALUES (155, 'efa', 'asdf', '[]', 20.00, '10号楼', 1, '2022-05-07 02:21:46', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (156, 'dawf', '大师傅', '[]', 20.00, '11号楼', 1, '2022-05-07 02:23:14', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (157, 'dsf', 'asdf', '[]', 10.00, '8号楼', 1, '2022-05-07 02:28:22', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (158, 'dfas', 'adf', '[]', 20.00, '6号楼', 1, '2022-05-07 02:28:31', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (159, '4252', '452', '[]', 20.00, '8号楼', 2, '2022-05-12 12:44:44', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (160, '417', '14', '[]', 40.00, '10号楼', 2, '2022-05-12 12:44:56', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (161, 'adsf', 'adf', '[]', 20.00, '10号楼', 2, '2022-05-12 13:05:40', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (162, 'adf', 'adf', '[]', 20.00, '8号楼', 2, '2022-05-12 13:05:50', 0, 37,1);
+INSERT INTO `sh_idle_item` VALUES (163, 'adsf', 'asdf', '[]', 30.00, '10号楼', 2, '2022-05-12 13:08:25', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (164, 'asdf', 'adf', '[]', 20.00, '8号楼', 1, '2022-05-12 13:08:36', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (165, 'asdf', 'asdf', '[]', 10.00, '11号楼', 2, '2022-05-12 13:08:45', 0, 40,1);
+INSERT INTO `sh_idle_item` VALUES (166, '出售哑铃', '宿舍健身必备，低价出售一对', '[\"http://localhost:8080/image?imageName=file16524424818461002src=http___s.xcditu.com_trash_20190701_20191107102718606.jpg&refer=http___s.xcditu.jfif\"]', 60.00, '7号楼', 3, '2022-05-13 11:48:06', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (167, '健身哑铃', '宿舍健身必备！！低价出售！', '[\"http://localhost:8080/image?imageName=file16524425723491004123.png\"]', 50.00, '2号楼', 3, '2022-05-13 11:49:38', 1, 38,1);
+INSERT INTO `sh_idle_item` VALUES (168, '时尚机械键盘', '好看又好用，九成新，用了不到2个月，紧急出售！！', '[]', 128.00, '2号楼', 1, '2022-05-13 11:51:23', 0, 38,1);
+INSERT INTO `sh_idle_item` VALUES (169, '机械键盘', '好看又好用，九成新，用了不到2个月，紧急出售！！', '[\"http://localhost:8080/image?imageName=file16524427230081005adsf.jpg\"]', 128.00, '2号楼', 1, '2022-05-13 11:52:06', 1, 38,1);
+INSERT INTO `sh_idle_item` VALUES (170, '篮球', '5成新，需要的找我', '[\"http://localhost:8080/image?imageName=file16524427826181006165165.jpg\"]', 80.00, '2号楼', 3, '2022-05-13 11:53:07', 1, 38,1);
+INSERT INTO `sh_idle_item` VALUES (171, '乒乓球拍', '低价出售，很好用，红双喜的！！', '[\"http://localhost:8080/image?imageName=file165244286141110081231213.png\"]', 70.00, '2号楼', 3, '2022-05-13 11:54:27', 1, 38,1);
+INSERT INTO `sh_idle_item` VALUES (172, '湿巾', '低价出售，可以团购哦！', '[\"http://localhost:8080/image?imageName=file165244302831110091.jpg\"]', 10.00, '9号楼', 2, '2022-05-13 11:57:11', 1, 39,1);
+INSERT INTO `sh_idle_item` VALUES (173, '拖把', '超级好用，临近毕业低价出售给学弟学妹们^_^', '[\"http://localhost:8080/image?imageName=file16524431015941010132.jpg\",\"http://localhost:8080/image?imageName=file16524431061461011src.jpg\"]', 20.00, '10号楼', 2, '2022-05-13 11:58:30', 1, 39,1);
+INSERT INTO `sh_idle_item` VALUES (174, '学习用品低价出售！！', '笔记本，笔，学习用品十分全面', '[\"http://localhost:8080/image?imageName=file16524434384781012132.jpg\"]', 0.00, '9号楼', 5, '2022-05-13 12:04:03', 2, 39,1);
+INSERT INTO `sh_idle_item` VALUES (175, '剑指offer', '面试必备！！', '[\"http://localhost:8080/image?imageName=file16524435432041013书234.jfif\"]', 50.00, '9号楼', 4, '2022-05-13 12:05:47', 1, 39,1);
+INSERT INTO `sh_idle_item` VALUES (176, 'Java大蓝书', '学Java就用它，低价买给学弟学妹', '[\"http://localhost:8080/image?imageName=file16524436588441014书66.jfif\"]', 20.00, '9号楼', 4, '2022-05-13 12:07:43', 1, 39,1);
+INSERT INTO `sh_idle_item` VALUES (177, '爱华辅导平板电脑', '低价出售，7成新', '[\"http://localhost:8080/image?imageName=file16524438710431016156.jpg\"]', 300.00, '9号楼', 1, '2022-05-13 12:11:14', 1, 39,1);
+INSERT INTO `sh_idle_item` VALUES (178, '华为平板', '考研可以用，16G+128G,全新', '[\"http://localhost:8080/image?imageName=file1652443963449101813.jpg\"]', 3200.00, '9号楼', 1, '2022-05-13 12:12:46', 1, 39,1);
+INSERT INTO `sh_idle_item` VALUES (179, '平板批发价', '买平板找我，靠谱！', '[\"http://localhost:8080/image?imageName=file1652444155511102015.jpg\",\"http://localhost:8080/image?imageName=file165244418977610229256.jpg\"]', 530.00, '12号楼', 1, '2022-05-13 12:16:35', 1, 43,1);
+INSERT INTO `sh_idle_item` VALUES (180, '键盘', '6成新，用了一年多，低价出售', '[\"http://localhost:8080/image?imageName=file16524442654841023jfi.jpg\"]', 60.00, '12号楼', 1, '2022-05-13 12:17:49', 0, 43,1);
+INSERT INTO `sh_idle_item` VALUES (181, '黑色机械键盘', '黑轴，多种光效', '[\"http://localhost:8080/image?imageName=file16524842187971002123.gif\"]', 135.00, '14号楼', 1, '2022-05-13 23:23:42', 2, 40,1);
+INSERT INTO `sh_idle_item` VALUES (182, '水桶', '夏天洗澡可以用', '[\"http://localhost:8080/image?imageName=file1652484350639100323165.jpg\"]', 20.00, '14号楼', 2, '2022-05-13 23:25:55', 2, 40,1);
+INSERT INTO `sh_idle_item` VALUES (183, '排球', '九成新，低价出售', '[\"http://localhost:8080/image?imageName=file16524844444851004123132123231.jpg\"]', 30.00, '14号楼', 3, '2022-05-13 23:27:28', 2, 40,1);
+INSERT INTO `sh_idle_item` VALUES (184, 'C语言经典编程282例', '本科辅助教材，有要的学弟学妹可以抢购！！', '[\"http://localhost:8080/image?imageName=file16524845823371005书2.jfif\"]', 10.00, '12号楼', 4, '2022-05-13 23:30:31', 2, 36,1);
+INSERT INTO `sh_idle_item` VALUES (185, '垃圾桶！！', '低价出售垃圾桶', '[\"http://localhost:8080/image?imageName=file165248474214510061685456.jpg\"]', 5.00, '11号楼', 2, '2022-05-13 23:32:30', 2, 37,1);
+INSERT INTO `sh_idle_item` VALUES (186, '羽毛球拍', '九成新，就玩过几次，毕业了，低价出售', '[\"http://localhost:8080/image?imageName=file16524848854481007f.jpg\"]', 60.00, '9号楼', 3, '2022-05-13 23:34:49', 2, 38,1);
+INSERT INTO `sh_idle_item` VALUES (187, '苹果13', '用了一年了，低价出售', '[\"http://localhost:8080/image?imageName=file16524853302661009adf.png\"]', 3400.00, '9号楼', 1, '2022-05-13 23:42:13', 2, 39,1);
+INSERT INTO `sh_idle_item` VALUES (188, '衣服架', '有需要的没？低价出售！！', '[\"http://localhost:8080/image?imageName=file165248581812010101654856.jpg\"]', 10.00, '12号楼', 2, '2022-05-13 23:50:22', 1, 37,1);
 
 -- ----------------------------
 -- Table structure for sh_message
@@ -243,12 +244,12 @@ CREATE TABLE `sh_message`  (
 INSERT INTO `sh_message` VALUES (36, 37, 85, '可以便宜吗', '2022-02-24 08:52:50', 36, NULL);
 INSERT INTO `sh_message` VALUES (37, 38, 92, '能便宜点吗', '2022-02-27 07:32:09', 37, NULL);
 INSERT INTO `sh_message` VALUES (38, 37, 92, '一口价130，再低不卖了', '2022-02-27 07:33:46', 37, NULL);
-INSERT INTO `sh_message` VALUES (39, 37, 92, '可笑', '2022-02-27 07:34:34', 37, 38);
-INSERT INTO `sh_message` VALUES (40, 37, 92, '那你别买了', '2022-02-27 07:34:49', 37, 39);
-INSERT INTO `sh_message` VALUES (41, 37, 92, '不能', '2022-02-27 07:35:03', 38, 37);
+INSERT INTO `sh_message` VALUES (39, 37, 92, '可笑', '2022-02-27 07:34:34', 37, 38,1);
+INSERT INTO `sh_message` VALUES (40, 37, 92, '那你别买了', '2022-02-27 07:34:49', 37, 39,1);
+INSERT INTO `sh_message` VALUES (41, 37, 92, '不能', '2022-02-27 07:35:03', 38, 37,1);
 INSERT INTO `sh_message` VALUES (42, 38, 92, '咋下架了，150我要了', '2022-02-27 07:36:27', 37, 41);
 INSERT INTO `sh_message` VALUES (43, 37, 90, '啥时候买的，老铁', '2022-02-27 07:37:51', 37, NULL);
-INSERT INTO `sh_message` VALUES (44, 37, 90, '前年，用着还行', '2022-02-27 07:38:43', 37, 43);
+INSERT INTO `sh_message` VALUES (44, 37, 90, '前年，用着还行', '2022-02-27 07:38:43', 37, 43,1);
 INSERT INTO `sh_message` VALUES (47, 38, 104, '我这有，马上毕业不玩了', '2022-03-10 14:14:00', 39, NULL);
 INSERT INTO `sh_message` VALUES (48, 39, 104, '那太好了，你发布一下，我看看', '2022-03-10 14:14:46', 38, 47);
 INSERT INTO `sh_message` VALUES (49, 38, 104, '好的，没问题', '2022-03-10 14:15:08', 39, 48);
@@ -434,6 +435,9 @@ CREATE TABLE `sh_user`  (
   `avatar` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '头像',
   `sign_in_time` datetime NOT NULL COMMENT '注册时间',
   `user_status` tinyint NULL DEFAULT NULL COMMENT '状态（1代表封禁）',
+  `user_role` tinyint NOT NULL DEFAULT 0 COMMENT '用户角色（0-普通用户，1-经营性卖家，2-管理员）',
+  `membership_type` tinyint NOT NULL DEFAULT 0 COMMENT '会员类型（0-普通用户，1-基础会员，2-高级会员）',
+  `membership_expire_time` datetime NULL DEFAULT NULL COMMENT '会员到期时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `account_number`(`account_number` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 44 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
@@ -441,12 +445,12 @@ CREATE TABLE `sh_user`  (
 -- ----------------------------
 -- Records of sh_user
 -- ----------------------------
-INSERT INTO `sh_user` VALUES (36, '98765432110', '123456', '李佳伟', 'http://localhost:8080/image?imageName=file17264683773801005OIP-C.jpg', '2022-03-11 00:53:55', 0);
-INSERT INTO `sh_user` VALUES (37, '18713790195', '123456', '山山', 'http://localhost:8080/image?imageName=file17264682791321002R-C.jpg', '2022-02-25 11:20:58', 0);
-INSERT INTO `sh_user` VALUES (38, '15263698569', '123456', '宣化街', 'http://localhost:8080/image?imageName=file1726468351394100420204823154758937.jpg', '2022-02-24 07:39:39', 0);
-INSERT INTO `sh_user` VALUES (39, '15896565656', '123456', '娜娜', 'http://localhost:8080/image?imageName=file1726468312095100320230415081411_f2e46.thumb.400_0.jpg', '2022-02-24 08:43:04', 0);
-INSERT INTO `sh_user` VALUES (40, '12345678910', '123456', '洪金宝', 'http://localhost:8080/image?imageName=file164689495865510061.png', '2022-03-10 06:23:41', 0);
-INSERT INTO `sh_user` VALUES (43, '12312313212', '123456', '张亮', 'http://localhost:8080/image?imageName=file165244405499510191556115156156.jpg', '2022-05-01 10:09:40', 0);
+INSERT INTO `sh_user` VALUES (36, '98765432110', '123456', '李佳伟', 'http://localhost:8080/image?imageName=file17264683773801005OIP-C.jpg', '2022-03-11 00:53:55', 0,0,0,NULL);
+INSERT INTO `sh_user` VALUES (37, '18713790195', '123456', '山山', 'http://localhost:8080/image?imageName=file17264682791321002R-C.jpg', '2022-02-25 11:20:58', 0,0,0,NULL);
+INSERT INTO `sh_user` VALUES (38, '15263698569', '123456', '宣化街', 'http://localhost:8080/image?imageName=file1726468351394100420204823154758937.jpg', '2022-02-24 07:39:39', 0,0,0,NULL);
+INSERT INTO `sh_user` VALUES (39, '15896565656', '123456', '娜娜', 'http://localhost:8080/image?imageName=file1726468312095100320230415081411_f2e46.thumb.400_0.jpg', '2022-02-24 08:43:04', 0,0,0,NULL);
+INSERT INTO `sh_user` VALUES (40, '12345678910', '123456', '洪金宝', 'http://localhost:8080/image?imageName=file164689495865510061.png', '2022-03-10 06:23:41', 0,0,0,NULL);
+INSERT INTO `sh_user` VALUES (43, '12312313212', '123456', '张亮', 'http://localhost:8080/image?imageName=file165244405499510191556115156156.jpg', '2022-05-01 10:09:40', 0,0,0,NULL);
 
 -- ----------------------------
 -- Table structure for sh_rating
@@ -467,4 +471,83 @@ CREATE TABLE `sh_rating`  (
   INDEX `seller_id_index`(`seller_id` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '评价表' ROW_FORMAT = DYNAMIC;
 
+-- ----------------------------
+-- Table structure for sh_merchant_application
+-- 商家认证申请表
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_merchant_application`;
+CREATE TABLE `sh_merchant_application`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `user_id` bigint NOT NULL COMMENT '申请人用户ID',
+  `shop_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '店铺名称',
+  `business_license` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '营业执照图片URL',
+  `id_card_front` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '身份证正面图片URL',
+  `id_card_back` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '身份证反面图片URL',
+  `contact_phone` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '联系电话',
+  `contact_address` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '联系地址',
+  `application_reason` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '申请理由',
+  `status` tinyint NOT NULL DEFAULT 0 COMMENT '审核状态（0-待审核，1-已通过，2-已拒绝）',
+  `admin_id` bigint NULL DEFAULT NULL COMMENT '审核管理员ID',
+  `admin_comment` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '管理员审核意见',
+  `create_time` datetime NOT NULL COMMENT '申请时间',
+  `review_time` datetime NULL DEFAULT NULL COMMENT '审核时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `user_id_unique`(`user_id` ASC) USING BTREE COMMENT '每个用户只能有一个申请',
+  INDEX `status_index`(`status` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商家认证申请表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for sh_membership_order
+-- 会员订单表
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_membership_order`;
+CREATE TABLE `sh_membership_order`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `membership_type` tinyint NOT NULL COMMENT '会员类型（1-基础会员，2-高级会员）',
+  `order_number` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '订单号',
+  `amount` decimal(10, 2) NOT NULL COMMENT '支付金额',
+  `payment_status` tinyint NOT NULL DEFAULT 0 COMMENT '支付状态（0-待支付，1-已支付，2-已退款）',
+  `payment_way` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '支付方式',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `payment_time` datetime NULL DEFAULT NULL COMMENT '支付时间',
+  `duration_months` int NOT NULL DEFAULT 1 COMMENT '购买时长（月）',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `order_number_unique`(`order_number` ASC) USING BTREE,
+  INDEX `user_id_index`(`user_id` ASC) USING BTREE,
+  INDEX `payment_status_index`(`payment_status` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '会员订单表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for sh_idle_item_pin
+-- 商品置顶记录表
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_idle_item_pin`;
+CREATE TABLE `sh_idle_item_pin`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `idle_item_id` bigint NOT NULL COMMENT '商品ID',
+  `usewor_id` bigint NOT NULL COMMENT '用户ID',
+  `pin_start_time` datetime NOT NULL COMMENT '置顶开始时间',
+  `pin_end_time` datetime NOT NULL COMMENT '置顶结束时间',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idle_item_id_index`(`idle_item_id` ASC) USING BTREE,
+  INDEX `user_id_index`(`user_id` ASC) USING BTREE,
+    INDEX `pin_time_index`(`pin_start_time` ASC, `pin_end_time` ASC) USING BTREE
+  ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品置顶记录表' ROW_FORMAT = DYNAMIC;
+
+
+-- 添加会员字段（如果字段已存在会报错，可以忽略）
+-- 执行前请先检查表结构，如果字段已存在请注释掉这两条ALTER TABLE语句
+ALTER TABLE `sh_user` 
+ADD COLUMN `membership_type` tinyint NOT NULL DEFAULT 0 COMMENT '会员类型（0-普通用户，1-基础会员，2-高级会员）' AFTER `user_role`;
+
+ALTER TABLE `sh_user` 
+ADD COLUMN `membership_expire_time` datetime NULL DEFAULT NULL COMMENT '会员到期时间' AFTER `membership_type`;
+
+-- 补齐旧数据的会员字段
+UPDATE `sh_user` 
+SET    `membership_type` = 0, `membership_expire_time` = NULL
+WHERE  `membership_type` IS NULL;
+  
 SET FOREIGN_KEY_CHECKS = 1;

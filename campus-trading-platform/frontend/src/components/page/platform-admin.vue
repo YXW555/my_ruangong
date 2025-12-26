@@ -34,9 +34,16 @@
 							<span slot="title">用户管理</span>
 						</el-menu-item>
 						<el-menu-item index="4">
-							<i class="el-icon-data-analysis"></i>
-							<span slot="title">数据统计</span>
-						</el-menu-item>
+                            <i class="el-icon-data-analysis"></i>
+                            <span slot="title">数据统计</span>
+                        </el-menu-item>
+                        <!-- 商家认证审核 -->
+                        <el-menu-item index="5">
+                            <el-badge :value="pendingCount>0?pendingCount:''" class="item-badge">
+                                <i class="el-icon-s-check"></i>
+                            </el-badge>
+                            <span slot="title">商家认证审核</span>
+                        </el-menu-item>
 					</el-menu>
 				</el-aside>
 				<el-main>
@@ -44,6 +51,7 @@
 					<orderList v-if="mode == 2"></orderList>
 					<userList v-if="mode == 3"></userList>
 					<DataStatistics v-if="mode == 4"></DataStatistics>
+					<MerchantApplicationAdmin v-if="mode == 5"></MerchantApplicationAdmin>
 				</el-main>
 			</el-container>
 		</el-container>
@@ -60,6 +68,7 @@
     import orderList from '../common/orderList.vue'
     import userList from '../common/userList.vue'
     import DataStatistics from '../common/DataStatistics.vue'
+    import MerchantApplicationAdmin from '../common/MerchantApplicationAdmin.vue'
 
     export default {
         name: "platform-admin",
@@ -69,6 +78,7 @@
             orderList,
             userList,
             DataStatistics,
+            MerchantApplicationAdmin,
         },
         data() {
             return {
@@ -76,6 +86,7 @@
                 admin: {
                     nickname: '',
                 },
+                pendingCount: 0,
             }
         },
         created() {
@@ -98,6 +109,9 @@
                 }
             });
             
+            // 获取待审核商家认证数量（用于菜单角标和首页卡片）
+            this.loadPendingCount();
+
             // 从URL参数中获取要显示的模块
             const pageParam = this.$route.query.page;
             if (pageParam) {
@@ -105,6 +119,14 @@
             }
         },
         methods: {
+            loadPendingCount() {
+                this.$api.adminGetPendingApplicationCount().then(res => {
+                    if (res.status_code === 1) {
+                        this.pendingCount = res.data || 0;
+                    }
+                }).catch(() => {
+                });
+            },
             logout() {
                 this.$api.loginOut({}).then(res => {
                     if (res.status_code === 1) {

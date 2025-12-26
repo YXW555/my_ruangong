@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.service.impl</a> &gt; <span class="el_source">UserServiceImpl.java</span></div><h1>UserServiceImpl.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.service.impl;
+
+import com.second.hand.trading.server.dao.UserDao;
+import com.second.hand.trading.server.entity.UserModel;
+import com.second.hand.trading.server.service.UserService;
+import com.second.hand.trading.server.dto.PageVo;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+
+
+@Service
+<span class="fc" id="L17">public class UserServiceImpl implements UserService {</span>
+
+    @Resource
+    private UserDao userDao;
+
+    /**
+     * 查询一个用户的公开信息
+     * @param id
+     * @return
+     */
+    public UserModel getUser(Long id){
+<span class="fc" id="L28">        return userDao.selectByPrimaryKey(id);</span>
+    }
+
+    /**
+     * 登录，安全问题未解决
+     * @param accountNumber
+     * @param userPassword
+     * @return
+     */
+    public UserModel userLogin(String accountNumber, String userPassword){
+<span class="fc" id="L38">        return userDao.userLogin(accountNumber,userPassword);</span>
+    }
+
+    /**
+     *注册
+     * @param userModel
+     * @return
+     */
+    public boolean userSignIn(UserModel userModel){
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        return userDao.insert(userModel) == 1;</span>
+    }
+
+    /**
+     *修改用户公开信息，未验证用户身份
+     * @param userModel
+     * @return
+     */
+    public boolean updateUserInfo(UserModel userModel){
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        return userDao.updateByPrimaryKeySelective(userModel)==1;</span>
+    }
+
+    /**
+     * 修改密码
+     * @param newPassword
+     * @param oldPassword
+     * @param id
+     * @return
+     */
+    public boolean updatePassword(String newPassword, String oldPassword,Long id){
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        return userDao.updatePassword(newPassword,oldPassword,id)==1;</span>
+    }
+
+    public PageVo&lt;UserModel&gt; getUserByStatus(int status,int page ,int nums){
+        List&lt;UserModel&gt; list;
+<span class="nc" id="L72">        int count=0;</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if(status==0){</span>
+<span class="nc" id="L74">            count=userDao.countNormalUser();</span>
+<span class="nc" id="L75">            list=userDao.getNormalUser((page-1)*nums, nums);</span>
+        }else {
+<span class="nc" id="L77">            count=userDao.countBanUser();</span>
+<span class="nc" id="L78">            list=userDao.getBanUser((page-1)*nums, nums);</span>
+        }
+<span class="nc" id="L80">        return new PageVo&lt;&gt;(list,count);</span>
+    }
+
+
+    /**
+     * 通过用户的姓名查询用户的id
+     *
+     * */
+	@Override
+	public Long getUserId(String nickname) {
+<span class="nc" id="L90">		return userDao.selectByUserName(nickname);</span>
+	}
+
+
+	/**
+     * 通过用户账号查询用户信息
+     *
+     * @return*/
+    @Override
+    public PageVo&lt;UserModel&gt; getUserByNumber(String searchValue, int mode) {
+        List&lt;UserModel&gt; list;
+
+//        System.out.println(&quot;-------------------&quot; + 123 + &quot;-----------------------&quot;);
+<span class="nc" id="L103">        list=userDao.getUserByNumber(searchValue, mode-1);</span>
+//
+//        System.out.println(&quot;-------------------&quot; + 456 + &quot;-----------------------&quot;);
+//        for (UserModel i: list) {
+//            System.out.println(i.getNickname() + &quot; &quot; + i.getUserStatus());
+//        }
+//        System.out.println(&quot;-------------------&quot; + 789 + &quot;-----------------------&quot;);
+<span class="nc" id="L110">        return new PageVo&lt;&gt;(list, 1);</span>
+    }
+
+    /**
+     * 获取总用户数
+     */
+    @Override
+    public int getTotalUserCount() {
+<span class="nc" id="L118">        return userDao.countTotalUser();</span>
+    }
+
+    /**
+     * 获取本月新增用户数
+     */
+    @Override
+    public int getNewUserCount() {
+<span class="nc" id="L126">        Calendar calendar = Calendar.getInstance();</span>
+<span class="nc" id="L127">        calendar.set(Calendar.DAY_OF_MONTH, 1);</span>
+<span class="nc" id="L128">        calendar.set(Calendar.HOUR_OF_DAY, 0);</span>
+<span class="nc" id="L129">        calendar.set(Calendar.MINUTE, 0);</span>
+<span class="nc" id="L130">        calendar.set(Calendar.SECOND, 0);</span>
+<span class="nc" id="L131">        calendar.set(Calendar.MILLISECOND, 0);</span>
+<span class="nc" id="L132">        Date startDate = calendar.getTime();</span>
+
+<span class="nc" id="L134">        calendar.add(Calendar.MONTH, 1);</span>
+<span class="nc" id="L135">        Date endDate = calendar.getTime();</span>
+
+<span class="nc" id="L137">        return userDao.countUsersByDateRange(startDate, endDate);</span>
+    }
+
+    /**
+     * 获取活跃用户数（有发布或购买行为的用户）
+     */
+    @Override
+    public int getActiveUserCount() {
+        // 获取过去30天内有交易记录的用户数
+<span class="nc" id="L146">        Calendar calendar = Calendar.getInstance();</span>
+<span class="nc" id="L147">        calendar.add(Calendar.DAY_OF_MONTH, -30);</span>
+<span class="nc" id="L148">        Date startDate = calendar.getTime();</span>
+
+<span class="nc" id="L150">        return userDao.countActiveUsers(startDate);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

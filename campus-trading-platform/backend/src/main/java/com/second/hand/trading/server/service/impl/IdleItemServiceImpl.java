@@ -1,6 +1,7 @@
 package com.second.hand.trading.server.service.impl;
 
 import com.second.hand.trading.server.dao.IdleItemDao;
+import com.second.hand.trading.server.dao.IdleItemPinDao;
 import com.second.hand.trading.server.dao.UserDao;
 import com.second.hand.trading.server.entity.IdleItemModel;
 import com.second.hand.trading.server.entity.UserModel;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +25,25 @@ public class IdleItemServiceImpl implements IdleItemService {
     @Resource
     private UserDao userDao;
 
+    @Resource
+    private com.second.hand.trading.server.utils.RedisUtil redisUtil;
+    
+    @Resource
+    private com.second.hand.trading.server.service.CacheService cacheService;
+
+    @Resource
+    private IdleItemPinDao idleItemPinDao;
+
     /**
      * 发布闲置
      * @param idleItemModel
      * @return
      */
     public boolean addIdleItem(IdleItemModel idleItemModel) {
+        // 如果没有设置库存，默认为1
+        if (idleItemModel.getStock() == null || idleItemModel.getStock() <= 0) {
+            idleItemModel.setStock(1);
+        }
         return idleItemDao.insert(idleItemModel) == 1;
     }
 
@@ -38,10 +53,24 @@ public class IdleItemServiceImpl implements IdleItemService {
      * @return
      */
     public IdleItemModel getIdleItem(Long id) {
-        IdleItemModel idleItemModel=idleItemDao.selectByPrimaryKey(id);
-        if(idleItemModel!=null){
-            idleItemModel.setUser(userDao.selectByPrimaryKey(idleItemModel.getUserId()));
+        // 使用缓存服务
+        IdleItemModel idleItemModel = cacheService.getProductDetail(id, () -> {
+            IdleItemModel item = idleItemDao.selectByPrimaryKey(id);
+            if(item != null){
+                item.setUser(userDao.selectByPrimaryKey(item.getUserId()));
+                // 检查是否正在置顶
+                com.second.hand.trading.server.entity.IdleItemPinModel pin = 
+                    idleItemPinDao.selectActivePinByItemId(id, new Date());
+                item.setIsPinned(pin != null);
+            }
+            return item;
+        });
+        
+        // 增加浏览量（计数器）
+        if (idleItemModel != null) {
+            redisUtil.increment("product:view:" + id);
         }
+        
         return idleItemModel;
     }
 
@@ -64,29 +93,37 @@ public class IdleItemServiceImpl implements IdleItemService {
      * @return
      */
     public PageVo<IdleItemModel> findIdleItem(String findValue, int page, int nums) {
-        List<IdleItemModel> list=idleItemDao.findIdleItem(findValue, (page - 1) * nums, nums);
+        // 使用缓存服务
+        return cacheService.getProductList(findValue, page, nums, () -> {
+            List<IdleItemModel> list=idleItemDao.findIdleItem(findValue, (page - 1) * nums, nums);
 
-        for (IdleItemModel i:list) {
-            System.out.println(i.getIdleName() + ' ' + i.getIdleStatus() + '\n');
-        }
+            for (IdleItemModel i:list) {
+                System.out.println(i.getIdleName() + ' ' + i.getIdleStatus() + '\n');
+            }
 
-        if(list.size()>0){
-            List<Long> idList=new ArrayList<>();
-            for(IdleItemModel i:list){
-                idList.add(i.getUserId());
+            if(list.size()>0){
+                List<Long> idList=new ArrayList<>();
+                for(IdleItemModel i:list){
+                    idList.add(i.getUserId());
+                }
+                List<UserModel> userList=userDao.findUserByList(idList);
+                Map<Long,UserModel> map=new HashMap<>();
+                for(UserModel user:userList){
+                    map.put(user.getId(),user);
+                }
+                Date now = new Date();
+                for(IdleItemModel i:list){
+                    i.setUser(map.get(i.getUserId()));
+                    // 检查是否正在置顶
+                    com.second.hand.trading.server.entity.IdleItemPinModel pin = 
+                        idleItemPinDao.selectActivePinByItemId(i.getId(), now);
+                    i.setIsPinned(pin != null);
+                }
             }
-            List<UserModel> userList=userDao.findUserByList(idList);
-            Map<Long,UserModel> map=new HashMap<>();
-            for(UserModel user:userList){
-                map.put(user.getId(),user);
-            }
-            for(IdleItemModel i:list){
-                i.setUser(map.get(i.getUserId()));
-            }
-        }
 
-        int count=idleItemDao.countIdleItem(findValue);
-        return new PageVo<>(list,count);
+            int count=idleItemDao.countIdleItem(findValue);
+            return new PageVo<>(list,count);
+        });
     }
 
 
@@ -100,23 +137,31 @@ public class IdleItemServiceImpl implements IdleItemService {
      * @return
      */
     public PageVo<IdleItemModel> findIdleItemByLable(int idleLabel, int page, int nums) {
-        List<IdleItemModel> list=idleItemDao.findIdleItemByLable(idleLabel, (page - 1) * nums, nums);
-        if(list.size()>0){
-            List<Long> idList=new ArrayList<>();
-            for(IdleItemModel i:list){
-                idList.add(i.getUserId());
+        // 使用缓存服务
+        return cacheService.getProductListByLabel(idleLabel, page, nums, () -> {
+            List<IdleItemModel> list=idleItemDao.findIdleItemByLable(idleLabel, (page - 1) * nums, nums);
+            if(list.size()>0){
+                List<Long> idList=new ArrayList<>();
+                for(IdleItemModel i:list){
+                    idList.add(i.getUserId());
+                }
+                List<UserModel> userList=userDao.findUserByList(idList);
+                Map<Long,UserModel> map=new HashMap<>();
+                for(UserModel user:userList){
+                    map.put(user.getId(),user);
+                }
+                Date now = new Date();
+                for(IdleItemModel i:list){
+                    i.setUser(map.get(i.getUserId()));
+                    // 检查是否正在置顶
+                    com.second.hand.trading.server.entity.IdleItemPinModel pin = 
+                        idleItemPinDao.selectActivePinByItemId(i.getId(), now);
+                    i.setIsPinned(pin != null);
+                }
             }
-            List<UserModel> userList=userDao.findUserByList(idList);
-            Map<Long,UserModel> map=new HashMap<>();
-            for(UserModel user:userList){
-                map.put(user.getId(),user);
-            }
-            for(IdleItemModel i:list){
-                i.setUser(map.get(i.getUserId()));
-            }
-        }
-        int count=idleItemDao.countIdleItemByLable(idleLabel);
-        return new PageVo<>(list,count);
+            int count=idleItemDao.countIdleItemByLable(idleLabel);
+            return new PageVo<>(list,count);
+        });
     }
 
     /**

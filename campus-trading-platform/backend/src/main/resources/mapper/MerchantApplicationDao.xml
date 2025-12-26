@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.second.hand.trading.server.dao.MerchantApplicationDao">
+  <resultMap id="BaseResultMap" type="com.second.hand.trading.server.entity.MerchantApplicationModel">
+    <id column="id" jdbcType="BIGINT" property="id"/>
+    <result column="user_id" jdbcType="BIGINT" property="userId"/>
+    <result column="shop_name" jdbcType="VARCHAR" property="shopName"/>
+    <result column="business_license" jdbcType="VARCHAR" property="businessLicense"/>
+    <result column="id_card_front" jdbcType="VARCHAR" property="idCardFront"/>
+    <result column="id_card_back" jdbcType="VARCHAR" property="idCardBack"/>
+    <result column="contact_phone" jdbcType="VARCHAR" property="contactPhone"/>
+    <result column="contact_address" jdbcType="VARCHAR" property="contactAddress"/>
+    <result column="application_reason" jdbcType="VARCHAR" property="applicationReason"/>
+    <result column="status" jdbcType="TINYINT" property="status"/>
+    <result column="admin_id" jdbcType="BIGINT" property="adminId"/>
+    <result column="admin_comment" jdbcType="VARCHAR" property="adminComment"/>
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    <result column="review_time" jdbcType="TIMESTAMP" property="reviewTime"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, user_id, shop_name, business_license, id_card_front, id_card_back, contact_phone,
+    contact_address, application_reason, status, admin_id, admin_comment, create_time, review_time
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id"
+          parameterType="com.second.hand.trading.server.entity.MerchantApplicationModel"
+          useGeneratedKeys="true">
+    insert into sh_merchant_application (user_id, shop_name, business_license, id_card_front,
+                                         id_card_back, contact_phone, contact_address,
+                                         application_reason, status, create_time)
+    values (#{userId,jdbcType=BIGINT}, #{shopName,jdbcType=VARCHAR},
+            #{businessLicense,jdbcType=VARCHAR}, #{idCardFront,jdbcType=VARCHAR},
+            #{idCardBack,jdbcType=VARCHAR}, #{contactPhone,jdbcType=VARCHAR},
+            #{contactAddress,jdbcType=VARCHAR}, #{applicationReason,jdbcType=VARCHAR},
+            #{status,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="selectByUserId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_merchant_application
+    where user_id = #{userId,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_merchant_application
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectAll" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_merchant_application
+    <if test="status != null">
+      where status = #{status,jdbcType=TINYINT}
+    </if>
+    order by create_time desc
+  </select>
+
+  <select id="countByStatus" resultType="int">
+    select count(*) from sh_merchant_application
+    where status = #{status,jdbcType=TINYINT}
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.second.hand.trading.server.entity.MerchantApplicationModel">
+    update sh_merchant_application
+    <set>
+      <if test="shopName != null">
+        shop_name = #{shopName,jdbcType=VARCHAR},
+      </if>
+      <if test="businessLicense != null">
+        business_license = #{businessLicense,jdbcType=VARCHAR},
+      </if>
+      <if test="idCardFront != null">
+        id_card_front = #{idCardFront,jdbcType=VARCHAR},
+      </if>
+      <if test="idCardBack != null">
+        id_card_back = #{idCardBack,jdbcType=VARCHAR},
+      </if>
+      <if test="contactPhone != null">
+        contact_phone = #{contactPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="contactAddress != null">
+        contact_address = #{contactAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="applicationReason != null">
+        application_reason = #{applicationReason,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="adminId != null">
+        admin_id = #{adminId,jdbcType=BIGINT},
+      </if>
+      <if test="adminComment != null">
+        admin_comment = #{adminComment,jdbcType=VARCHAR},
+      </if>
+      <if test="reviewTime != null">
+        review_time = #{reviewTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
+

@@ -45,6 +45,21 @@ export default new Router({
             meta: { title: '私聊 | 校园二手闲置物品交易平台' }
         },
         {
+            path: '/merchant/apply',
+            component: () => import('../components/page/merchant-apply.vue'),
+            meta: { title: '商家认证 | 校园二手闲置物品交易平台' }
+        },
+        {
+            path: '/merchant/manage',
+            component: () => import('../components/page/merchant-manage.vue'),
+            meta: { title: '店铺管理 | 校园二手闲置物品交易平台' }
+        },
+        {
+            path: '/membership',
+            component: () => import('../components/page/membership.vue'),
+            meta: { title: '开通会员 | 校园二手闲置物品交易平台' }
+        },
+        {
             path: '/release',
             component: () => import('../components/page/release.vue'),
             meta: { title: '发布闲置 | 校园二手闲置物品交易平台' }

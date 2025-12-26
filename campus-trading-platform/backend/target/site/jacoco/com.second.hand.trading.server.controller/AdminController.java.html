@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.controller</a> &gt; <span class="el_source">AdminController.java</span></div><h1>AdminController.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.controller;
+
+import com.second.hand.trading.server.enums.ErrorMsg;
+import com.second.hand.trading.server.entity.AdminModel;
+import com.second.hand.trading.server.entity.IdleItemModel;
+import com.second.hand.trading.server.entity.UserModel;
+import com.second.hand.trading.server.service.AdminService;
+import com.second.hand.trading.server.service.IdleItemService;
+import com.second.hand.trading.server.service.OrderService;
+import com.second.hand.trading.server.service.UserService;
+import com.second.hand.trading.server.dto.ResultVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+@RestController
+@RequestMapping(&quot;admin&quot;)
+<span class="fc" id="L23">public class AdminController {</span>
+
+    @Autowired
+    private AdminService adminService;
+
+    @Autowired
+    private IdleItemService idleItemService;
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping(&quot;login&quot;)
+    public ResultVo login(@RequestParam(&quot;accountNumber&quot;) @NotNull @NotEmpty String accountNumber,
+                          @RequestParam(&quot;adminPassword&quot;) @NotNull @NotEmpty String adminPassword,
+                          HttpServletResponse response,
+                          HttpSession session){
+<span class="nc" id="L42">        AdminModel adminModel=adminService.login(accountNumber,adminPassword);</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (null == adminModel) {</span>
+<span class="nc" id="L44">            return ResultVo.fail(ErrorMsg.EMAIL_LOGIN_ERROR);</span>
+        }
+<span class="nc" id="L46">        session.setAttribute(&quot;admin&quot;,adminModel);</span>
+<span class="nc" id="L47">        Cookie cookie = new Cookie(&quot;shAdminId&quot;, String.valueOf(adminModel.getId()));</span>
+<span class="nc" id="L48">        cookie.setPath(&quot;/&quot;);</span>
+<span class="nc" id="L49">        response.addCookie(cookie);</span>
+<span class="nc" id="L50">        return ResultVo.success(adminModel);</span>
+    }
+
+    @GetMapping(&quot;loginOut&quot;)
+    public ResultVo loginOut( HttpSession session){
+<span class="nc" id="L55">        session.removeAttribute(&quot;admin&quot;);</span>
+<span class="nc" id="L56">        return ResultVo.success();</span>
+    }
+
+    @GetMapping(&quot;list&quot;)
+    public ResultVo getAdminList(HttpSession session,
+                                 @RequestParam(value = &quot;page&quot;,required = false) Integer page,
+                                 @RequestParam(value = &quot;nums&quot;,required = false) Integer nums){
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L64">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc" id="L66">        int p=1;</span>
+<span class="nc" id="L67">        int n=8;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if(null!=page){</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            p=page&gt;0?page:1;</span>
+        }
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if(null!=nums){</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">            n=nums&gt;0?nums:8;</span>
+        }
+<span class="nc" id="L74">        return ResultVo.success(adminService.getAdminList(p,n));</span>
+    }
+
+    @PostMapping(&quot;add&quot;)
+    public ResultVo addAdmin(HttpSession session,
+                             @RequestBody AdminModel adminModel){
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L81">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if(adminService.addAdmin(adminModel)){</span>
+<span class="nc" id="L84">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L86">        return ResultVo.fail(ErrorMsg.PARAM_ERROR);</span>
+    }
+
+    @GetMapping(&quot;idleList&quot;)
+    public ResultVo idleList(HttpSession session,
+                             @RequestParam(&quot;status&quot;) @NotNull @NotEmpty Integer status,
+                             @RequestParam(value = &quot;page&quot;,required = false) Integer page,
+                             @RequestParam(value = &quot;nums&quot;,required = false) Integer nums){
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L95">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc" id="L97">        int p=1;</span>
+<span class="nc" id="L98">        int n=8;</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if(null!=page){</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            p=page&gt;0?page:1;</span>
+        }
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if(null!=nums){</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            n=nums&gt;0?nums:8;</span>
+        }
+<span class="nc" id="L105">        return ResultVo.success(idleItemService.adminGetIdleList(status,p,n));</span>
+    }
+
+    @GetMapping(&quot;updateIdleStatus&quot;)
+    public ResultVo updateIdleStatus(HttpSession session,
+                                     @RequestParam(&quot;id&quot;) @NotNull @NotEmpty Long id,
+                                     @RequestParam(&quot;status&quot;) @NotNull @NotEmpty Integer status
+                                     ){
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L114">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc" id="L116">        IdleItemModel idleItemModel=new IdleItemModel();</span>
+<span class="nc" id="L117">        idleItemModel.setId(id);</span>
+<span class="nc" id="L118">        idleItemModel.setIdleStatus(status.byteValue());</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if(idleItemService.updateIdleItem(idleItemModel)){</span>
+<span class="nc" id="L120">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L122">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+
+    @GetMapping(&quot;orderList&quot;)
+    public ResultVo orderList(HttpSession session,
+                              @RequestParam(value = &quot;page&quot;,required = false) Integer page,
+                              @RequestParam(value = &quot;nums&quot;,required = false) Integer nums){
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L130">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc" id="L132">        int p=1;</span>
+<span class="nc" id="L133">        int n=8;</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if(null!=page){</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            p=page&gt;0?page:1;</span>
+        }
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if(null!=nums){</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">            n=nums&gt;0?nums:8;</span>
+        }
+<span class="nc" id="L140">        return ResultVo.success(orderService.getAllOrder(p,n));</span>
+    }
+
+    @GetMapping(&quot;deleteOrder&quot;)
+    public ResultVo deleteOrder(HttpSession session,
+                              @RequestParam(&quot;id&quot;) @NotNull @NotEmpty Long id){
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L147">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if(orderService.deleteOrder(id)){</span>
+<span class="nc" id="L150">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L152">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+
+    @GetMapping(&quot;userList&quot;)
+    public ResultVo userList(HttpSession session,
+                             @RequestParam(value = &quot;page&quot;,required = false) Integer page,
+                             @RequestParam(value = &quot;nums&quot;,required = false) Integer nums,
+                             @RequestParam(&quot;status&quot;) @NotNull @NotEmpty Integer status){
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L161">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc" id="L163">        int p=1;</span>
+<span class="nc" id="L164">        int n=8;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if(null!=page){</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">            p=page&gt;0?page:1;</span>
+        }
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if(null!=nums){</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            n=nums&gt;0?nums:8;</span>
+        }
+<span class="nc" id="L171">        return ResultVo.success(userService.getUserByStatus(status,p,n));</span>
+    }
+
+    @GetMapping(&quot;updateUserStatus&quot;)
+    public ResultVo updateUserStatus(HttpSession session,
+                                     @RequestParam(&quot;id&quot;) @NotNull @NotEmpty Long id,
+                                     @RequestParam(&quot;status&quot;) @NotNull @NotEmpty Integer status){
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L179">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc" id="L181">        UserModel userModel=new UserModel();</span>
+<span class="nc" id="L182">        userModel.setId(id);</span>
+<span class="nc" id="L183">        userModel.setUserStatus(status.byteValue());</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if(userService.updateUserInfo(userModel))</span>
+<span class="nc" id="L185">            return ResultVo.success();</span>
+<span class="nc" id="L186">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+
+
+    // 按订单闲置物品名称查询
+    @GetMapping(&quot;queryIdle&quot;)
+    public ResultVo queryIdle(@RequestParam(value = &quot;findValue&quot;,required = false) String findValue,
+                              @RequestParam(value = &quot;page&quot;,required = false) Integer page,
+                              @RequestParam(value = &quot;nums&quot;,required = false) Integer nums,
+                              @RequestParam(&quot;status&quot;) @NotNull @NotEmpty Integer status){
+<span class="nc bnc" id="L196" title="All 2 branches missed.">            if(null==findValue){</span>
+<span class="nc" id="L197">                findValue=&quot;&quot;;</span>
+            }
+<span class="nc" id="L199">            int p=1;</span>
+<span class="nc" id="L200">            int n=8;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">            if(null!=page){</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">                p=page&gt;0?page:1;</span>
+            }
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if(null!=nums){</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                n=nums&gt;0?nums:8;</span>
+            }
+
+<span class="nc" id="L208">        System.out.println(findValue + &quot; &quot; + page + &quot; &quot; + nums + &quot; &quot; + status);</span>
+
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            if(status == 1)</span>
+<span class="nc" id="L211">                return ResultVo.success(idleItemService.findIdleItem(findValue,p,n));</span>
+<span class="nc" id="L212">            return ResultVo.success(idleItemService.findIdleItem1(findValue,status,p,n));</span>
+
+    }
+
+    // 按订单号查询订单
+    @GetMapping(&quot;queryOrder&quot;)
+    public ResultVo queryOrder(HttpSession session,
+                              @RequestParam(value = &quot;page&quot;,required = false) Integer page,
+                              @RequestParam(value = &quot;nums&quot;,required = false) Integer nums,
+                              @RequestParam(value = &quot;searchValue&quot;,required = false) String searchValue){
+
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L224">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+
+<span class="nc" id="L227">        int p=1;</span>
+<span class="nc" id="L228">        int n=8;</span>
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        if(null!=page){</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">            p=page&gt;0?page:1;</span>
+        }
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        if(null!=nums){</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">            n=nums&gt;0?nums:8;</span>
+        }
+
+//        System.out.println(&quot;---------------------&quot; + searchValue + &quot;--------------&quot;);
+<span class="nc bnc" id="L237" title="All 4 branches missed.">        if(null == searchValue || &quot;&quot;.equals(searchValue))</span>
+<span class="nc" id="L238">            return ResultVo.success(orderService.getAllOrder(p,n));</span>
+<span class="nc" id="L239">        return ResultVo.success(orderService.findOrderByNumber(searchValue, p, n));</span>
+    }
+
+
+
+
+    // 根据用户账号来查找信息
+    @GetMapping(&quot;queryUser&quot;)
+    public ResultVo queryUser(HttpSession session,
+                              @RequestParam(value = &quot;searchValue&quot;,required = false) String searchValue,
+                              @RequestParam(value = &quot;mode&quot;,required = false) Integer mode,
+                              @RequestParam(value = &quot;page&quot;,required = false) Integer page,
+                              @RequestParam(value = &quot;nums&quot;,required = false) Integer nums){
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if(session.getAttribute(&quot;admin&quot;)==null){</span>
+<span class="nc" id="L253">            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);</span>
+        }
+<span class="nc" id="L255">        int p=1;</span>
+<span class="nc" id="L256">        int n=8;</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if(null!=page){</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">            p=page&gt;0?page:1;</span>
+        }
+<span class="nc bnc" id="L260" title="All 2 branches missed.">        if(null!=nums){</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">            n=nums&gt;0?nums:8;</span>
+        }
+//        return ResultVo.success(userService.getUserByStatus(0,p,n));
+
+<span class="nc bnc" id="L265" title="All 2 branches missed.">        if(mode == 1){</span>
+<span class="nc bnc" id="L266" title="All 4 branches missed.">            if(null == searchValue || &quot;&quot;.equals(searchValue)){</span>
+<span class="nc" id="L267">                return ResultVo.success(userService.getUserByStatus(0,p,n));</span>
+            }else{
+<span class="nc" id="L269">                return ResultVo.success(userService.getUserByNumber(searchValue,mode));</span>
+            }
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        }else if(mode == 2){</span>
+<span class="nc bnc" id="L272" title="All 4 branches missed.">            if(null == searchValue || &quot;&quot;.equals(searchValue)){</span>
+<span class="nc" id="L273">                return ResultVo.success(userService.getUserByStatus(1,p,n));</span>
+            }else{
+<span class="nc" id="L275">                return ResultVo.success(userService.getUserByNumber(searchValue,mode));</span>
+            }
+        }else
+<span class="nc" id="L278">            return ResultVo.success(adminService.getAdminList(p,n));</span>
+
+
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

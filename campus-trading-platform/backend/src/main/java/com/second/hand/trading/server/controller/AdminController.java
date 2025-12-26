@@ -12,6 +12,8 @@ import com.second.hand.trading.server.dto.ResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -35,12 +37,16 @@ public class AdminController {
     @GetMapping("login")
     public ResultVo login(@RequestParam("accountNumber") @NotNull @NotEmpty String accountNumber,
                           @RequestParam("adminPassword") @NotNull @NotEmpty String adminPassword,
+                          HttpServletResponse response,
                           HttpSession session){
         AdminModel adminModel=adminService.login(accountNumber,adminPassword);
         if (null == adminModel) {
             return ResultVo.fail(ErrorMsg.EMAIL_LOGIN_ERROR);
         }
         session.setAttribute("admin",adminModel);
+        Cookie cookie = new Cookie("shAdminId", String.valueOf(adminModel.getId()));
+        cookie.setPath("/");
+        response.addCookie(cookie);
         return ResultVo.success(adminModel);
     }
 

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.entity</a> &gt; <span class="el_source">UserModel.java</span></div><h1>UserModel.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * sh_user
+ * @author myl
+ */
+<span class="fc" id="L10">public class UserModel implements Serializable {</span>
+    /**
+     * 自增主键
+     */
+    private Long id;
+
+    /**
+     * 账号（手机号）
+     */
+    private String accountNumber;
+
+    /**
+     * 登录密码
+     */
+    private String userPassword;
+
+    /**
+     * 昵称
+     */
+    private String nickname;
+
+    /**
+     * 头像
+     */
+    private String avatar;
+
+    /**
+     * 注册时间
+     */
+    private Date signInTime;
+
+    private Byte userStatus;
+
+    /**
+     * 用户角色（0-普通用户，1-经营性卖家，2-管理员）
+     */
+    private Byte userRole;
+
+    /**
+     * 会员类型（0-普通用户，1-基础会员，2-高级会员）
+     */
+    private Byte membershipType;
+
+    /**
+     * 会员到期时间
+     */
+    private Date membershipExpireTime;
+
+    private static final long serialVersionUID = 1L;
+
+    public Long getId() {
+<span class="fc" id="L61">        return id;</span>
+    }
+
+    public void setId(Long id) {
+<span class="fc" id="L65">        this.id = id;</span>
+<span class="fc" id="L66">    }</span>
+
+    public String getAccountNumber() {
+<span class="fc" id="L69">        return accountNumber;</span>
+    }
+
+    public void setAccountNumber(String accountNumber) {
+<span class="fc" id="L73">        this.accountNumber = accountNumber;</span>
+<span class="fc" id="L74">    }</span>
+
+    public String getUserPassword() {
+<span class="fc" id="L77">        return userPassword;</span>
+    }
+
+    public void setUserPassword(String userPassword) {
+<span class="fc" id="L81">        this.userPassword = userPassword;</span>
+<span class="fc" id="L82">    }</span>
+
+    public String getNickname() {
+<span class="fc" id="L85">        return nickname;</span>
+    }
+
+    public void setNickname(String nickname) {
+<span class="fc" id="L89">        this.nickname = nickname;</span>
+<span class="fc" id="L90">    }</span>
+
+    public String getAvatar() {
+<span class="fc" id="L93">        return avatar;</span>
+    }
+
+    public void setAvatar(String avatar) {
+<span class="fc" id="L97">        this.avatar = avatar;</span>
+<span class="fc" id="L98">    }</span>
+
+    public Date getSignInTime() {
+<span class="fc" id="L101">        return signInTime;</span>
+    }
+
+    public void setSignInTime(Date signInTime) {
+<span class="fc" id="L105">        this.signInTime = signInTime;</span>
+<span class="fc" id="L106">    }</span>
+
+    public Byte getUserStatus() {
+<span class="fc" id="L109">        return userStatus;</span>
+    }
+
+    public void setUserStatus(Byte userStatus) {
+<span class="fc" id="L113">        this.userStatus = userStatus;</span>
+<span class="fc" id="L114">    }</span>
+
+    public Byte getUserRole() {
+<span class="fc" id="L117">        return userRole;</span>
+    }
+
+    public void setUserRole(Byte userRole) {
+<span class="fc" id="L121">        this.userRole = userRole;</span>
+<span class="fc" id="L122">    }</span>
+
+    public Byte getMembershipType() {
+<span class="fc" id="L125">        return membershipType;</span>
+    }
+
+    public void setMembershipType(Byte membershipType) {
+<span class="fc" id="L129">        this.membershipType = membershipType;</span>
+<span class="fc" id="L130">    }</span>
+
+    public Date getMembershipExpireTime() {
+<span class="fc" id="L133">        return membershipExpireTime;</span>
+    }
+
+    public void setMembershipExpireTime(Date membershipExpireTime) {
+<span class="nc" id="L137">        this.membershipExpireTime = membershipExpireTime;</span>
+<span class="nc" id="L138">    }</span>
+
+    @Override
+    public boolean equals(Object that) {
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (this == that) {</span>
+<span class="nc" id="L143">            return true;</span>
+        }
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (that == null) {</span>
+<span class="nc" id="L146">            return false;</span>
+        }
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (getClass() != that.getClass()) {</span>
+<span class="nc" id="L149">            return false;</span>
+        }
+<span class="nc" id="L151">        UserModel other = (UserModel) that;</span>
+<span class="nc bnc" id="L152" title="All 6 branches missed.">        return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))</span>
+<span class="nc bnc" id="L153" title="All 6 branches missed.">            &amp;&amp; (this.getAccountNumber() == null ? other.getAccountNumber() == null : this.getAccountNumber().equals(other.getAccountNumber()))</span>
+<span class="nc bnc" id="L154" title="All 6 branches missed.">            &amp;&amp; (this.getUserPassword() == null ? other.getUserPassword() == null : this.getUserPassword().equals(other.getUserPassword()))</span>
+<span class="nc bnc" id="L155" title="All 6 branches missed.">            &amp;&amp; (this.getNickname() == null ? other.getNickname() == null : this.getNickname().equals(other.getNickname()))</span>
+<span class="nc bnc" id="L156" title="All 6 branches missed.">            &amp;&amp; (this.getAvatar() == null ? other.getAvatar() == null : this.getAvatar().equals(other.getAvatar()))</span>
+<span class="nc bnc" id="L157" title="All 6 branches missed.">            &amp;&amp; (this.getSignInTime() == null ? other.getSignInTime() == null : this.getSignInTime().equals(other.getSignInTime()));</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L162">        final int prime = 31;</span>
+<span class="fc" id="L163">        int result = 1;</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">        result = prime * result + ((getId() == null) ? 0 : getId().hashCode());</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        result = prime * result + ((getAccountNumber() == null) ? 0 : getAccountNumber().hashCode());</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        result = prime * result + ((getUserPassword() == null) ? 0 : getUserPassword().hashCode());</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">        result = prime * result + ((getNickname() == null) ? 0 : getNickname().hashCode());</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">        result = prime * result + ((getAvatar() == null) ? 0 : getAvatar().hashCode());</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        result = prime * result + ((getSignInTime() == null) ? 0 : getSignInTime().hashCode());</span>
+<span class="fc" id="L170">        return result;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="fc" id="L175">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L176">        sb.append(getClass().getSimpleName());</span>
+<span class="fc" id="L177">        sb.append(&quot; [&quot;);</span>
+<span class="fc" id="L178">        sb.append(&quot;Hash = &quot;).append(hashCode());</span>
+<span class="fc" id="L179">        sb.append(&quot;, id=&quot;).append(id);</span>
+<span class="fc" id="L180">        sb.append(&quot;, accountNumber=&quot;).append(accountNumber);</span>
+<span class="fc" id="L181">        sb.append(&quot;, userPassword=&quot;).append(userPassword);</span>
+<span class="fc" id="L182">        sb.append(&quot;, nickname=&quot;).append(nickname);</span>
+<span class="fc" id="L183">        sb.append(&quot;, avatar=&quot;).append(avatar);</span>
+<span class="fc" id="L184">        sb.append(&quot;, signInTime=&quot;).append(signInTime);</span>
+<span class="fc" id="L185">        sb.append(&quot;, serialVersionUID=&quot;).append(serialVersionUID);</span>
+<span class="fc" id="L186">        sb.append(&quot;]&quot;);</span>
+<span class="fc" id="L187">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

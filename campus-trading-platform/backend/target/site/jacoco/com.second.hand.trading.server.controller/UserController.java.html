@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.controller;
+
+import com.second.hand.trading.server.enums.ErrorMsg;
+import com.second.hand.trading.server.entity.UserModel;
+import com.second.hand.trading.server.service.UserService;
+import com.second.hand.trading.server.dto.ResultVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
+
+
+@RestController
+@RequestMapping(&quot;user&quot;)
+<span class="fc" id="L19">public class UserController {</span>
+
+    @Autowired
+    private UserService userService;
+
+
+    /**
+     * 注册账号
+     * @param userModel
+     * @return
+     */
+    @PostMapping(&quot;sign-in&quot;)
+    public ResultVo signIn(@RequestBody  UserModel userModel) {
+<span class="fc" id="L32">        System.out.println(userModel);</span>
+<span class="fc" id="L33">        userModel.setSignInTime(new Timestamp(System.currentTimeMillis()));</span>
+<span class="pc bpc" id="L34" title="1 of 4 branches missed.">        if (userModel.getAvatar() == null || &quot;&quot;.equals(userModel.getAvatar())) {</span>
+<span class="fc" id="L35">            userModel.setAvatar(&quot;https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png&quot;);</span>
+        }
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        if (userService.userSignIn(userModel)) {</span>
+<span class="fc" id="L38">            return ResultVo.success(userModel);</span>
+        }
+<span class="nc" id="L40">        return ResultVo.fail(ErrorMsg.REGISTER_ERROR);</span>
+    }
+
+    /**
+     * 登录，不安全，可伪造id，后期改进
+     *
+     * @param accountNumber
+     * @param userPassword
+     * @param response
+     * @return
+     */
+    @RequestMapping(&quot;login&quot;)
+    public ResultVo login(@RequestParam(&quot;accountNumber&quot;) @NotEmpty @NotNull String accountNumber,
+                          @RequestParam(&quot;userPassword&quot;) @NotEmpty @NotNull String userPassword,
+                          HttpServletResponse response) {
+<span class="fc" id="L55">        UserModel userModel = userService.userLogin(accountNumber, userPassword);</span>
+<span class="fc" id="L56">        System.out.println(&quot;登录：&quot; + userModel);</span>
+
+<span class="fc" id="L58">        System.out.println(&quot;===================================&quot;);</span>
+<span class="fc" id="L59">        System.out.println(accountNumber + &quot;   &quot; + userPassword);</span>
+<span class="fc" id="L60">        System.out.println(&quot;===================================&quot;);</span>
+
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (null == userModel) {</span>
+<span class="nc" id="L63">            return ResultVo.fail(ErrorMsg.EMAIL_LOGIN_ERROR);</span>
+        }
+
+        // 用户名或者密码为空
+<span class="pc bpc" id="L67" title="2 of 4 branches missed.">        if(accountNumber.equals(&quot;&quot;) || userPassword.equals(&quot;&quot;)){</span>
+<span class="nc" id="L68">            return ResultVo.fail(ErrorMsg.EMAIL_LOGIN_ERROR);</span>
+        }
+
+        // 手机号长度不足11位
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if(userModel.getAccountNumber().length() != 11){</span>
+<span class="nc" id="L73">            return ResultVo.fail(ErrorMsg.EMAIL_LOGIN_ERROR);</span>
+        }
+
+<span class="pc bpc" id="L76" title="2 of 4 branches missed.">        if(userModel.getUserStatus()!=null&amp;&amp;userModel.getUserStatus().equals((byte) 1)){</span>
+<span class="nc" id="L77">            return ResultVo.fail(ErrorMsg.ACCOUNT_Ban);</span>
+        }
+<span class="fc" id="L79">        Cookie cookie = new Cookie(&quot;shUserId&quot;, String.valueOf(userModel.getId()));</span>
+//        cookie.setMaxAge(60 * 60 * 24 * 30);
+<span class="fc" id="L81">        cookie.setPath(&quot;/&quot;);</span>
+<span class="fc" id="L82">        cookie.setHttpOnly(false);</span>
+<span class="fc" id="L83">        response.addCookie(cookie);</span>
+<span class="fc" id="L84">        return ResultVo.success(userModel);</span>
+    }
+
+    /**
+     * 退出登录
+     *
+     * @param shUserId
+     * @param response
+     * @return
+     */
+    @RequestMapping(&quot;logout&quot;)
+    public ResultVo logout(@CookieValue(&quot;shUserId&quot;)
+                           @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                           @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId, HttpServletResponse response) {
+<span class="nc" id="L98">        Cookie cookie = new Cookie(&quot;shUserId&quot;, shUserId);</span>
+<span class="nc" id="L99">        cookie.setMaxAge(0);</span>
+<span class="nc" id="L100">        cookie.setPath(&quot;/&quot;);</span>
+<span class="nc" id="L101">        cookie.setHttpOnly(true);</span>
+<span class="nc" id="L102">        response.addCookie(cookie);</span>
+<span class="nc" id="L103">        return ResultVo.success();</span>
+    }
+
+    /**
+     * 获取用户信息
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping(&quot;info&quot;)
+    public ResultVo getOneUser(@CookieValue(&quot;shUserId&quot;) @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                               @NotEmpty(message = &quot;登录异常 请重新登录&quot;)
+                                       String id) {
+<span class="nc" id="L116">        return ResultVo.success(userService.getUser(Long.valueOf(id)));</span>
+    }
+
+    /**
+     * 修改用户公开信息
+     * @param id
+     * @param userModel
+     * @return
+     */
+    @PostMapping(&quot;/info&quot;)
+    public ResultVo updateUserPublicInfo(@CookieValue(&quot;shUserId&quot;) @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                     @NotEmpty(message = &quot;登录异常 请重新登录&quot;)
+                                             String id, @RequestBody  UserModel userModel) {
+<span class="nc" id="L129">        userModel.setId(Long.valueOf(id));</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (userService.updateUserInfo(userModel)) {</span>
+<span class="nc" id="L131">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L133">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+
+
+    /**
+     * 修改密码
+     * @param id
+     * @param oldPassword
+     * @param newPassword
+     * @return
+     */
+    @GetMapping(&quot;/password&quot;)
+    public ResultVo updateUserPassword(@CookieValue(&quot;shUserId&quot;) @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                       @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String id,
+                                       @RequestParam(&quot;oldPassword&quot;) @NotEmpty @NotNull String oldPassword,
+                                       @RequestParam(&quot;newPassword&quot;) @NotEmpty @NotNull String newPassword) {
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (userService.updatePassword(newPassword,oldPassword,Long.valueOf(id))) {</span>
+<span class="nc" id="L150">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L152">        return ResultVo.fail(ErrorMsg.PASSWORD_RESET_ERROR);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

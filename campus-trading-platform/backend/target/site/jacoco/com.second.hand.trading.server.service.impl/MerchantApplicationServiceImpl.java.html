@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MerchantApplicationServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.service.impl</a> &gt; <span class="el_source">MerchantApplicationServiceImpl.java</span></div><h1>MerchantApplicationServiceImpl.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.service.impl;
+
+import com.second.hand.trading.server.dao.AdminDao;
+import com.second.hand.trading.server.dao.MerchantApplicationDao;
+import com.second.hand.trading.server.dao.UserDao;
+import com.second.hand.trading.server.entity.AdminModel;
+import com.second.hand.trading.server.entity.MerchantApplicationModel;
+import com.second.hand.trading.server.entity.UserModel;
+import com.second.hand.trading.server.service.MerchantApplicationService;
+import com.second.hand.trading.server.service.UserService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.List;
+
+@Service
+<span class="fc" id="L19">public class MerchantApplicationServiceImpl implements MerchantApplicationService {</span>
+
+    @Resource
+    private MerchantApplicationDao merchantApplicationDao;
+
+    @Resource
+    private UserDao userDao;
+
+    @Resource
+    private AdminDao adminDao;
+
+    @Resource
+    private UserService userService;
+
+    @Override
+    public boolean submitApplication(MerchantApplicationModel applicationModel) {
+        // 检查是否已有申请
+<span class="nc" id="L36">        MerchantApplicationModel existing = merchantApplicationDao.selectByUserId(applicationModel.getUserId());</span>
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        if (existing != null &amp;&amp; existing.getStatus() == 0) {</span>
+            // 已有待审核的申请
+<span class="nc" id="L39">            return false;</span>
+        }
+<span class="nc" id="L41">        applicationModel.setStatus((byte) 0);</span>
+<span class="nc" id="L42">        applicationModel.setCreateTime(new Date());</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        return merchantApplicationDao.insert(applicationModel) == 1;</span>
+    }
+
+    @Override
+    public MerchantApplicationModel getApplicationByUserId(Long userId) {
+<span class="nc" id="L48">        MerchantApplicationModel application = merchantApplicationDao.selectByUserId(userId);</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (application != null) {</span>
+<span class="nc" id="L50">            fillApplicationInfo(application);</span>
+        }
+<span class="nc" id="L52">        return application;</span>
+    }
+
+    @Override
+    public MerchantApplicationModel getApplicationById(Long id) {
+<span class="nc" id="L57">        MerchantApplicationModel application = merchantApplicationDao.selectByPrimaryKey(id);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (application != null) {</span>
+<span class="nc" id="L59">            fillApplicationInfo(application);</span>
+        }
+<span class="nc" id="L61">        return application;</span>
+    }
+
+    @Override
+    public List&lt;MerchantApplicationModel&gt; getAllApplications(Byte status) {
+<span class="nc" id="L66">        List&lt;MerchantApplicationModel&gt; list = merchantApplicationDao.selectAll(status);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        for (MerchantApplicationModel application : list) {</span>
+<span class="nc" id="L68">            fillApplicationInfo(application);</span>
+<span class="nc" id="L69">        }</span>
+<span class="nc" id="L70">        return list;</span>
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean reviewApplication(Long applicationId, Long adminId, Byte status, String adminComment) {
+<span class="nc" id="L76">        MerchantApplicationModel application = merchantApplicationDao.selectByPrimaryKey(applicationId);</span>
+<span class="nc bnc" id="L77" title="All 4 branches missed.">        if (application == null || application.getStatus() != 0) {</span>
+<span class="nc" id="L78">            return false;</span>
+        }
+
+<span class="nc" id="L81">        application.setStatus(status);</span>
+<span class="nc" id="L82">        application.setAdminId(adminId);</span>
+<span class="nc" id="L83">        application.setAdminComment(adminComment);</span>
+<span class="nc" id="L84">        application.setReviewTime(new Date());</span>
+
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (merchantApplicationDao.updateByPrimaryKeySelective(application) == 1) {</span>
+            // 如果审核通过，更新用户角色为经营性卖家
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            if (status == 1) {</span>
+<span class="nc" id="L89">                UserModel user = userDao.selectByPrimaryKey(application.getUserId());</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                if (user != null) {</span>
+<span class="nc" id="L91">                    user.setUserRole((byte) 1); // 1-经营性卖家</span>
+<span class="nc" id="L92">                    userDao.updateByPrimaryKeySelective(user);</span>
+                }
+            }
+<span class="nc" id="L95">            return true;</span>
+        }
+<span class="nc" id="L97">        return false;</span>
+    }
+
+    /**
+     * 填充申请的关联信息
+     */
+    @Override
+    public int countPendingApplications() {
+<span class="nc" id="L105">        return merchantApplicationDao.countByStatus((byte) 0);</span>
+    }
+
+    /**
+     * 填充申请的关联信息
+     */
+    private void fillApplicationInfo(MerchantApplicationModel application) {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        if (application.getUserId() != null) {</span>
+<span class="nc" id="L113">            UserModel user = userDao.selectByPrimaryKey(application.getUserId());</span>
+<span class="nc" id="L114">            application.setUser(user);</span>
+        }
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (application.getAdminId() != null) {</span>
+<span class="nc" id="L117">            AdminModel admin = adminDao.selectByPrimaryKey(application.getAdminId());</span>
+<span class="nc" id="L118">            application.setAdmin(admin);</span>
+        }
+<span class="nc" id="L120">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -59,7 +59,17 @@ public class IdleItemModel implements Serializable {
      */
     private Long userId;
 
+    /**
+     * 库存数量（经营性卖家使用，普通用户默认为1）
+     */
+    private Integer stock;
+
     private UserModel user;
+
+    /**
+     * 是否正在置顶（非数据库字段，用于前端显示）
+     */
+    private Boolean isPinned;
 
     private static final long serialVersionUID = 1L;
 
@@ -143,12 +153,28 @@ public class IdleItemModel implements Serializable {
         this.userId = userId;
     }
 
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
     public UserModel getUser() {
         return user;
     }
 
     public void setUser(UserModel user) {
         this.user = user;
+    }
+
+    public Boolean getIsPinned() {
+        return isPinned;
+    }
+
+    public void setIsPinned(Boolean isPinned) {
+        this.isPinned = isPinned;
     }
 
     @Override

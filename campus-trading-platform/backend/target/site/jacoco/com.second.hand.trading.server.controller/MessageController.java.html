@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.controller</a> &gt; <span class="el_source">MessageController.java</span></div><h1>MessageController.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.controller;
+
+import com.second.hand.trading.server.enums.ErrorMsg;
+import com.second.hand.trading.server.entity.MessageModel;
+import com.second.hand.trading.server.service.MessageService;
+import com.second.hand.trading.server.dto.ResultVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+
+@RestController
+@RequestMapping(&quot;/message&quot;)
+<span class="fc" id="L16">public class MessageController {</span>
+
+    @Autowired
+    private MessageService messageService;
+
+    @PostMapping(&quot;/send&quot;)
+    public ResultVo sendMessage(@CookieValue(&quot;shUserId&quot;)
+                                @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId,
+                                @RequestBody MessageModel messageModel){
+<span class="nc" id="L26">        messageModel.setUserId(Long.valueOf(shUserId));</span>
+<span class="nc" id="L27">        messageModel.setCreateTime(new Date());</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">        if(messageService.addMessage(messageModel)){</span>
+<span class="nc" id="L29">            return ResultVo.success(messageModel);</span>
+        }
+<span class="nc" id="L31">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+
+    @GetMapping(&quot;/info&quot;)
+    public ResultVo getMessage(@RequestParam Long id){
+<span class="nc" id="L36">        return ResultVo.success(messageService.getMessage(id));</span>
+    }
+
+    @GetMapping(&quot;/idle&quot;)
+    public ResultVo getAllIdleMessage(@RequestParam Long idleId){
+<span class="nc" id="L41">        return ResultVo.success(messageService.getAllIdleMessage(idleId));</span>
+    }
+
+    @GetMapping(&quot;/my&quot;)
+    public ResultVo getAllMyMessage(@CookieValue(&quot;shUserId&quot;)
+                                        @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                        @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId){
+<span class="nc" id="L48">        return ResultVo.success(messageService.getAllMyMessage(Long.valueOf(shUserId)));</span>
+    }
+
+    @GetMapping(&quot;/delete&quot;)
+    public ResultVo deleteMessage(@CookieValue(&quot;shUserId&quot;)
+                                  @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                  @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId,
+                                  @RequestParam Long id){
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if(messageService.deleteMessage(id)){</span>
+<span class="nc" id="L57">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L59">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

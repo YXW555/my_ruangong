@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MerchantController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.controller</a> &gt; <span class="el_source">MerchantController.java</span></div><h1>MerchantController.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.controller;
+
+import com.second.hand.trading.server.dto.ResultVo;
+import com.second.hand.trading.server.entity.IdleItemModel;
+import com.second.hand.trading.server.entity.UserModel;
+import com.second.hand.trading.server.enums.ErrorMsg;
+import com.second.hand.trading.server.service.IdleItemService;
+import com.second.hand.trading.server.service.MerchantService;
+import com.second.hand.trading.server.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 经营性卖家管理接口
+ */
+@RestController
+@RequestMapping(&quot;/merchant/manage&quot;)
+<span class="fc" id="L23">public class MerchantController {</span>
+
+    @Autowired
+    private MerchantService merchantService;
+
+    @Autowired
+    private IdleItemService idleItemService;
+
+    @Autowired
+    private UserService userService;
+
+    /**
+     * 批量发布商品
+     */
+    @PostMapping(&quot;/batch-add&quot;)
+    public ResultVo batchAddItems(@CookieValue(&quot;shUserId&quot;)
+                                  @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                  @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId,
+                                  @RequestBody List&lt;IdleItemModel&gt; items) {
+        // 验证用户是否为经营性卖家
+<span class="nc" id="L43">        UserModel user = userService.getUser(Long.valueOf(shUserId));</span>
+<span class="nc bnc" id="L44" title="All 6 branches missed.">        if (user == null || user.getUserRole() == null || user.getUserRole() != 1) {</span>
+<span class="nc" id="L45">            return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+        }
+
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (merchantService.batchAddItems(Long.valueOf(shUserId), items)) {</span>
+<span class="nc" id="L49">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L51">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+
+    /**
+     * 更新商品库存
+     */
+    @PostMapping(&quot;/update-stock&quot;)
+    public ResultVo updateStock(@CookieValue(&quot;shUserId&quot;)
+                                @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId,
+                                @RequestParam Long idleId,
+                                @RequestParam Integer stock) {
+        // 验证用户是否为经营性卖家
+<span class="nc" id="L64">        UserModel user = userService.getUser(Long.valueOf(shUserId));</span>
+<span class="nc bnc" id="L65" title="All 6 branches missed.">        if (user == null || user.getUserRole() == null || user.getUserRole() != 1) {</span>
+<span class="nc" id="L66">            return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+        }
+
+        // 验证商品是否属于该用户
+<span class="nc" id="L70">        IdleItemModel item = idleItemService.getIdleItem(idleId);</span>
+<span class="nc bnc" id="L71" title="All 4 branches missed.">        if (item == null || !item.getUserId().equals(Long.valueOf(shUserId))) {</span>
+<span class="nc" id="L72">            return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+        }
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (merchantService.updateStock(idleId, stock)) {</span>
+<span class="nc" id="L76">            return ResultVo.success();</span>
+        }
+<span class="nc" id="L78">        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+    }
+
+    /**
+     * 获取店铺交易数据统计
+     */
+    @GetMapping(&quot;/statistics&quot;)
+    public ResultVo getShopStatistics(@CookieValue(&quot;shUserId&quot;)
+                                     @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                     @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId) {
+        // 验证用户是否为经营性卖家
+<span class="nc" id="L89">        UserModel user = userService.getUser(Long.valueOf(shUserId));</span>
+<span class="nc bnc" id="L90" title="All 6 branches missed.">        if (user == null || user.getUserRole() == null || user.getUserRole() != 1) {</span>
+<span class="nc" id="L91">            return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+        }
+
+<span class="nc" id="L94">        Map&lt;String, Object&gt; statistics = merchantService.getShopStatistics(Long.valueOf(shUserId));</span>
+<span class="nc" id="L95">        return ResultVo.success(statistics);</span>
+    }
+
+    /**
+     * 获取店铺所有商品（用于库存管理）
+     */
+    @GetMapping(&quot;/items&quot;)
+    public ResultVo getShopItems(@CookieValue(&quot;shUserId&quot;)
+                                 @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                 @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId) {
+        // 验证用户是否为经营性卖家
+<span class="nc" id="L106">        UserModel user = userService.getUser(Long.valueOf(shUserId));</span>
+<span class="nc bnc" id="L107" title="All 6 branches missed.">        if (user == null || user.getUserRole() == null || user.getUserRole() != 1) {</span>
+<span class="nc" id="L108">            return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+        }
+
+<span class="nc" id="L111">        List&lt;IdleItemModel&gt; items = merchantService.getShopItems(Long.valueOf(shUserId));</span>
+<span class="nc" id="L112">        return ResultVo.success(items);</span>
+    }
+
+    /**
+     * 获取店铺订单列表
+     */
+    @GetMapping(&quot;/orders&quot;)
+    public ResultVo getShopOrders(@CookieValue(&quot;shUserId&quot;)
+                                  @NotNull(message = &quot;登录异常 请重新登录&quot;)
+                                  @NotEmpty(message = &quot;登录异常 请重新登录&quot;) String shUserId) {
+        // 验证用户是否为经营性卖家
+<span class="nc" id="L123">        UserModel user = userService.getUser(Long.valueOf(shUserId));</span>
+<span class="nc bnc" id="L124" title="All 6 branches missed.">        if (user == null || user.getUserRole() == null || user.getUserRole() != 1) {</span>
+<span class="nc" id="L125">            return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);</span>
+        }
+
+<span class="nc" id="L128">        return ResultVo.success(merchantService.getShopOrders(Long.valueOf(shUserId)));</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -83,6 +83,14 @@
                                     @click="changeStatus(idleItemInfo,1)">
                                     重新上架
                                 </el-button>
+                                <el-button 
+                                    v-if="isMaster && idleItemInfo.idleStatus===1 && canPin" 
+                                    :type="idleItemInfo.isPinned ? 'warning' : 'primary'" 
+                                    :icon="idleItemInfo.isPinned ? 'el-icon-top' : 'el-icon-top'" 
+                                    round 
+                                    @click="handlePinItem">
+                                    {{idleItemInfo.isPinned ? '取消置顶' : '置顶商品'}}
+                                </el-button>
                             </div>
                         </div>
                     </div>
@@ -94,6 +102,13 @@
                     <div class="details-info">
                         <div class="details-info-title">
                             <span class="product-name">{{idleItemInfo.idleName}}</span>
+                            <el-tag 
+                                v-if="idleItemInfo.isPinned" 
+                                type="warning" 
+                                size="small" 
+                                class="pin-tag">
+                                <i class="el-icon-top"></i> 置顶中
+                            </el-tag>
                             <el-tag 
                                 v-if="idleItemInfo.idleLabel" 
                                 :type="getTagType(idleItemInfo.idleLabel)" 
@@ -264,10 +279,20 @@
                     '3': '运动相关',
                     '4': '图书笔记',
                     '5': '公告'
-                }
+                },
+                membershipStatus: null // 会员状态
             };
         },
+        computed: {
+            canPin() {
+                // 检查用户是否是会员且可以置顶
+                return this.membershipStatus && this.membershipStatus.isValid && this.membershipStatus.canPin;
+            }
+        },
         created(){
+            // 加载会员状态
+            this.loadMembershipStatus();
+            
             let id=this.$route.query.id;
             this.$api.getIdleItem({
                 id:id
@@ -405,6 +430,60 @@
                 }).catch(e=>{
 
                 })
+            },
+            loadMembershipStatus() {
+                this.$api.getMembershipStatus().then(res => {
+                    if (res.status_code === 1) {
+                        this.membershipStatus = res.data;
+                    }
+                }).catch(() => {
+                    // 静默失败
+                });
+            },
+            handlePinItem() {
+                if (!this.canPin) {
+                    this.$message.warning('您还不是会员，无法使用置顶功能！');
+                    this.$router.push('/membership');
+                    return;
+                }
+
+                if (this.idleItemInfo.isPinned) {
+                    // 取消置顶（这里需要后端支持取消置顶的接口）
+                    this.$message.info('取消置顶功能开发中，置顶将在到期后自动取消');
+                    return;
+                }
+
+                // 置顶商品
+                this.$confirm('置顶商品可以让您的商品在列表中优先显示，是否确认置顶？', '确认置顶', {
+                    confirmButtonText: '确认',
+                    cancelButtonText: '取消',
+                    type: 'info'
+                }).then(() => {
+                    // 默认置顶7天
+                    this.$api.pinItem({
+                        idleItemId: this.idleItemInfo.id,
+                        durationDays: 7
+                    }).then(res => {
+                        if (res.status_code === 1) {
+                            this.$message.success('置顶成功！');
+                            // 刷新商品信息
+                            this.$api.getIdleItem({
+                                id: this.idleItemInfo.id
+                            }).then(refreshRes => {
+                                if (refreshRes.data) {
+                                    refreshRes.data.pictureList = JSON.parse(refreshRes.data.pictureList);
+                                    this.idleItemInfo = refreshRes.data;
+                                }
+                            });
+                            // 刷新会员状态
+                            this.loadMembershipStatus();
+                        } else {
+                            this.$message.error(res.msg || '置顶失败');
+                        }
+                    }).catch(() => {
+                        this.$message.error('网络错误，请稍后重试');
+                    });
+                }).catch(() => {});
             },
             favoriteButton(idleItemInfo){
                 if(this.isFavorite){
@@ -643,6 +722,17 @@
 
     .product-tag {
         margin-left: 10px;
+    }
+    
+    .pin-tag {
+        margin-left: 10px;
+        background: #ffc107;
+        color: #fff;
+        border: none;
+    }
+    
+    .pin-tag i {
+        margin-right: 4px;
     }
 
     .product-location {

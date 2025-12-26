@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.second.hand.trading.server.dao.IdleItemPinDao">
+    <resultMap id="BaseResultMap" type="com.second.hand.trading.server.entity.IdleItemPinModel">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="idle_item_id" jdbcType="BIGINT" property="idleItemId"/>
+        <result column="user_id" jdbcType="BIGINT" property="userId"/>
+        <result column="pin_start_time" jdbcType="TIMESTAMP" property="pinStartTime"/>
+        <result column="pin_end_time" jdbcType="TIMESTAMP" property="pinEndTime"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, idle_item_id, user_id, pin_start_time, pin_end_time, create_time
+    </sql>
+
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.second.hand.trading.server.entity.IdleItemPinModel"
+            useGeneratedKeys="true">
+        insert into sh_idle_item_pin (idle_item_id, user_id, pin_start_time, pin_end_time, create_time)
+        values (#{idleItemId,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT},
+                #{pinStartTime,jdbcType=TIMESTAMP}, #{pinEndTime,jdbcType=TIMESTAMP},
+                #{createTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <select id="countActivePinsByUserId" resultType="int">
+        select count(*) from sh_idle_item_pin
+        where user_id = #{userId,jdbcType=BIGINT}
+        and pin_start_time &lt;= #{currentTime,jdbcType=TIMESTAMP}
+        and pin_end_time > #{currentTime,jdbcType=TIMESTAMP}
+    </select>
+
+    <select id="selectActivePinByItemId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sh_idle_item_pin
+        where idle_item_id = #{idleItemId,jdbcType=BIGINT}
+        and pin_start_time &lt;= #{currentTime,jdbcType=TIMESTAMP}
+        and pin_end_time > #{currentTime,jdbcType=TIMESTAMP}
+        limit 1
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sh_idle_item_pin
+        where user_id = #{userId,jdbcType=BIGINT}
+        order by create_time desc
+    </select>
+</mapper>
+

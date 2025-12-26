@@ -16,13 +16,33 @@
 			</div>
 		</div>
 
-		<!-- 平台交易数据概览 -->
+			<!-- 平台交易数据概览 -->
 		<el-card class="data-card overview-card" shadow="hover" v-loading="isLoading">
 			<div slot="header" class="card-header">
 				<span class="card-title"><i class="el-icon-data-line"></i> 平台交易数据概览</span>
 			</div>
 			<el-row :gutter="20" class="data-row">
 				<el-col :xs="24" :sm="12" :md="6" v-for="(item, index) in tradingDataList" :key="index">
+					<div class="stat-card" :class="item.class">
+						<div class="stat-icon">
+							<i :class="item.icon"></i>
+						</div>
+						<div class="stat-content">
+							<div class="stat-title">{{ item.title }}</div>
+							<div class="stat-value">{{ item.prefix }}{{ item.value }}</div>
+						</div>
+					</div>
+				</el-col>
+			</el-row>
+		</el-card>
+
+		<!-- 会员收入统计 -->
+		<el-card class="data-card membership-card" shadow="hover" v-loading="isLoading">
+			<div slot="header" class="card-header">
+				<span class="card-title"><i class="el-icon-wallet"></i> 会员收入统计</span>
+			</div>
+			<el-row :gutter="20" class="data-row">
+				<el-col :xs="24" :sm="12" :md="6" v-for="(item, index) in membershipDataList" :key="index">
 					<div class="stat-card" :class="item.class">
 						<div class="stat-icon">
 							<i :class="item.icon"></i>
@@ -103,6 +123,19 @@ export default {
 				newUsers: 0,
 				activeUsers: 0
 			},
+			pendingApplications: 0,
+			membershipRevenue: {
+				totalRevenue: 0,
+				basicRevenue: 0,
+				premiumRevenue: 0,
+				basicOrderCount: 0,
+				premiumOrderCount: 0
+			},
+			membershipCount: {
+				basicMemberCount: 0,
+				premiumMemberCount: 0,
+				totalMemberCount: 0
+			},
 			monthlyData: [],
 			categoryData: [],
 			monthlyChart: null,
@@ -139,6 +172,45 @@ export default {
 					icon: 'el-icon-wallet',
 					prefix: '¥',
 					class: 'purple-card'
+				},
+				{
+					title: '待审核商家',
+					value: this.pendingApplications,
+					icon: 'el-icon-s-check',
+					prefix: '',
+					class: 'red-card'
+				}
+			];
+		},
+		membershipDataList() {
+			return [
+				{
+					title: '会员总收入',
+					value: this.membershipRevenue.totalRevenue,
+					icon: 'el-icon-wallet',
+					prefix: '¥',
+					class: 'green-card'
+				},
+				{
+					title: '基础会员收入',
+					value: this.membershipRevenue.basicRevenue,
+					icon: 'el-icon-coin',
+					prefix: '¥',
+					class: 'blue-card'
+				},
+				{
+					title: '高级会员收入',
+					value: this.membershipRevenue.premiumRevenue,
+					icon: 'el-icon-bank-card',
+					prefix: '¥',
+					class: 'purple-card'
+				},
+				{
+					title: '会员总数',
+					value: this.membershipCount.totalMemberCount,
+					icon: 'el-icon-user-solid',
+					prefix: '',
+					class: 'orange-card'
 				}
 			];
 		},
@@ -187,8 +259,14 @@ export default {
 				// 获取月度交易统计
 				this.$api.getMonthlyStatistics({}),
 				// 获取商品分类统计
-				this.$api.getCategoryStatistics({})
-			]).then(([tradingRes, userRes, monthlyRes, categoryRes]) => {
+				this.$api.getCategoryStatistics({}),
+				// 获取待审核商家数量
+				this.$api.adminGetPendingApplicationCount({}),
+				// 获取会员收入统计
+				this.$api.getMembershipRevenueStats({}),
+				// 获取会员数量统计
+				this.$api.getMembershipCountStats({})
+			]).then(([tradingRes, userRes, monthlyRes, categoryRes, pendingAppRes, revenueRes, countRes]) => {
 				// 处理平台交易数据
 				if (tradingRes.status_code === 1) {
 					this.tradingData = tradingRes.data;
@@ -208,6 +286,21 @@ export default {
 				if (categoryRes.status_code === 1) {
 					this.categoryData = categoryRes.data;
 				}
+
+                // 待审核商家数量
+                if (pendingAppRes.status_code === 1) {
+                    this.pendingApplications = pendingAppRes.data || 0;
+                }
+
+                // 会员收入统计
+                if (revenueRes.status_code === 1) {
+                    this.membershipRevenue = revenueRes.data;
+                }
+
+                // 会员数量统计
+                if (countRes.status_code === 1) {
+                    this.membershipCount = countRes.data;
+                }
 				
 				// 延迟初始化图表，确保DOM已经渲染
 				this.$nextTick(() => {
@@ -572,6 +665,10 @@ export default {
 	background: linear-gradient(to right, #a18cd1, #fbc2eb);
 }
 
+.red-card::before {
+    background: linear-gradient(to right, #f56c6c, #f78989);
+}
+
 .stat-icon {
 	width: 60px;
 	height: 60px;
@@ -601,6 +698,11 @@ export default {
 .purple-card .stat-icon {
 	background: rgba(161, 140, 209, 0.15);
 	color: #a18cd1;
+}
+
+.red-card .stat-icon {
+    background: rgba(245, 108, 108, 0.15);
+    color: #f56c6c;
 }
 
 .stat-icon i {
@@ -637,6 +739,10 @@ export default {
 
 .purple-card .stat-value {
 	color: #a18cd1;
+}
+
+.red-card .stat-value {
+    color: #f56c6c;
 }
 
 /* 图表样式 */

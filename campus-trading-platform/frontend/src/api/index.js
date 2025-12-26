@@ -434,6 +434,132 @@ const api = {
             params: query
         });
     },
+
+    // 商家认证功能   MerchantApplicationController
+    submitMerchantApplication(data) {
+        return request({
+            url: '/merchant/apply',
+            method: 'post',
+            data: data
+        });
+    },
+    getMyMerchantApplication(query) {
+        return request({
+            url: '/merchant/my-application',
+            method: 'get',
+            params: query
+        });
+    },
+    adminGetPendingApplicationCount(query) {
+        return request({
+            url: '/merchant/admin/pending-count',
+            method: 'get',
+            params: query
+        });
+    },
+    adminGetAllApplications(query) {
+        return request({
+            url: '/merchant/admin/list',
+            method: 'get',
+            params: query
+        });
+    },
+    adminReviewApplication(data) {
+        return request({
+            url: '/merchant/admin/review',
+            method: 'post',
+            params: data
+        });
+    },
+
+    // 经营性卖家管理功能   MerchantController
+    batchAddItems(data) {
+        return request({
+            url: '/merchant/manage/batch-add',
+            method: 'post',
+            data: data
+        });
+    },
+    updateStock(data) {
+        return request({
+            url: '/merchant/manage/update-stock',
+            method: 'post',
+            data: data
+        });
+    },
+    getShopStatistics(query) {
+        return request({
+            url: '/merchant/manage/statistics',
+            method: 'get',
+            params: query
+        });
+    },
+    getShopItems(query) {
+        return request({
+            url: '/merchant/manage/items',
+            method: 'get',
+            params: query
+        });
+    },
+    getShopOrders(query) {
+        return request({
+            url: '/merchant/manage/orders',
+            method: 'get',
+            params: query
+        });
+    },
+
+    // 会员功能   MembershipController
+    createMembershipOrder(data) {
+        return request({
+            url: '/membership/create-order',
+            method: 'post',
+            params: data
+        });
+    },
+    activateMembership(data) {
+        return request({
+            url: '/membership/activate',
+            method: 'post',
+            params: data
+        });
+    },
+    getMembershipStatus(query) {
+        return request({
+            url: '/membership/status',
+            method: 'get',
+            params: query
+        });
+    },
+    getMembershipOrders(query) {
+        return request({
+            url: '/membership/orders',
+            method: 'get',
+            params: query
+        });
+    },
+    pinItem(data) {
+        return request({
+            url: '/idle/pin',
+            method: 'post',
+            params: data
+        });
+    },
+    // 管理员：会员统计
+    getMembershipRevenueStats(query) {
+        return request({
+            url: '/membership/admin/revenue-stats',
+            method: 'get',
+            params: query
+        });
+    },
+    getMembershipCountStats(query) {
+        return request({
+            url: '/membership/admin/count-stats',
+            method: 'get',
+            params: query
+        });
+    },
 };
 
 

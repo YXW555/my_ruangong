@@ -31,6 +31,29 @@
                                 <div class="user-info-details-text-edit">
                                     <el-button type="primary" icon="el-icon-edit" round @click="userInfoDialogVisible = true">编辑个人信息</el-button>
                                     <el-button type="warning" icon="el-icon-location" round @click="eidtAddress=true">管理收货地址</el-button>
+                                    <el-button 
+                                        v-if="userInfo.userRole !== 1" 
+                                        type="success" 
+                                        icon="el-icon-s-shop" 
+                                        round 
+                                        @click="goToMerchantApply">
+                                        商家认证
+                                    </el-button>
+                                    <el-button 
+                                        v-if="userInfo.userRole === 1" 
+                                        type="info" 
+                                        icon="el-icon-s-operation" 
+                                        round 
+                                        @click="goToMerchantManage">
+                                        店铺管理
+                                    </el-button>
+                                    <el-button 
+                                        type="warning" 
+                                        icon="el-icon-star-on" 
+                                        round 
+                                        @click="goToMembership">
+                                        开通会员
+                                    </el-button>
                                 </div>
                             </div>
                         </div>
@@ -337,24 +360,13 @@
                     avatar: "",
                     nickname: "",
                     signInTime: "",
+                    userRole: 0,
                 },
                 addressData: []
             };
         },
         created() {
-            if (!this.$globalData.userInfo.nickname) {
-                this.$api.getUserInfo().then(res => {
-                    if (res.status_code === 1) {
-                        res.data.signInTime = res.data.signInTime.substring(0, 10);
-                        console.log(res.data);
-                        this.$globalData.userInfo = res.data;
-                        this.userInfo = this.$globalData.userInfo;
-                    }
-                })
-            } else {
-                this.userInfo = this.$globalData.userInfo;
-                console.log(this.userInfo);
-            }
+            this.loadUserInfo();
             this.getAddressData();
             this.getIdleItemData();
             this.getMyOrder();
@@ -362,6 +374,20 @@
             this.getMyFavorite();
         },
         methods: {
+            loadUserInfo() {
+                this.$api.getUserInfo().then(res => {
+                    if (res.status_code === 1) {
+                        res.data.signInTime = res.data.signInTime.substring(0, 10);
+                        // 强制更新全局用户信息
+                        this.$globalData.userInfo = res.data;
+                        // 更新当前页面的用户信息
+                        this.userInfo = res.data;
+                    }
+                }).catch(() => {
+                    // 如果获取失败，尝试从全局数据加载，以防万一
+                    this.userInfo = this.$globalData.userInfo;
+                });
+            },
             getEmptyIcon(tabName) {
                 const icons = {
                     '1': 'el-icon-upload',
@@ -387,16 +413,18 @@
                     console.log('getMyFavorite',res);
                     if (res.status_code === 1){
                         for (let i = 0; i < res.data.length; i++) {
-                            let pictureList = JSON.parse(res.data[i].idleItem.pictureList);
-                            this.dataList[2].push({
-                                favoriteId:res.data[i].id,
-                                id:res.data[i].idleItem.id,
-                                imgUrl:pictureList.length > 0 ? pictureList[0] : '',
-                                idleName:res.data[i].idleItem.idleName,
-                                idleDetails:res.data[i].idleItem.idleDetails,
-                                timeStr:res.data[i].createTime.substring(0, 10) + " " + res.data[i].createTime.substring(11, 19),
-                                idlePrice:res.data[i].idleItem.idlePrice
-                            });
+                            if (res.data[i].idleItem && res.data[i].idleItem.pictureList) {
+                                let pictureList = JSON.parse(res.data[i].idleItem.pictureList);
+                                this.dataList[2].push({
+                                    favoriteId:res.data[i].id,
+                                    id:res.data[i].idleItem.id,
+                                    imgUrl:pictureList.length > 0 ? pictureList[0] : '',
+                                    idleName:res.data[i].idleItem.idleName,
+                                    idleDetails:res.data[i].idleItem.idleDetails,
+                                    timeStr:res.data[i].createTime.substring(0, 10) + " " + res.data[i].createTime.substring(11, 19),
+                                    idlePrice:res.data[i].idleItem.idlePrice
+                                });
+                            }
                         }
                     }
                 })
@@ -406,16 +434,18 @@
                     if (res.status_code === 1){
                         console.log('getMySoldIdle',res.data);
                         for (let i = 0; i < res.data.length; i++) {
-                            let pictureList = JSON.parse(res.data[i].idleItem.pictureList);
-                            this.dataList[3].push({
-                                id:res.data[i].id,
-                                imgUrl:pictureList.length > 0 ? pictureList[0] : '',
-                                idleName:res.data[i].idleItem.idleName,
-                                idleDetails:res.data[i].idleItem.idleDetails,
-                                timeStr:res.data[i].createTime.substring(0, 10) + " " + res.data[i].createTime.substring(11, 19),
-                                idlePrice:res.data[i].orderPrice,
-                                orderStatus:res.data[i].orderStatus
-                            });
+                            if (res.data[i].idleItem && res.data[i].idleItem.pictureList) {
+                                let pictureList = JSON.parse(res.data[i].idleItem.pictureList);
+                                this.dataList[3].push({
+                                    id:res.data[i].id,
+                                    imgUrl:pictureList.length > 0 ? pictureList[0] : '',
+                                    idleName:res.data[i].idleItem.idleName,
+                                    idleDetails:res.data[i].idleItem.idleDetails,
+                                    timeStr:res.data[i].createTime.substring(0, 10) + " " + res.data[i].createTime.substring(11, 19),
+                                    idlePrice:res.data[i].orderPrice,
+                                    orderStatus:res.data[i].orderStatus
+                                });
+                            }
                         }
                     }
                 })
@@ -425,16 +455,18 @@
                     if (res.status_code === 1){
                         console.log('getMyOrder',res.data);
                         for (let i = 0; i < res.data.length; i++) {
-                            let pictureList = JSON.parse(res.data[i].idleItem.pictureList);
-                            this.dataList[4].push({
-                                id:res.data[i].id,
-                                imgUrl:pictureList.length > 0 ? pictureList[0] : '',
-                                idleName:res.data[i].idleItem.idleName,
-                                idleDetails:res.data[i].idleItem.idleDetails,
-                                timeStr:res.data[i].createTime.substring(0, 10) + " " + res.data[i].createTime.substring(11, 19),
-                                idlePrice:res.data[i].orderPrice,
-                                orderStatus:res.data[i].orderStatus
-                            });
+                            if (res.data[i].idleItem && res.data[i].idleItem.pictureList) {
+                                let pictureList = JSON.parse(res.data[i].idleItem.pictureList);
+                                this.dataList[4].push({
+                                    id:res.data[i].id,
+                                    imgUrl:pictureList.length > 0 ? pictureList[0] : '',
+                                    idleName:res.data[i].idleItem.idleName,
+                                    idleDetails:res.data[i].idleItem.idleDetails,
+                                    timeStr:res.data[i].createTime.substring(0, 10) + " " + res.data[i].createTime.substring(11, 19),
+                                    idlePrice:res.data[i].orderPrice,
+                                    orderStatus:res.data[i].orderStatus
+                                });
+                            }
                         }
                     }
                 })
@@ -704,6 +736,15 @@
                     defaultFlag: false
                 };
                 this.selectedOptions = [];
+            },
+            goToMerchantApply() {
+                this.$router.push('/merchant/apply');
+            },
+            goToMerchantManage() {
+                this.$router.push('/merchant/manage');
+            },
+            goToMembership() {
+                this.$router.push('/membership');
             }
         }
     }

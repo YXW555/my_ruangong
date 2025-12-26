@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IdleItemPinModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">com.second.hand.trading.server.entity</a> &gt; <span class="el_source">IdleItemPinModel.java</span></div><h1>IdleItemPinModel.java</h1><pre class="source lang-java linenums">package com.second.hand.trading.server.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * 商品置顶记录实体类
+ */
+<span class="nc" id="L9">public class IdleItemPinModel implements Serializable {</span>
+    private Long id;
+    private Long idleItemId;
+    private Long userId;
+    private Date pinStartTime;
+    private Date pinEndTime;
+    private Date createTime;
+
+    private static final long serialVersionUID = 1L;
+
+    public Long getId() {
+<span class="nc" id="L20">        return id;</span>
+    }
+
+    public void setId(Long id) {
+<span class="nc" id="L24">        this.id = id;</span>
+<span class="nc" id="L25">    }</span>
+
+    public Long getIdleItemId() {
+<span class="nc" id="L28">        return idleItemId;</span>
+    }
+
+    public void setIdleItemId(Long idleItemId) {
+<span class="nc" id="L32">        this.idleItemId = idleItemId;</span>
+<span class="nc" id="L33">    }</span>
+
+    public Long getUserId() {
+<span class="nc" id="L36">        return userId;</span>
+    }
+
+    public void setUserId(Long userId) {
+<span class="nc" id="L40">        this.userId = userId;</span>
+<span class="nc" id="L41">    }</span>
+
+    public Date getPinStartTime() {
+<span class="nc" id="L44">        return pinStartTime;</span>
+    }
+
+    public void setPinStartTime(Date pinStartTime) {
+<span class="nc" id="L48">        this.pinStartTime = pinStartTime;</span>
+<span class="nc" id="L49">    }</span>
+
+    public Date getPinEndTime() {
+<span class="nc" id="L52">        return pinEndTime;</span>
+    }
+
+    public void setPinEndTime(Date pinEndTime) {
+<span class="nc" id="L56">        this.pinEndTime = pinEndTime;</span>
+<span class="nc" id="L57">    }</span>
+
+    public Date getCreateTime() {
+<span class="nc" id="L60">        return createTime;</span>
+    }
+
+    public void setCreateTime(Date createTime) {
+<span class="nc" id="L64">        this.createTime = createTime;</span>
+<span class="nc" id="L65">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

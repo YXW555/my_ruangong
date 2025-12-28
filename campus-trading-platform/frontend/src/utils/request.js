@@ -5,8 +5,8 @@ import axios from 'axios';
 // 使用 /api 前缀，通过 nginx 反向代理到后端
 // 生产环境：通过 nginx 代理 /api -> backend:8080
 // 开发环境：直接使用 localhost:8080
-const baseURL = process.env.VUE_APP_API_BASE_URL || 
-                (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8080');
+// 默认使用 /api（生产环境），除非明确指定了 VUE_APP_API_BASE_URL
+const baseURL = process.env.VUE_APP_API_BASE_URL || '/api';
 
 const service = axios.create({
     timeout: 5000,

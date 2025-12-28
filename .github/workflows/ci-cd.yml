@@ -175,9 +175,75 @@ jobs:
         run: |
           scp -r campus-trading-platform/deploy/docker-compose.prod.yml ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/opt/campus-trading-platform/docker-compose.yml
 
+      - name: Upgrade Docker on server
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+            # 检查当前 Docker 版本
+            echo "Checking current Docker version..."
+            docker --version || echo "Docker not found"
+            
+            # 使用官方脚本升级 Docker（推荐方法）
+            echo "Upgrading Docker using official installation script..."
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            sudo sh get-docker.sh
+            
+            # 安装 Docker Compose V2 (作为插件)
+            echo "Installing Docker Compose V2..."
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq docker-compose-plugin || {
+              echo "docker-compose-plugin installation failed, trying alternative method..."
+              sudo apt-get install -y -qq docker-compose
+            }
+            
+            # 启动并启用 Docker 服务
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            
+            # 将当前用户添加到 docker 组（避免使用 sudo）
+            sudo usermod -aG docker $USER || true
+            
+            # 验证安装
+            echo "Verifying Docker installation..."
+            sudo docker --version
+            sudo docker compose version || sudo docker-compose --version || echo "docker-compose not found"
+            
+            # 清理
+            rm -f get-docker.sh
+          EOF
+
       - name: Deploy to server
         run: |
-          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} && cd /opt/campus-trading-platform && docker-compose pull && docker-compose down && docker-compose up -d && docker image prune -f && docker-compose ps"
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} bash -s << DEPLOY_EOF
+            export DOCKER_USERNAME='${{ secrets.DOCKER_USERNAME }}'
+            cd /opt/campus-trading-platform
+            
+            # 尝试使用 docker compose (V2)，如果失败则使用 docker-compose (V1)
+            if command -v docker &> /dev/null && sudo docker compose version &> /dev/null 2>&1; then
+              DOCKER_CMD="sudo docker compose"
+            elif command -v docker-compose &> /dev/null; then
+              DOCKER_CMD="sudo docker-compose"
+            else
+              DOCKER_CMD="sudo docker compose"
+            fi
+            
+            echo "Using: \$DOCKER_CMD"
+            echo "DOCKER_USERNAME: \$DOCKER_USERNAME"
+            
+            # 拉取最新镜像
+            \$DOCKER_CMD pull
+            
+            # 停止旧容器
+            \$DOCKER_CMD down
+            
+            # 启动新容器
+            \$DOCKER_CMD up -d
+            
+            # 清理未使用的镜像
+            sudo docker image prune -f
+            
+            # 查看服务状态
+            \$DOCKER_CMD ps
+          DEPLOY_EOF
 
       - name: Verify deployment
         run: |

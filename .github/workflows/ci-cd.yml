@@ -173,7 +173,10 @@ jobs:
 
       - name: Copy docker-compose file to server
         run: |
-          scp -r campus-trading-platform/deploy/docker-compose.prod.yml ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/opt/campus-trading-platform/docker-compose.yml
+          # 先替换 docker-compose.prod.yml 中的占位符
+          sed "s/yourusername/${{ secrets.DOCKER_USERNAME }}/g" campus-trading-platform/deploy/docker-compose.prod.yml > /tmp/docker-compose.yml
+          # 然后复制到服务器
+          scp /tmp/docker-compose.yml ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/opt/campus-trading-platform/docker-compose.yml
 
       - name: Deploy to server
         run: |

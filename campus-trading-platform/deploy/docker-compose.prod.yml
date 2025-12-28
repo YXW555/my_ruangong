@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: campus-trading-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123456}
+      MYSQL_DATABASE: second_hand_trading
+      MYSQL_USER: trading_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-trading123456}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: always
+    networks:
+      - trading-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis:
+    image: redis:6.2
+    container_name: campus-trading-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    networks:
+      - trading-network
+    command: redis-server --appendonly yes
+
+  backend:
+    image: ${DOCKER_USERNAME:-yourusername}/campus-trading-backend:latest
+    container_name: campus-trading-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/second_hand_trading?serverTimezone=UTC&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=trading_user
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD:-trading123456}
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - USER_FILE_PATH=/opt/upload
+    depends_on:
+      - mysql
+      - redis
+    restart: always
+    networks:
+      - trading-network
+    volumes:
+      - upload_data:/opt/upload
+
+  frontend:
+    image: ${DOCKER_USERNAME:-yourusername}/campus-trading-frontend:latest
+    container_name: campus-trading-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - trading-network
+
+volumes:
+  mysql_data:
+  redis_data:
+  upload_data:
+
+networks:
+  trading-network:
+    driver: bridge
+

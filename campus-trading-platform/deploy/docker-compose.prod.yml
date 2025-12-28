@@ -41,6 +41,7 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - USER_FILE_PATH=/opt/upload
+      - BASE_URL=/api
     depends_on:
       - mysql
       - redis

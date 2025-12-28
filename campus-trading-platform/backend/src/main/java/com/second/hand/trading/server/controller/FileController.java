@@ -36,7 +36,8 @@ public class FileController {
         String fileName= uuid+ multipartFile.getOriginalFilename();
         try {
             if (fileService.uploadFile(multipartFile,fileName)) {
-                return ResultVo.success(baseUrl+"/image?imageName="+fileName);
+                // 返回相对路径，通过 Nginx 代理访问
+                return ResultVo.success("/api/image?imageName="+fileName);
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());

@@ -9,7 +9,8 @@ COPY .docker/maven-settings.xml /root/.m2/settings.xml
 
 # 复制 pom.xml 并下载依赖（利用 Docker 缓存）
 COPY pom.xml .
-RUN mvn dependency:go-offline -B -s /root/.m2/settings.xml
+# 如果 go-offline 失败，继续构建（依赖会在编译时下载）
+RUN mvn dependency:go-offline -B -s /root/.m2/settings.xml || echo "依赖预下载失败，将在编译时下载"
 
 # 复制源代码并构建
 COPY src ./src

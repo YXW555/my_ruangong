@@ -63,9 +63,8 @@ jobs:
       - name: Run tests
         working-directory: ./campus-trading-platform/backend
         env:
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/second_hand_trading?serverTimezone=UTC&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
-          SPRING_DATASOURCE_USERNAME: root
-          SPRING_DATASOURCE_PASSWORD: root
+          # 不设置数据库环境变量，让测试使用 application-test.properties 中的 H2 配置
+          # Redis 配置保留，因为我们在 services 中配置了 Redis
           SPRING_REDIS_HOST: localhost
           SPRING_REDIS_PORT: 6379
         run: mvn test -B

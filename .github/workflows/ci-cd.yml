@@ -245,9 +245,39 @@ jobs:
             \$DOCKER_CMD ps
           DEPLOY_EOF
 
+      - name: Check deployment status
+        run: |
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'STATUS_EOF'
+            cd /opt/campus-trading-platform
+            
+            # 确定使用的 docker compose 命令
+            if command -v docker &> /dev/null && sudo docker compose version &> /dev/null 2>&1; then
+              DOCKER_CMD="sudo docker compose"
+            else
+              DOCKER_CMD="sudo docker-compose"
+            fi
+            
+            echo "=== 容器状态 ==="
+            \$DOCKER_CMD ps
+            
+            echo -e "\n=== 后端日志（最后30行）==="
+            \$DOCKER_CMD logs --tail=30 backend || echo "无法获取后端日志"
+            
+            echo -e "\n=== 前端日志（最后30行）==="
+            \$DOCKER_CMD logs --tail=30 frontend || echo "无法获取前端日志"
+            
+            echo -e "\n=== MySQL 日志（最后20行）==="
+            \$DOCKER_CMD logs --tail=20 mysql || echo "无法获取 MySQL 日志"
+          STATUS_EOF
+
       - name: Verify deployment
         run: |
-          sleep 10
-          curl -f http://${{ secrets.HOST }}:8080/actuator/health || echo "Backend health check failed"
-          curl -f http://${{ secrets.HOST }} || echo "Frontend health check failed"
+          echo "等待服务启动..."
+          sleep 15
+          
+          echo "检查后端服务..."
+          curl -f http://${{ secrets.HOST }}:8080 || echo "后端服务不可用"
+          
+          echo "检查前端服务..."
+          curl -f http://${{ secrets.HOST }} || echo "前端服务不可用"
 

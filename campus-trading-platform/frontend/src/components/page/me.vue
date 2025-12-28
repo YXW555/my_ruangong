@@ -8,7 +8,7 @@
                     <div class="user-info-container">
                         <div class="user-info-details">
                             <el-upload
-                                    action="http://localhost:8080/file/"
+                                    action="/file/"
                                     :on-success="fileHandleSuccess"
                                     :file-list="imgFileList"
                                     :show-file-list="false"

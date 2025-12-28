@@ -229,7 +229,7 @@
                                                 </el-form-item>
                                                 <el-form-item label="商品图片">
                                                     <el-upload
-                                                        action="http://localhost:8080/file/"
+                                                        action="/file/"
                                                         :on-success="(res) => handleBatchImageSuccess(res, index)"
                                                         :file-list="item.pictureList || []"
                                                         list-type="picture-card"

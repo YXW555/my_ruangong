@@ -22,8 +22,8 @@ WORKDIR /usr/share/nginx/html
 # 复制构建产物
 COPY --from=build /app/dist .
 
-# 复制 nginx 配置（可选）
-# COPY nginx.conf /etc/nginx/nginx.conf
+# 复制 nginx 配置
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 暴露端口
 EXPOSE 80

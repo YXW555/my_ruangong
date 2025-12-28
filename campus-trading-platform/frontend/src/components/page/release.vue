@@ -111,7 +111,7 @@
                             </div>
                             
                             <el-upload
-                                action="http://localhost:8080/file/"
+                                action="/file/"
                                 :on-preview="fileHandlePreview"
                                 :on-remove="fileHandleRemove"
                                 :on-success="fileHandleSuccess"

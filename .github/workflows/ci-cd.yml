@@ -177,24 +177,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
-            cd /opt/campus-trading-platform
-            
-            # 拉取最新镜像
-            docker-compose pull
-            
-            # 停止旧容器
-            docker-compose down
-            
-            # 启动新容器
-            docker-compose up -d
-            
-            # 清理未使用的镜像
-            docker image prune -f
-            
-            # 查看服务状态
-            docker-compose ps
-          EOF
+          ssh ${{ secrets.USERNAME }}@${{ secrets.HOST }} "export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }} && cd /opt/campus-trading-platform && docker-compose pull && docker-compose down && docker-compose up -d && docker image prune -f && docker-compose ps"
 
       - name: Verify deployment
         run: |

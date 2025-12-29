@@ -257,8 +257,27 @@ public class OrderServiceImpl implements OrderService {
         return new PageVo<>(list,count);
     }
 
+    /**
+     * 删除订单（管理员功能）
+     * 注意：只有未支付或已取消的订单才能删除，已支付的订单不能删除
+     * @param id 订单ID
+     * @return 是否成功
+     */
     public boolean deleteOrder(long id){
-        return orderDao.deleteByPrimaryKey(id)==1;
+        OrderModel order = orderDao.selectByPrimaryKey(id);
+        if (order == null) {
+            return false;
+        }
+        
+        // 只有未支付（paymentStatus=0）或已取消（orderStatus=4）的订单才能删除
+        // 已支付的订单不能删除，需要先退款
+        if (order.getPaymentStatus() != null && order.getPaymentStatus() == 1) {
+            // 已支付的订单不能直接删除
+            return false;
+        }
+        
+        // 可以删除的订单：未支付或已取消
+        return orderDao.deleteByPrimaryKey(id) == 1;
     }
 
     /**

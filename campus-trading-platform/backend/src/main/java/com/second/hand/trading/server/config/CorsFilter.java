@@ -24,8 +24,8 @@ public class CorsFilter implements Filter {
 
         String origin = request.getHeader("Origin");
         
-        // 允许的源
-        if (origin != null && (origin.equals("http://localhost:8081") || origin.equals("http://localhost:8082"))) {
+        // 允许的源（允许所有本地开发端口）
+        if (origin != null && (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))) {
             response.setHeader("Access-Control-Allow-Origin", origin);
         }
         

@@ -14,17 +14,15 @@ module.exports = {
         ]
     },
     devServer: {
-        port: 8080,
-    },
-    // devServer: {
-    //     proxy: {
-    //         '/api':{
-    //             target:'http://jsonplaceholder.typicode.com',
-    //             changeOrigin:true,
-    //             pathRewrite:{
-    //                 '/api':''
-    //             }
-    //         }
-    //     }
-    // }
+        port: 8082,  // 保持你现在的端口
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8080',  // IDEA 中直接运行的后端（Spring Boot 默认 8080）
+                changeOrigin: true,
+                pathRewrite: {
+                    '^/api': ''  // 去掉 /api 前缀，直接转发到后端
+                }
+            }
+        }
+    }
 };

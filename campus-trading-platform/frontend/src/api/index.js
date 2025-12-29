@@ -560,6 +560,48 @@ const api = {
             params: query
         });
     },
+
+    // 交易纠纷功能   DisputeController
+    // 用户申请纠纷
+    applyDispute(data) {
+        return request({
+            url: '/dispute/apply',
+            method: 'post',
+            data: data
+        });
+    },
+    // 用户查看我的纠纷
+    getMyDisputes(query) {
+        return request({
+            url: '/dispute/my',
+            method: 'get',
+            params: query
+        });
+    },
+    // 用户查看纠纷详情
+    getDisputeInfo(query) {
+        return request({
+            url: '/dispute/info',
+            method: 'get',
+            params: query
+        });
+    },
+    // 管理员获取纠纷列表
+    adminGetDisputeList(query) {
+        return request({
+            url: '/dispute/admin/list',
+            method: 'get',
+            params: query
+        });
+    },
+    // 管理员处理纠纷
+    adminHandleDispute(data) {
+        return request({
+            url: '/dispute/admin/handle',
+            method: 'post',
+            data: data
+        });
+    },
 };
 
 

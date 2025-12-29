@@ -44,6 +44,10 @@
                             </el-badge>
                             <span slot="title">商家认证审核</span>
                         </el-menu-item>
+                        <el-menu-item index="6">
+                            <i class="el-icon-warning-outline"></i>
+                            <span slot="title">交易纠纷管理</span>
+                        </el-menu-item>
 					</el-menu>
 				</el-aside>
 				<el-main>
@@ -52,6 +56,7 @@
 					<userList v-if="mode == 3"></userList>
 					<DataStatistics v-if="mode == 4"></DataStatistics>
 					<MerchantApplicationAdmin v-if="mode == 5"></MerchantApplicationAdmin>
+					<DisputeManagement v-if="mode == 6"></DisputeManagement>
 				</el-main>
 			</el-container>
 		</el-container>
@@ -69,6 +74,7 @@
     import userList from '../common/userList.vue'
     import DataStatistics from '../common/DataStatistics.vue'
     import MerchantApplicationAdmin from '../common/MerchantApplicationAdmin.vue'
+    import DisputeManagement from '../common/DisputeManagement.vue'
 
     export default {
         name: "platform-admin",
@@ -79,6 +85,7 @@
             userList,
             DataStatistics,
             MerchantApplicationAdmin,
+            DisputeManagement,
         },
         data() {
             return {

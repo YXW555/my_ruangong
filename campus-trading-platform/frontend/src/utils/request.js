@@ -2,10 +2,10 @@ import axios from 'axios';
 
 /* axios功能封装  */
 
-// 使用 /api 前缀，通过 nginx 反向代理到后端
-// 生产环境：通过 nginx 代理 /api -> backend:8080
-// 开发环境：直接使用 localhost:8080
-// 默认使用 /api（生产环境），除非明确指定了 VUE_APP_API_BASE_URL
+// 使用 /api 前缀，通过代理访问后端
+// 开发环境：vue.config.js 的代理将 /api 转发到 localhost:8081
+// 生产环境：Nginx 将 /api 代理到 backend:8080
+// 这样开发和生产环境使用相同的路径，代码统一
 const baseURL = process.env.VUE_APP_API_BASE_URL || '/api';
 
 const service = axios.create({

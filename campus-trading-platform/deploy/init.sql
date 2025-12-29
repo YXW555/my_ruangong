@@ -141,6 +141,10 @@ CREATE TABLE `sh_order_address`  (
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '订单地址表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
+-- Table structure for sh_dispute
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for sh_user
 -- ----------------------------
 DROP TABLE IF EXISTS `sh_user`;

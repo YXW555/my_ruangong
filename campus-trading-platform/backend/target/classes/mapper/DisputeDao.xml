@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.second.hand.trading.server.dao.DisputeDao">
+  <resultMap id="BaseResultMap" type="com.second.hand.trading.server.entity.DisputeModel">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="order_id" jdbcType="BIGINT" property="orderId" />
+    <result column="applicant_id" jdbcType="BIGINT" property="applicantId" />
+    <result column="dispute_type" jdbcType="TINYINT" property="disputeType" />
+    <result column="dispute_reason" jdbcType="VARCHAR" property="disputeReason" />
+    <result column="evidence_images" jdbcType="VARCHAR" property="evidenceImages" />
+    <result column="dispute_status" jdbcType="TINYINT" property="disputeStatus" />
+    <result column="handle_result" jdbcType="TINYINT" property="handleResult" />
+    <result column="handle_description" jdbcType="VARCHAR" property="handleDescription" />
+    <result column="handler_id" jdbcType="BIGINT" property="handlerId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="handle_time" jdbcType="TIMESTAMP" property="handleTime" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    id, order_id, applicant_id, dispute_type, dispute_reason, evidence_images, 
+    dispute_status, handle_result, handle_description, handler_id, create_time, handle_time
+  </sql>
+
+  <insert id="insert" parameterType="com.second.hand.trading.server.entity.DisputeModel" useGeneratedKeys="true" keyProperty="id">
+    insert into sh_dispute (order_id, applicant_id, dispute_type, dispute_reason, 
+      evidence_images, dispute_status, create_time)
+    values (#{orderId,jdbcType=BIGINT}, #{applicantId,jdbcType=BIGINT}, 
+      #{disputeType,jdbcType=TINYINT}, #{disputeReason,jdbcType=VARCHAR}, 
+      #{evidenceImages,jdbcType=VARCHAR}, #{disputeStatus,jdbcType=TINYINT}, 
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_dispute
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_dispute
+    where order_id = #{orderId,jdbcType=BIGINT}
+    order by create_time desc
+    limit 1
+  </select>
+
+  <select id="selectByApplicantId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_dispute
+    where applicant_id = #{applicantId,jdbcType=BIGINT}
+    order by create_time desc
+  </select>
+
+  <select id="selectAll" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_dispute
+    <where>
+      <if test="status != null">
+        dispute_status = #{status,jdbcType=TINYINT}
+      </if>
+    </where>
+    order by create_time desc
+    limit #{begin}, #{nums}
+  </select>
+
+  <select id="countAll" resultType="int">
+    select count(*) from sh_dispute
+    <where>
+      <if test="status != null">
+        dispute_status = #{status,jdbcType=TINYINT}
+      </if>
+    </where>
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.second.hand.trading.server.entity.DisputeModel">
+    update sh_dispute
+    <set>
+      <if test="disputeStatus != null">
+        dispute_status = #{disputeStatus,jdbcType=TINYINT},
+      </if>
+      <if test="handleResult != null">
+        handle_result = #{handleResult,jdbcType=TINYINT},
+      </if>
+      <if test="handleDescription != null">
+        handle_description = #{handleDescription,jdbcType=VARCHAR},
+      </if>
+      <if test="handlerId != null">
+        handler_id = #{handlerId,jdbcType=BIGINT},
+      </if>
+      <if test="handleTime != null">
+        handle_time = #{handleTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
+

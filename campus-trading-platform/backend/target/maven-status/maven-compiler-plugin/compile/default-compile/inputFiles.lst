@@ -65,6 +65,7 @@ D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand
 D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand\trading\server\util\AliyunNlpUtil.java
 D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand\trading\server\controller\OrderController.java
 D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand\trading\server\service\UserService.java
+D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand\trading\server\task\FundReleaseTask.java
 D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand\trading\server\controller\MerchantApplicationController.java
 D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand\trading\server\entity\MerchantApplicationModel.java
 D:\Git\my_ruangong\campus-trading-platform\backend\src\main\java\com\second\hand\trading\server\dto\PageVo.java

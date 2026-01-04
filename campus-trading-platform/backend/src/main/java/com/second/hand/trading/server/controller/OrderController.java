@@ -21,10 +21,11 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping("/add")
-    public ResultVo addOrder(@CookieValue("shUserId")
-                             @NotNull(message = "登录异常 请重新登录")
-                             @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+    public ResultVo addOrder(@CookieValue(value = "shUserId", required = false) String shUserId,
                              @RequestBody OrderModel orderModel){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         if(OrderTaskHandler.orderService==null){
             OrderTaskHandler.orderService=orderService;
         }
@@ -40,10 +41,11 @@ public class OrderController {
     }
 
     @GetMapping("/info")
-    public ResultVo getOrderInfo(@CookieValue("shUserId")
-                                 @NotNull(message = "登录异常 请重新登录")
-                                 @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+    public ResultVo getOrderInfo(@CookieValue(value = "shUserId", required = false) String shUserId,
                                  @RequestParam Long id){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         OrderModel orderModel=orderService.getOrder(id);
         if(orderModel.getUserId().equals(Long.valueOf(shUserId))||
                 orderModel.getIdleItem().getUserId().equals(Long.valueOf(shUserId))){
@@ -53,11 +55,12 @@ public class OrderController {
     }
 
     @PostMapping("/update")
-    public ResultVo updateOrder(@CookieValue("shUserId")
-                             @NotNull(message = "登录异常 请重新登录")
-                             @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+    public ResultVo updateOrder(@CookieValue(value = "shUserId", required = false) String shUserId,
                              @RequestBody OrderModel orderModel,
                              @RequestParam(value = "price",required = false) String price){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
 
 
 
@@ -76,16 +79,18 @@ public class OrderController {
     }
 
     @GetMapping("/my")
-    public ResultVo getMyOrder(@CookieValue("shUserId")
-                                 @NotNull(message = "登录异常 请重新登录")
-                                 @NotEmpty(message = "登录异常 请重新登录") String shUserId){
+    public ResultVo getMyOrder(@CookieValue(value = "shUserId", required = false) String shUserId){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         return ResultVo.success(orderService.getMyOrder(Long.valueOf(shUserId)));
     }
 
-    @GetMapping("/my-sold")
-    public ResultVo getMySoldIdle(@CookieValue("shUserId")
-                               @NotNull(message = "登录异常 请重新登录")
-                               @NotEmpty(message = "登录异常 请重新登录") String shUserId){
+    @GetMapping({"/my-sold", "/mySoldIdle", "/mySold"})
+    public ResultVo getMySoldIdle(@CookieValue(value = "shUserId", required = false) String shUserId){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         return ResultVo.success(orderService.getMySoldIdle(Long.valueOf(shUserId)));
     }
 }

@@ -30,10 +30,11 @@ public class IdleItemController {
     private IdleItemPinDao idleItemPinDao;
 
     @PostMapping("add")
-    public ResultVo addIdleItem(@CookieValue("shUserId")
-                                    @NotNull(message = "登录异常 请重新登录")
-                                    @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+    public ResultVo addIdleItem(@CookieValue(value = "shUserId", required = false) String shUserId,
                                 @RequestBody IdleItemModel idleItemModel){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         Long userId = Long.valueOf(shUserId);
         
         // 检查会员发布权限
@@ -65,9 +66,10 @@ public class IdleItemController {
     }
 
     @GetMapping("all")
-    public ResultVo getAllIdleItem(@CookieValue("shUserId")
-                                       @NotNull(message = "登录异常 请重新登录")
-                                       @NotEmpty(message = "登录异常 请重新登录") String shUserId){
+    public ResultVo getAllIdleItem(@CookieValue(value = "shUserId", required = false) String shUserId){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         return ResultVo.success(idleItemService.getAllIdelItem(Long.valueOf(shUserId)));
     }
 
@@ -89,7 +91,7 @@ public class IdleItemController {
         return ResultVo.success(idleItemService.findIdleItem(findValue,p,n));
     }
 
-    @GetMapping("lable")
+    @GetMapping({"lable","findByLabel"})
     public ResultVo findIdleItemByLable(@RequestParam(value = "idleLabel",required = true) Integer idleLabel,
                                  @RequestParam(value = "page",required = false) Integer page,
                                  @RequestParam(value = "nums",required = false) Integer nums){
@@ -105,10 +107,11 @@ public class IdleItemController {
     }
 
     @PostMapping("update")
-    public ResultVo updateIdleItem(@CookieValue("shUserId")
-                                       @NotNull(message = "登录异常 请重新登录")
-                                       @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+    public ResultVo updateIdleItem(@CookieValue(value = "shUserId", required = false) String shUserId,
                                    @RequestBody IdleItemModel idleItemModel){
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         idleItemModel.setUserId(Long.valueOf(shUserId));
         if(idleItemService.updateIdleItem(idleItemModel)){
             return ResultVo.success();
@@ -120,11 +123,12 @@ public class IdleItemController {
      * 置顶商品
      */
     @PostMapping("/pin")
-    public ResultVo pinItem(@CookieValue("shUserId")
-                           @NotNull(message = "登录异常 请重新登录")
-                           @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+    public ResultVo pinItem(@CookieValue(value = "shUserId", required = false) String shUserId,
                            @RequestParam Long idleItemId,
                            @RequestParam Integer durationDays) {
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
         Long userId = Long.valueOf(shUserId);
         
         // 检查会员置顶权限

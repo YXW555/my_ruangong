@@ -32,7 +32,7 @@
   </select>
   <select id="countIdleItem"  resultType="int">
     select COUNT(*) from sh_idle_item
-    where (idle_name LIKE "%"#{idleName}"%" or idle_details LIKE "%"#{idleDetails}"%") and idle_status = 1
+    where (idle_name LIKE CONCAT('%', #{idleName}, '%') or idle_details LIKE CONCAT('%', #{idleDetails}, '%')) and idle_status = 1
   </select>
   <select id="countIdleItemByLable"  resultType="int">
     select COUNT(*) from sh_idle_item
@@ -50,16 +50,16 @@
     left join sh_idle_item_pin p on i.id = p.idle_item_id 
         and p.pin_start_time &lt;= NOW() 
         and p.pin_end_time > NOW()
-    where (i.idle_name LIKE "%"#{findValue}"%" or i.idle_details LIKE "%"#{findValue}"%") 
+    where (i.idle_name LIKE CONCAT('%', #{findValue}, '%') or i.idle_details LIKE CONCAT('%', #{findValue}, '%')) 
         and i.idle_status = 1 
     order by (p.id IS NOT NULL) desc, i.id desc 
-    limit #{begin}, #{nums}
+    limit #{nums} offset #{begin}
   </select>
   <select id="findIdleItem1" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
     from sh_idle_item
-    where (idle_name LIKE "%"#{findValue}"%" or idle_details LIKE "%"#{findValue}"%") and idle_status = 2 order by id desc limit #{begin}, #{nums}
+    where (idle_name LIKE CONCAT('%', #{findValue}, '%') or idle_details LIKE CONCAT('%', #{findValue}, '%')) and idle_status = 2 order by id desc limit #{nums} offset #{begin}
   </select>
   <select id="findIdleItemByLable" resultMap="BaseResultMap">
     select

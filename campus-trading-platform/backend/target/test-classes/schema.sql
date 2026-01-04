@@ -37,10 +37,10 @@ DROP TABLE IF EXISTS `sh_idle_item`;
 CREATE TABLE `sh_idle_item`  (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `idle_name` varchar(64) NOT NULL COMMENT '闲置物名称',
-  `idle_details` varchar(2048) NOT NULL COMMENT '详情',
-  `picture_list` varchar(1024) NOT NULL COMMENT '图集',
+  `idle_details` varchar(2048) NULL DEFAULT NULL COMMENT '详情',
+  `picture_list` varchar(1024) NULL DEFAULT NULL COMMENT '图集',
   `idle_price` decimal(10, 2) NOT NULL COMMENT '价格',
-  `idle_place` varchar(32) NOT NULL COMMENT '发货地区',
+  `idle_place` varchar(32) NULL DEFAULT NULL COMMENT '发货地区',
   `idle_label` int NOT NULL COMMENT '分类标签',
   `release_time` datetime NOT NULL COMMENT '发布时间',
   `idle_status` tinyint NOT NULL COMMENT '状态（发布1、下架2、删除0）',
@@ -86,6 +86,8 @@ CREATE TABLE `sh_order`  (
   `payment_time` datetime NULL DEFAULT NULL COMMENT '支付时间',
   `order_status` tinyint NOT NULL COMMENT '订单状态',
   `is_deleted` tinyint NULL DEFAULT NULL COMMENT '是否删除',
+  `finish_time` datetime NULL DEFAULT NULL COMMENT '订单完成时间',
+  `fund_status` tinyint NOT NULL DEFAULT 0 COMMENT '资金状态：0-待释放，1-已释放给卖家',
   PRIMARY KEY (`id`)
 );
 

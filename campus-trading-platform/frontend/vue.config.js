@@ -14,13 +14,21 @@ module.exports = {
         ]
     },
     devServer: {
-        port: 8082,  // 保持你现在的端口
+        port: 8082,  // 前端开发服务器端口
         proxy: {
             '/api': {
-                target: 'http://localhost:8080',  // IDEA 中直接运行的后端（Spring Boot 默认 8080）
+                target: 'http://localhost:8080',  // 后端服务地址（Spring Boot 默认 8080）
                 changeOrigin: true,
+                ws: true,  // 支持websocket
                 pathRewrite: {
                     '^/api': ''  // 去掉 /api 前缀，直接转发到后端
+                },
+                // 添加错误处理和日志
+                onError: function(err, req, res) {
+                    console.log('代理错误:', err.message);
+                },
+                onProxyReq: function(proxyReq, req, res) {
+                    console.log('代理请求:', req.method, req.url, '->', proxyReq.path);
                 }
             }
         }

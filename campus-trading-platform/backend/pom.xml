@@ -116,7 +116,33 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
         </dependency>
+
+        <!-- HanLP 中文自然语言处理框架 (from JitPack) -->
+        <dependency>
+            <groupId>com.github.hankcs</groupId>
+            <artifactId>HanLP</artifactId>
+            <version>v1.8.4</version>
+        </dependency>
+
+        <!-- 阿里云SDK核心库（已包含所有服务的调用能力） -->
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>aliyun-java-sdk-core</artifactId>
+            <version>4.6.3</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>aliyunmaven</id>
+            <name>Aliyun Maven</name>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>

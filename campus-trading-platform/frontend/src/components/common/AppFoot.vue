@@ -3,7 +3,7 @@
         <div class="footer-content">
             <div class="footer-logo">
                 <i class="el-icon-s-shop"></i>
-                <span>校园二手闲置物品交易平台</span>
+                <span>拾光换物-校园二手交易商城</span>
             </div>
 
 

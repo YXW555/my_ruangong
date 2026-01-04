@@ -227,6 +227,51 @@
             </div>
             <app-foot></app-foot>
         </app-body>
+        
+        <!-- 购买时选择收货地址对话框 -->
+        <el-dialog
+            title="选择收货地址"
+            :visible.sync="addressDialogVisible"
+            width="600px"
+            :close-on-click-modal="false">
+            <div v-if="addressList.length > 0">
+                <el-radio-group v-model="selectedAddressId" style="width: 100%;">
+                    <div 
+                        v-for="address in addressList" 
+                        :key="address.id"
+                        class="address-option"
+                        :class="{'selected': selectedAddressId === address.id}">
+                        <el-radio :label="address.id" style="width: 100%;">
+                            <div class="address-option-content">
+                                <div class="address-header">
+                                    <span class="address-name">{{ address.consigneeName }}</span>
+                                    <span class="address-phone">{{ address.consigneePhone }}</span>
+                                    <el-tag v-if="address.defaultFlag" size="small" type="success" style="margin-left: 10px;">默认</el-tag>
+                                </div>
+                                <div class="address-detail">
+                                    <i class="el-icon-location"></i>
+                                    {{ address.detailAddress }}
+                                </div>
+                            </div>
+                        </el-radio>
+                    </div>
+                </el-radio-group>
+            </div>
+            <div v-else class="no-address-tip">
+                <i class="el-icon-warning"></i>
+                <p>您还没有收货地址，请先添加收货地址</p>
+                <el-button type="primary" @click="goToAddAddress">去添加地址</el-button>
+            </div>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="addressDialogVisible = false">取 消</el-button>
+                <el-button 
+                    type="primary" 
+                    @click="confirmBuyWithAddress"
+                    :disabled="!selectedAddressId && addressList.length > 0">
+                    确认购买
+                </el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -280,7 +325,12 @@
                     '4': '图书笔记',
                     '5': '公告'
                 },
-                membershipStatus: null // 会员状态
+                membershipStatus: null, // 会员状态
+                // 购买地址选择相关
+                addressDialogVisible: false,
+                addressList: [],
+                selectedAddressId: null,
+                pendingBuyItem: null // 待购买的商品信息
             };
         },
         computed: {
@@ -417,19 +467,115 @@
                 });
             },
             buyButton(idleItemInfo){
-                this.$api.addOrder({
-                    idleId:idleItemInfo.id,
-                    orderPrice:idleItemInfo.idlePrice,
-                }).then(res=>{
-                    console.log(res);
-                    if(res.status_code===1){
-                        this.$router.push({path: '/order', query: {id: res.data.id}});
-                    }else {
-                        this.$message.error(res.msg)
-                    }
-                }).catch(e=>{
+                // 检查是否登录
+                const userId = this.getCookie('shUserId');
+                if(!userId){
+                    this.$message.warning('请先登录后再购买');
+                    this.$router.push('/login');
+                    return;
+                }
 
-                })
+                // 保存待购买的商品信息
+                this.pendingBuyItem = idleItemInfo;
+                
+                // 加载收货地址列表
+                this.loadAddressList();
+            },
+            // 加载收货地址列表
+            async loadAddressList() {
+                try {
+                    const addressRes = await this.$api.getAddress();
+                    if (addressRes.status_code === 1 && addressRes.data) {
+                        this.addressList = addressRes.data;
+                        
+                        if (this.addressList.length > 0) {
+                            // 自动选择默认地址
+                            const defaultAddress = this.addressList.find(addr => addr.defaultFlag);
+                            this.selectedAddressId = defaultAddress ? defaultAddress.id : this.addressList[0].id;
+                            // 显示地址选择对话框
+                            this.addressDialogVisible = true;
+                        } else {
+                            // 没有收货地址，提示用户先添加
+                            this.$confirm('您还没有收货地址，请先添加收货地址', '提示', {
+                                confirmButtonText: '去添加',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }).then(() => {
+                                this.goToAddAddress();
+                            }).catch(() => {});
+                        }
+                    } else {
+                        this.$message.error('加载地址列表失败');
+                    }
+                } catch (e) {
+                    console.error('加载地址列表异常:', e);
+                    this.$message.error('网络错误，请稍后重试');
+                }
+            },
+            // 确认购买（使用选中的地址）
+            async confirmBuyWithAddress() {
+                if (!this.selectedAddressId) {
+                    this.$message.warning('请选择收货地址');
+                    return;
+                }
+                
+                const selectedAddress = this.addressList.find(addr => addr.id === this.selectedAddressId);
+                if (!selectedAddress) {
+                    this.$message.error('地址信息错误');
+                    return;
+                }
+                
+                if (!this.pendingBuyItem) {
+                    this.$message.error('商品信息错误');
+                    return;
+                }
+                
+                try {
+                    // 创建订单
+                    const orderRes = await this.$api.addOrder({
+                        idleId: this.pendingBuyItem.id,
+                        orderPrice: this.pendingBuyItem.idlePrice,
+                    });
+                    
+                    if (orderRes.status_code === 1 && orderRes.data && orderRes.data.id) {
+                        // 创建订单地址
+                        console.log('准备创建订单地址，订单ID:', orderRes.data.id, '地址信息:', selectedAddress);
+                        const addressRes = await this.$api.addOrderAddress({
+                            orderId: orderRes.data.id,
+                            consigneeName: selectedAddress.consigneeName,
+                            consigneePhone: selectedAddress.consigneePhone,
+                            detailAddress: selectedAddress.detailAddress
+                        });
+                        
+                        console.log('订单地址创建结果:', addressRes);
+                        if (addressRes.status_code !== 1) {
+                            console.error('订单地址创建失败:', addressRes);
+                            this.$message.warning('订单创建成功，但地址保存失败，请在订单详情页补充地址信息');
+                        }
+                        
+                        // 关闭对话框
+                        this.addressDialogVisible = false;
+                        this.pendingBuyItem = null;
+                        
+                        console.log('订单创建成功，跳转到订单页面，订单ID:', orderRes.data.id);
+                        this.$message.success('订单创建成功！');
+                        this.$router.push({path: '/order', query: {id: orderRes.data.id}}).catch(err => {
+                            console.error('路由跳转失败:', err);
+                            this.$message.error('跳转失败，请刷新页面重试');
+                        });
+                    } else {
+                        console.error('订单创建失败:', orderRes);
+                        this.$message.error(orderRes.msg || '订单创建失败，请稍后重试');
+                    }
+                } catch (e) {
+                    console.error('创建订单异常:', e);
+                    this.$message.error('网络错误，请稍后重试');
+                }
+            },
+            // 跳转到添加地址页面
+            goToAddAddress() {
+                this.addressDialogVisible = false;
+                this.$router.push({path: '/me', query: {tab: 'address'}});
             },
             loadMembershipStatus() {
                 this.$api.getMembershipStatus().then(res => {
@@ -922,5 +1068,77 @@
             align-self: flex-end;
         }
     }
-</style>
+    
+    /* 地址选择对话框样式 */
+    .address-option {
+        margin-bottom: 15px;
+        padding: 15px;
+        border: 2px solid #e4e7ed;
+        border-radius: 8px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .address-option:hover {
+        border-color: #409EFF;
+        background-color: #f0f9ff;
+    }
+    
+    .address-option.selected {
+        border-color: #409EFF;
+        background-color: #ecf5ff;
+    }
+    
+    .address-option-content {
+        margin-left: 20px;
+    }
+    
+    .address-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .address-name {
+        font-weight: 600;
+        font-size: 16px;
+        color: #303133;
+        margin-right: 15px;
+    }
+    
+    .address-phone {
+        color: #606266;
+        font-size: 14px;
+    }
+    
+    .address-detail {
+        color: #606266;
+        font-size: 14px;
+        line-height: 1.6;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .address-detail i {
+        margin-right: 5px;
+        color: #409EFF;
+        margin-top: 2px;
+    }
+    
+    .no-address-tip {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .no-address-tip i {
+        font-size: 48px;
+        color: #e6a23c;
+        margin-bottom: 15px;
+    }
+    
+    .no-address-tip p {
+        color: #606266;
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
 </style>

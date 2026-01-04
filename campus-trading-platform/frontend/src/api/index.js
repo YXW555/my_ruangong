@@ -45,6 +45,7 @@ const api = {
             params: query
         });
     },
+
     //  地址功能  对应addresscontroller
     addAddress(data) {
         return request({
@@ -118,6 +119,13 @@ const api = {
             data: data
         });
     },
+    pinItem(data) {
+        return request({
+            url: '/idle/pin',
+            method: 'post',
+            params: data
+        });
+    },
 
     // 个人中心的功能  ordercontroller
     addOrder(data) {
@@ -155,6 +163,14 @@ const api = {
             params: query
         });
     },
+    // 订单地址功能
+    getOrderAddress(query) {
+        return request({
+            url: '/order-address/info',
+            method: 'get',
+            params: query
+        });
+    },
 
     // 订单的地址信息   orderAddressController
     addOrderAddress(data) {
@@ -169,13 +185,6 @@ const api = {
             url: '/order-address/update',
             method: 'post',
             data: data
-        });
-    },
-    getOrderAddress(query) {
-        return request({
-            url: '/order-address/info',
-            method: 'get',
-            params: query
         });
     },
 
@@ -254,6 +263,13 @@ const api = {
             data: data
         });
     },
+    sendChatImage(data) {
+        return request({
+            url: '/chat/sendImage',
+            method: 'post',
+            data: data
+        });
+    },
     getChatSessionList(query) {
         return request({
             url: '/chat/session/list',
@@ -266,6 +282,42 @@ const api = {
             url: '/chat/session/detail',
             method: 'get',
             params: query
+        });
+    },
+    // 获取未读消息数量（私信）
+    getChatUnreadCount(query) {
+        return request({
+            url: '/chat/unread/count',
+            method: 'get',
+            params: query
+        });
+    },
+
+    // 自动回复模板相关操作 ✅ 第一个文件新增的功能
+    getAutoReplyTemplateList() {
+        return request({
+            url: '/auto-reply/template/list',
+            method: 'get'
+        });
+    },
+    createOrUpdateAutoReplyTemplate(data) {
+        return request({
+            url: '/auto-reply/template',
+            method: 'post',
+            data: data
+        });
+    },
+    updateAutoReplyTemplate(data) {
+        return request({
+            url: '/auto-reply/template',
+            method: 'put',
+            data: data
+        });
+    },
+    deleteAutoReplyTemplate(id) {
+        return request({
+            url: `/auto-reply/template/${id}`,
+            method: 'delete'
         });
     },
 
@@ -368,8 +420,16 @@ const api = {
             params: query
         });
     },
-    // 添加以下数据统计相关API
-    // 获取交易数据统计
+    // 模拟支付接口
+    simulatePay(data) {
+        return request({
+            url: '/alipay/simulatePay',
+            method: 'post',
+            params: data
+        });
+    },
+
+    // 数据统计相关API
     getTradingData(query) {
         return request({
             url: '/statistics/trading-data',
@@ -377,8 +437,6 @@ const api = {
             params: query
         });
     },
-
-    // 获取月度统计数据
     getMonthlyStatistics(query) {
         return request({
             url: '/statistics/monthly-statistics',
@@ -386,8 +444,6 @@ const api = {
             params: query
         });
     },
-
-    // 获取商品分类统计
     getCategoryStatistics(query) {
         return request({
             url: '/statistics/category-statistics',
@@ -395,11 +451,16 @@ const api = {
             params: query
         });
     },
-
-    // 获取用户统计数据
     getUserStatistics(query) {
         return request({
             url: '/statistics/user-statistics',
+            method: 'get',
+            params: query
+        });
+    },
+    getEnvironmentalBenefits(query) {
+        return request({
+            url: '/statistics/environmental-benefits',
             method: 'get',
             params: query
         });
@@ -538,13 +599,6 @@ const api = {
             params: query
         });
     },
-    pinItem(data) {
-        return request({
-            url: '/idle/pin',
-            method: 'post',
-            params: data
-        });
-    },
     // 管理员：会员统计
     getMembershipRevenueStats(query) {
         return request({
@@ -561,7 +615,89 @@ const api = {
         });
     },
 
-    // 交易纠纷功能   DisputeController
+    // 售后服务功能   AfterSaleController ✅ 第二个文件新增核心亮点
+    applyAfterSale(data) {
+        return request({
+            url: '/after-sale/apply',
+            method: 'post',
+            data: data
+        });
+    },
+    getAfterSaleByOrderId(query) {
+        return request({
+            url: '/after-sale/by-order',
+            method: 'get',
+            params: query
+        });
+    },
+    getMyAfterSales(query) {
+        return request({
+            url: '/after-sale/my',
+            method: 'get',
+            params: query
+        });
+    },
+    getPendingAfterSales(query) {
+        return request({
+            url: '/after-sale/pending',
+            method: 'get',
+            params: query
+        });
+    },
+    reviewAfterSale(data) {
+        return request({
+            url: '/after-sale/review',
+            method: 'post',
+            data: data
+        });
+    },
+    // 管理员审核售后申请
+    getAdminPendingAfterSales(query) {
+        return request({
+            url: '/after-sale/admin/pending',
+            method: 'get',
+            params: query
+        });
+    },
+    getAdminAfterSaleDetail(query) {
+        return request({
+            url: '/after-sale/admin/detail',
+            method: 'get',
+            params: query
+        });
+    },
+    adminReviewAfterSale(data) {
+        return request({
+            url: '/after-sale/admin/review',
+            method: 'post',
+            data: data
+        });
+    },
+
+    // 推荐功能   RecommendController ✅ 第二个文件新增核心亮点 (老师要的推荐算法)
+    getPersonalizedRecommendations(query) {
+        return request({
+            url: '/recommend/personalized',
+            method: 'get',
+            params: query
+        });
+    },
+    getSimilarItems(query) {
+        return request({
+            url: '/recommend/similar',
+            method: 'get',
+            params: query
+        });
+    },
+    getHotRecommendations(query) {
+        return request({
+            url: '/recommend/hot',
+            method: 'get',
+            params: query
+        });
+    },
+
+    // 交易纠纷功能   DisputeController ✅ 第二个文件新增核心亮点 (核心业务闭环)
     // 用户申请纠纷
     applyDispute(data) {
         return request({
@@ -603,6 +739,5 @@ const api = {
         });
     },
 };
-
 
 export default api;

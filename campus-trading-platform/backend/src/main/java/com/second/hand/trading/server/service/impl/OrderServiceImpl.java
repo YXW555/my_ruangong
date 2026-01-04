@@ -28,6 +28,9 @@ public class OrderServiceImpl implements OrderService {
     private IdleItemDao idleItemDao;
 
     @Resource
+    private com.second.hand.trading.server.dao.UserDao userDao;
+
+    @Resource
     private com.second.hand.trading.server.utils.RedisUtil redisUtil;
 
     /**
@@ -68,13 +71,11 @@ public class OrderServiceImpl implements OrderService {
             if(idleItemModel.getIdleStatus()!=1){
                 return false;
             }
-            IdleItemModel idleItem=new IdleItemModel();
-            idleItem.setId(orderModel.getIdleId());
-            idleItem.setUserId(idleItemModel.getUserId());
-            idleItem.setIdleStatus((byte)2);
+            // 不再在创建订单时下架商品，改为支付时下架
+            // 这样多个买家可以同时下单，只有支付成功的订单对应的商品才会下架
 
-            // 执行订单创建逻辑
-            boolean flag = addOrderHelp(idleItem, orderModel);
+            // 执行订单创建逻辑（不传idleItem，因为不下架商品）
+            boolean flag = addOrderHelp(null, orderModel);
             return flag;
         } finally {
             // 释放分布式锁
@@ -89,27 +90,41 @@ public class OrderServiceImpl implements OrderService {
         if(idleItemModel.getIdleStatus()!=1){
             return false;
         }
-        if(idleItemDao.updateByPrimaryKeySelective(idleItem)==1){
-            if(orderDao.insert(orderModel)==1){
-                orderModel.setOrderStatus((byte) 4);
-                //半小时未支付则取消订单
-                OrderTaskHandler.addOrder(new OrderTask(orderModel,30*60));
-                return true;
-            }else {
-                new RuntimeException();
+        // 如果传入了idleItem，则更新商品状态（用于支付时下架商品）
+        // 如果为null，则不下架商品（创建订单时不下架，支付时才下架）
+        if(idleItem != null){
+            if(idleItemDao.updateByPrimaryKeySelective(idleItem)!=1){
+                return false;
             }
+        }
+        // 直接插入订单，不下架商品
+        if(orderDao.insert(orderModel)==1){
+            orderModel.setOrderStatus((byte) 4);
+            //半小时未支付则取消订单
+            OrderTaskHandler.addOrder(new OrderTask(orderModel,30*60));
+            return true;
+        }else {
+            new RuntimeException();
         }
         return false;
     }
 
+    @Resource
+    private com.second.hand.trading.server.service.IdleItemService idleItemService;
+
     /**
-     * 获取订单信息，同时获取对应的闲置信息
+     * 获取订单信息，同时获取对应的闲置信息（包含卖家信息）和买家信息
      * @param id
      * @return
      */
     public OrderModel getOrder(Long id){
         OrderModel orderModel=orderDao.selectByPrimaryKey(id);
-        orderModel.setIdleItem(idleItemDao.selectByPrimaryKey(orderModel.getIdleId()));
+        // 使用 idleItemService 获取商品信息，会自动填充 user 信息（卖家信息）
+        orderModel.setIdleItem(idleItemService.getIdleItem(orderModel.getIdleId()));
+        // 填充买家信息
+        if (orderModel.getUserId() != null) {
+            orderModel.setUser(userDao.selectByPrimaryKey(orderModel.getUserId()));
+        }
         return orderModel;
     }
 
@@ -153,6 +168,19 @@ public class OrderServiceImpl implements OrderService {
         orderModel.setUserId(null);
         orderModel.setIdleId(null);
         orderModel.setCreateTime(null);
+        
+        // 如果订单状态变为3（已完成），设置完成时间和资金状态
+        if(orderModel.getOrderStatus() != null && orderModel.getOrderStatus() == 3){
+            // 检查订单是否已经完成过（避免重复设置）
+            OrderModel existingOrder = orderDao.selectByPrimaryKey(orderModel.getId());
+            if(existingOrder != null && existingOrder.getFinishTime() == null){
+                // 设置完成时间为当前时间
+                orderModel.setFinishTime(new Date());
+                // 设置资金状态为0（待释放，平台担保中）
+                orderModel.setFundStatus((byte) 0);
+            }
+        }
+        
         if(orderModel.getOrderStatus()==4){
             //取消订单,需要优化，减少数据库查询次数
             OrderModel o=orderDao.selectByPrimaryKey(orderModel.getId());
@@ -370,5 +398,38 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return result;
+    }
+
+    /**
+     * 释放订单资金给卖家（7天售后期结束后）
+     * 查询完成时间超过7天，且没有活跃售后申请的订单，将资金状态更新为1（已释放）
+     * @return 释放资金的订单数量
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int releaseFundsToSellers() {
+        // 计算7天前的时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -7);
+        Date finishTimeThreshold = calendar.getTime();
+
+        // 查询需要释放资金的订单
+        List<OrderModel> ordersToRelease = orderDao.selectOrdersForFundRelease(finishTimeThreshold);
+
+        int count = 0;
+        for (OrderModel order : ordersToRelease) {
+            // 更新资金状态为1（已释放给卖家）
+            order.setFundStatus((byte) 1);
+            if (orderDao.updateByPrimaryKeySelective(order) == 1) {
+                count++;
+                System.out.println("订单 " + order.getOrderNumber() + " 的资金已释放给卖家，金额：¥" + order.getOrderPrice());
+            }
+        }
+
+        if (count > 0) {
+            System.out.println("本次共释放 " + count + " 个订单的资金给卖家");
+        }
+
+        return count;
     }
 }

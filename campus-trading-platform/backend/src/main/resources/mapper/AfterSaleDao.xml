@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.second.hand.trading.server.dao.AfterSaleDao">
+  <resultMap id="BaseResultMap" type="com.second.hand.trading.server.entity.AfterSaleModel">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="order_id" jdbcType="BIGINT" property="orderId" />
+    <result column="buyer_id" jdbcType="BIGINT" property="buyerId" />
+    <result column="seller_id" jdbcType="BIGINT" property="sellerId" />
+    <result column="application_type" jdbcType="TINYINT" property="applicationType" />
+    <result column="problem_description" jdbcType="VARCHAR" property="problemDescription" />
+    <result column="evidence_images" jdbcType="VARCHAR" property="evidenceImages" />
+    <result column="refund_amount" jdbcType="DECIMAL" property="refundAmount" />
+    <result column="application_status" jdbcType="TINYINT" property="applicationStatus" />
+    <result column="seller_review_time" jdbcType="TIMESTAMP" property="sellerReviewTime" />
+    <result column="seller_review_result" jdbcType="TINYINT" property="sellerReviewResult" />
+    <result column="seller_reject_reason" jdbcType="VARCHAR" property="sellerRejectReason" />
+    <result column="seller_evidence_images" jdbcType="VARCHAR" property="sellerEvidenceImages" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    id, order_id, buyer_id, seller_id, application_type, problem_description, 
+    evidence_images, refund_amount, application_status, seller_review_time, 
+    seller_review_result, seller_reject_reason, seller_evidence_images, 
+    create_time, update_time
+  </sql>
+
+  <insert id="insert" parameterType="com.second.hand.trading.server.entity.AfterSaleModel" useGeneratedKeys="true" keyProperty="id">
+    insert into sh_after_sale (order_id, buyer_id, seller_id, application_type, 
+      problem_description, evidence_images, refund_amount, application_status, 
+      create_time)
+    values (#{orderId,jdbcType=BIGINT}, #{buyerId,jdbcType=BIGINT}, 
+      #{sellerId,jdbcType=BIGINT}, #{applicationType,jdbcType=TINYINT}, 
+      #{problemDescription,jdbcType=VARCHAR}, #{evidenceImages,jdbcType=VARCHAR}, 
+      #{refundAmount,jdbcType=DECIMAL}, #{applicationStatus,jdbcType=TINYINT}, 
+      #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_after_sale
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_after_sale
+    where order_id = #{orderId,jdbcType=BIGINT}
+    order by create_time desc
+    limit 1
+  </select>
+
+  <select id="selectByBuyerId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_after_sale
+    where buyer_id = #{buyerId,jdbcType=BIGINT}
+    order by create_time desc
+  </select>
+
+  <select id="selectPendingBySellerId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_after_sale
+    where seller_id = #{sellerId,jdbcType=BIGINT}
+    and application_status = 0
+    order by create_time desc
+  </select>
+
+  <select id="selectAdminPending" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_after_sale
+    where application_status in (3, 4)
+    order by create_time desc
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.second.hand.trading.server.entity.AfterSaleModel">
+    update sh_after_sale
+    <set>
+      <if test="applicationStatus != null">
+        application_status = #{applicationStatus,jdbcType=TINYINT},
+      </if>
+      <if test="sellerReviewTime != null">
+        seller_review_time = #{sellerReviewTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="sellerReviewResult != null">
+        seller_review_result = #{sellerReviewResult,jdbcType=TINYINT},
+      </if>
+      <if test="sellerRejectReason != null">
+        seller_reject_reason = #{sellerRejectReason,jdbcType=VARCHAR},
+      </if>
+      <if test="sellerEvidenceImages != null">
+        seller_evidence_images = #{sellerEvidenceImages,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
+

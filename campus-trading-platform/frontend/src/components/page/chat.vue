@@ -54,7 +54,7 @@
                     </div>
                     <div class="chat-header" v-else>
                         <div class="chat-header-empty">
-                            请选择左侧的会话或从商品详情页点击“私聊”发起会话
+                            请选择左侧的会话或从商品详情页点击"私聊"发起会话
                         </div>
                     </div>
 
@@ -74,7 +74,17 @@
                                     class="chat-message-avatar"
                             ></el-avatar>
                             <div class="chat-message-bubble">
-                                <div class="chat-message-content" v-html="msg.content"></div>
+                                <template v-if="msg.imageUrl">
+                                    <el-image
+                                            class="chat-image"
+                                            :src="msg.imageUrl"
+                                            :preview-src-list="[msg.imageUrl]"
+                                            fit="cover"
+                                    ></el-image>
+                                </template>
+                                <template v-else>
+                                    <div class="chat-message-content" v-html="msg.content"></div>
+                                </template>
                                 <div class="chat-message-time">{{ formatTime(msg.createTime) }}</div>
                             </div>
                         </div>
@@ -91,6 +101,16 @@
                                 @keyup.enter.native.exact.prevent="handleSend"
                         ></el-input>
                         <div class="chat-input-actions">
+                            <el-upload
+                                    class="image-uploader"
+                                    :action="'/api/file'"
+                                    :show-file-list="false"
+                                    :on-success="handleUploadSuccess"
+                                    :on-error="handleUploadError"
+                                    :before-upload="beforeUpload"
+                                    accept="image/*">
+                                <el-button icon="el-icon-picture-outline" title="发送图片"></el-button>
+                            </el-upload>
                             <el-button type="primary" icon="el-icon-s-promotion" @click="handleSend" :disabled="!currentTargetUserId">
                                 发送
                             </el-button>
@@ -260,6 +280,73 @@
                 } catch (e) {
                     this.$message.error("发送失败！");
                 }
+            },
+            beforeUpload(file) {
+                const isLt2M = file.size / 1024 / 1024 < 2;
+                if (!isLt2M) {
+                    this.$message.error('上传图片大小不能超过 2MB!');
+                }
+                return isLt2M;
+            },
+            handleUploadSuccess(res, file) {
+                console.log('Upload success response:', res);
+                console.log('Response type:', typeof res);
+                
+                let responseData = res;
+                // el-upload有时会返回字符串，需要手动解析
+                if (typeof res === 'string') {
+                    try {
+                        responseData = JSON.parse(res);
+                    } catch (e) {
+                        console.error('Failed to parse response as JSON:', e);
+                        this.$message.error('图片上传失败: 无法解析服务器响应');
+                        return;
+                    }
+                }
+
+                console.log('Parsed response data:', responseData);
+                
+                // 检查响应格式
+                if (responseData && responseData.status_code === 1) {
+                    const imageUrl = responseData.data;
+                    if (imageUrl) {
+                        console.log('Image URL extracted:', imageUrl);
+                        this.$message.success('图片上传成功!');
+                        this.sendImage(imageUrl);
+                    } else {
+                        console.error('No image URL in response data');
+                        this.$message.error('图片上传失败: 服务器返回数据中无URL');
+                    }
+                } else {
+                    console.error('Upload failed:', responseData);
+                    this.$message.error('图片上传失败: ' + (responseData && responseData.msg || '服务器返回格式错误'));
+                }
+            },
+            handleUploadError(err, file, fileList) {
+                console.error('Upload error:', err);
+                this.$message.error('图片上传失败，请检查网络或联系管理员。');
+            },
+            async sendImage(imageUrl) {
+                if (!this.currentTargetUserId) {
+                    this.$message.error('请选择会话！');
+                    return;
+                }
+                try {
+                    const res = await this.$api.sendChatImage({
+                        toUser: this.currentTargetUserId,
+                        idleId: this.currentIdleId,
+                        imageUrl: imageUrl,
+                        content: '' // 图片消息内容可为空
+                    });
+                    if (res.status_code === 1) {
+                        await this.loadSessionDetail(this.currentTargetUserId, this.currentIdleId);
+                        await this.loadSessionList();
+                    } else {
+                        this.$message.error("图片发送失败：" + res.msg);
+                    }
+                } catch (e) {
+                    this.$message.error("图片发送失败！");
+                }
             }
         }
     }
@@ -267,7 +354,7 @@
 
 <style scoped>
     .chat-container {
-        min-height: 85vh;
+        height: 85vh;
         display: flex;
         border: 1px solid #ebeef5;
         border-radius: 8px;
@@ -276,8 +363,9 @@
 
     .chat-session-list {
         width: 320px;
+        overflow-y: auto;
         border-right: 1px solid #ebeef5;
-        background-color: #fafafa;
+        background-color: #f5f7fa;
         display: flex;
         flex-direction: column;
     }
@@ -287,6 +375,8 @@
         font-size: 16px;
         font-weight: 600;
         border-bottom: 1px solid #ebeef5;
+        background-color: #e6f7ff;
+        color: #1890ff;
     }
 
     .session-empty {
@@ -296,41 +386,58 @@
         justify-content: center;
         color: #909399;
         font-size: 13px;
+        padding: 20px;
+        text-align: center;
     }
 
     .session-item {
         display: flex;
-        padding: 10px 16px;
+        padding: 12px 16px;
         cursor: pointer;
-        transition: background-color .2s;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f0f0f0;
     }
 
     .session-item:hover {
-        background-color: #f0f2f5;
+        background-color: #f0f8ff;
     }
 
     .session-item.active {
-        background-color: #e6f7ff;
+        background-color: #1890ff;
+        color: white;
+    }
+
+    .session-item.active .session-name,
+    .session-item.active .session-time,
+    .session-item.active .session-last,
+    .session-item.active .session-goods-name {
+        color: white;
     }
 
     .session-avatar {
         width: 46px;
         height: 46px;
         border-radius: 50%;
+        border: 2px solid #e6f7ff;
+    }
+
+    .session-item.active .session-avatar {
+        border-color: white;
     }
 
     .session-info {
         flex: 1;
-        margin-left: 10px;
+        margin-left: 12px;
         display: flex;
         flex-direction: column;
+        justify-content: center;
     }
 
     .session-top {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
     .session-name {
@@ -375,15 +482,18 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        background-color: #ffffff;
+        background-color: #f8fafc;
+        overflow: hidden; /* 防止子元素溢出 */
     }
 
     .chat-header {
-        height: 60px;
-        border-bottom: 1px solid #ebeef5;
+        height: 68px;
+        border-bottom: 1px solid #e8e8e8;
         display: flex;
         align-items: center;
         padding: 0 20px;
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .chat-header-left {
@@ -392,11 +502,11 @@
     }
 
     .chat-header-text {
-        margin-left: 10px;
+        margin-left: 12px;
     }
 
     .chat-header-name {
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 600;
         color: #303133;
     }
@@ -404,19 +514,26 @@
     .chat-header-sub {
         margin-top: 4px;
         font-size: 13px;
-        color: #909399;
+        color: #666;
     }
 
     .chat-header-empty {
-        font-size: 13px;
+        font-size: 14px;
         color: #909399;
+        text-align: center;
+        width: 100%;
     }
 
     .chat-message-list {
         flex: 1;
-        padding: 16px 20px;
-        overflow-y: auto;
-        background-color: #f5f7fa;
+        padding: 20px;
+        overflow-y: auto; /* 消息列表独立滚动 */
+        background-color: #f8fafc;
+        background-image:
+            radial-gradient(#e3e8f1 1px, transparent 1px),
+            radial-gradient(#e3e8f1 1px, transparent 1px);
+        background-size: 20px 20px;
+        background-position: 0 0, 10px 10px;
     }
 
     .chat-message-empty {
@@ -425,12 +542,28 @@
         align-items: center;
         justify-content: center;
         color: #909399;
-        font-size: 13px;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        padding: 30px;
+        backdrop-filter: blur(2px);
     }
 
     .chat-message-row {
         display: flex;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .chat-message-row.self {
@@ -438,44 +571,178 @@
     }
 
     .chat-message-avatar {
-        margin: 0 8px;
+        margin: 0 10px;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .chat-message-bubble {
-        max-width: 60%;
-        padding: 10px 12px;
-        border-radius: 4px;
+        max-width: 65%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background-color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        position: relative;
+    }
+
+    .chat-message-row.other .chat-message-bubble {
         background-color: #ffffff;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+        border: 1px solid #e8e8e8;
     }
 
     .chat-message-row.self .chat-message-bubble {
-        background-color: #c6e2ff;
+        background: linear-gradient(135deg, #1890ff, #096dd9);
+        color: white;
+        box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+    }
+
+    /* 添加小箭头效果 */
+    .chat-message-row.other .chat-message-bubble::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 12px;
+        width: 0;
+        height: 0;
+        border-top: 6px solid transparent;
+        border-bottom: 6px solid transparent;
+        border-right: 6px solid white;
+    }
+
+    .chat-message-row.self .chat-message-bubble::before {
+        content: '';
+        position: absolute;
+        right: -6px;
+        top: 12px;
+        width: 0;
+        height: 0;
+        border-top: 6px solid transparent;
+        border-bottom: 6px solid transparent;
+        border-left: 6px solid #1890ff;
     }
 
     .chat-message-content {
         font-size: 14px;
-        color: #303133;
+        line-height: 1.5;
         word-break: break-word;
     }
 
+    .chat-message-row.self .chat-message-content {
+        color: white;
+    }
+
     .chat-message-time {
-        margin-top: 4px;
+        margin-top: 6px;
         font-size: 11px;
-        color: #909399;
+        color: #999;
         text-align: right;
+        opacity: 0.8;
+    }
+
+    .chat-message-row.self .chat-message-time {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .chat-image {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        cursor: pointer;
     }
 
     .chat-input-bar {
-        border-top: 1px solid #ebeef5;
-        padding: 10px 16px;
-        background-color: #ffffff;
+        border-top: 1px solid #e8e8e8;
+        padding: 16px 20px;
+        background-color: white;
+        box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 优化文本输入框 */
+    .el-textarea {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .el-textarea >>> .el-textarea__inner {
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        transition: all 0.3s;
+        background-color: #fafafa;
+    }
+
+    .el-textarea >>> .el-textarea__inner:focus {
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        background-color: white;
+    }
+
+    .el-textarea >>> .el-input__count {
+        background: transparent;
+        color: #999;
     }
 
     .chat-input-actions {
         display: flex;
         justify-content: flex-end;
-        margin-top: 6px;
+        margin-top: 12px;
+    }
+
+    /* 优化发送按钮 */
+    .el-button--primary {
+        background: linear-gradient(135deg, #1890ff, #096dd9);
+        border: none;
+        border-radius: 6px;
+        padding: 10px 24px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .el-button--primary:hover {
+        background: linear-gradient(135deg, #40a9ff, #1890ff);
+        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+        transform: translateY(-1px);
+    }
+
+    .el-button--primary:active {
+        transform: translateY(0);
+    }
+
+    .el-button--primary.is-disabled {
+        background: #f5f5f5;
+        color: #bfbfbf;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* 滚动条优化 */
+    .chat-session-list,
+    .chat-message-list {
+        scrollbar-width: thin;
+        scrollbar-color: #c1c1c1 #f5f5f5;
+    }
+
+    .chat-session-list::-webkit-scrollbar,
+    .chat-message-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-session-list::-webkit-scrollbar-track,
+    .chat-message-list::-webkit-scrollbar-track {
+        background: #f5f5f5;
+    }
+
+    .chat-session-list::-webkit-scrollbar-thumb,
+    .chat-message-list::-webkit-scrollbar-thumb {
+        background-color: #c1c1c1;
+        border-radius: 3px;
+    }
+
+    .chat-session-list::-webkit-scrollbar-thumb:hover,
+    .chat-message-list::-webkit-scrollbar-thumb:hover {
+        background-color: #a8a8a8;
     }
 
     @media (max-width: 900px) {
@@ -487,8 +754,13 @@
             width: 100%;
             border-right: none;
             border-bottom: 1px solid #ebeef5;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .chat-message-bubble {
+            max-width: 75%;
         }
     }
 </style>
-
 

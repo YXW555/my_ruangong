@@ -53,4 +53,11 @@ public interface OrderDao {
      * @return 订单金额
      */
     BigDecimal getOrderAmountByDateRange(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    /**
+     * 查询需要释放资金的订单（完成时间超过7天，且没有活跃的售后申请）
+     * @param finishTimeThreshold 完成时间阈值（当前时间减去7天）
+     * @return 订单列表
+     */
+    List<OrderModel> selectOrdersForFundRelease(@Param("finishTimeThreshold") Date finishTimeThreshold);
 }

@@ -217,8 +217,19 @@
                                                         </el-form-item>
                                                     </el-col>
                                                 </el-row>
-                                                <el-form-item label="发货地区">
-                                                    <el-input v-model="item.idlePlace" placeholder="请输入发货地区"></el-input>
+                                                <el-form-item label="交易地点">
+                                                    <el-input 
+                                                        v-model="item.idlePlace" 
+                                                        placeholder="请输入交易地点，例如：清华大学学生宿舍1号楼101"
+                                                        maxlength="100"
+                                                        show-word-limit>
+                                                        <template slot="prepend">
+                                                            <i class="el-icon-location"></i>
+                                                        </template>
+                                                    </el-input>
+                                                    <div style="margin-top: 5px; color: #909399; font-size: 12px;">
+                                                        <i class="el-icon-info"></i> 建议格式：学校名称+详细地址，例如："清华大学学生宿舍1号楼101"或"北京大学图书馆附近"
+                                                    </div>
                                                 </el-form-item>
                                                 <el-form-item label="商品详情">
                                                     <el-input

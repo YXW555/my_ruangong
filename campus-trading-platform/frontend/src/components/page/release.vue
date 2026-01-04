@@ -90,16 +90,19 @@
                                 </el-col>
                             </el-row>
                             
-                            <el-form-item label="您的位置">
-                                <el-cascader
-                                    :options="options"
-                                    v-model="selectedOptions"
-                                    @change="handleChange"
-                                    :separator="' '"
-                                    placeholder="请选择您的位置，方便买家找到您"
-                                    style="width: 100%;"
-                                    class="location-select">
-                                </el-cascader>
+                            <el-form-item label="交易地点" required>
+                                <el-input
+                                    v-model="idleItemInfo.idlePlace"
+                                    placeholder="请输入交易地点，例如：清华大学学生宿舍1号楼101"
+                                    maxlength="100"
+                                    show-word-limit>
+                                    <template slot="prepend">
+                                        <i class="el-icon-location"></i>
+                                    </template>
+                                </el-input>
+                                <div style="margin-top: 5px; color: #909399; font-size: 12px;">
+                                    <i class="el-icon-info"></i> 建议格式：学校名称+详细地址，例如："清华大学学生宿舍1号楼101"或"北京大学图书馆附近"
+                                </div>
                             </el-form-item>
                         </el-card>
                         
@@ -177,7 +180,7 @@
     import AppHead from '../common/AppHeader.vue';
     import AppBody from '../common/AppPageBody.vue'
     import AppFoot from '../common/AppFoot.vue'
-    import options from '../common/country-data.js'
+    // import options from '../common/country-data.js' // 已移除，不再使用级联选择器
 
     export default {
         name: "release",
@@ -191,8 +194,7 @@
                 imgDialogVisible: false,
                 dialogImageUrl: '',
                 showFileList: true,
-                options: options,
-                selectedOptions: [],
+                // options和selectedOptions已移除，现在直接使用输入框
                 submitting: false,
                 options2: [{
                     value: 1,
@@ -232,10 +234,7 @@
                 };
                 return icons[categoryId] || 'el-icon-goods';
             },
-            handleChange(value) {
-                console.log(value);
-                this.idleItemInfo.idlePlace = value[1];
-            },
+            // handleChange方法已移除，现在直接使用输入框
             fileHandleRemove(file, fileList) {
                 console.log(file, fileList);
                 for (let i = 0; i < this.imgList.length; i++) {
@@ -263,8 +262,8 @@
                     this.$message.error('请输入详细描述！');
                     return;
                 }
-                if (!this.idleItemInfo.idlePlace) {
-                    this.$message.error('请选择您的位置！');
+                if (!this.idleItemInfo.idlePlace || !this.idleItemInfo.idlePlace.trim()) {
+                    this.$message.error('请输入交易地点！');
                     return;
                 }
                 if (!this.idleItemInfo.idleLabel) {

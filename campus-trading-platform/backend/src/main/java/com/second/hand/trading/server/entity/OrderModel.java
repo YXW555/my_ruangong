@@ -67,6 +67,16 @@ public class OrderModel implements Serializable {
      */
     private Byte isDeleted;
 
+    /**
+     * 订单完成时间（买家确认收货时）
+     */
+    private Date finishTime;
+
+    /**
+     * 资金状态：0-待释放（平台担保中），1-已释放给卖家
+     */
+    private Byte fundStatus;
+
     private static final long serialVersionUID = 1L;
 
     public UserModel getUser() {
@@ -171,6 +181,22 @@ public class OrderModel implements Serializable {
 
     public void setIsDeleted(Byte isDeleted) {
         this.isDeleted = isDeleted;
+    }
+
+    public Date getFinishTime() {
+        return finishTime;
+    }
+
+    public void setFinishTime(Date finishTime) {
+        this.finishTime = finishTime;
+    }
+
+    public Byte getFundStatus() {
+        return fundStatus;
+    }
+
+    public void setFundStatus(Byte fundStatus) {
+        this.fundStatus = fundStatus;
     }
 
     @Override

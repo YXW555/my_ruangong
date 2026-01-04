@@ -31,17 +31,18 @@ public class FileController {
     private FileService fileService;
 
     @PostMapping("/file")
-    public ResultVo uploadFile(@RequestParam("file") MultipartFile multipartFile) {
+    public ResultVo<String> uploadFile(@RequestParam("file") MultipartFile multipartFile) {
         String uuid="file"+ IdFactoryUtil.getFileId();
         String fileName= uuid+ multipartFile.getOriginalFilename();
         try {
-            if (fileService.uploadFile(multipartFile,fileName)) {
-                // 返回相对路径，通过 Nginx 代理访问
-                return ResultVo.success("/api/image?imageName="+fileName);
+            if (fileService.uploadFile(multipartFile, fileName)) {
+                // 返回相对路径，通过前端代理访问
+                return ResultVo.success("/api/image?imageName=" + fileName);
             }
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);
+            System.err.println("File upload failed for: " + fileName);
+            e.printStackTrace();
+            return ResultVo.fail(ErrorMsg.FILE_UPLOAD_ERROR);
         }
         return ResultVo.fail(ErrorMsg.FILE_UPLOAD_ERROR);
     }

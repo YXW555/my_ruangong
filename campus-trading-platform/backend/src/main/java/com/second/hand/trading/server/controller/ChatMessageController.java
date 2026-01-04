@@ -39,6 +39,24 @@ public class ChatMessageController {
     }
 
     /**
+     * 发送一张图片
+     */
+    @PostMapping("/sendImage")
+    public ResultVo sendImageMessage(@CookieValue("shUserId")
+                                         @NotNull(message = "登录异常 请重新登录")
+                                         @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+                                     @RequestBody ChatMessageModel chatMessageModel) {
+        chatMessageModel.setFromUser(Long.valueOf(shUserId));
+        chatMessageModel.setCreateTime(new Date());
+        chatMessageModel.setIsRead((byte) 0);
+        // 图片消息的内容可以为空，或者前端传一个"[图片]"之类的占位符
+        if (chatMessageService.sendImageMessage(chatMessageModel)) {
+            return ResultVo.success(chatMessageModel);
+        }
+        return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);
+    }
+
+    /**
      * 当前用户的会话列表
      */
     @GetMapping("/session/list")
@@ -53,13 +71,24 @@ public class ChatMessageController {
      */
     @GetMapping("/session/detail")
     public ResultVo getSessionDetail(@CookieValue("shUserId")
-                                         @NotNull(message = "登录异常 请重新登录")
-                                         @NotEmpty(message = "登录异常 请重新登录") String shUserId,
-                                     @RequestParam Long targetUserId,
-                                     @RequestParam(required = false) Long idleId) {
+                                        @NotNull(message = "登录异常 请重新登录")
+                                        @NotEmpty(message = "登录异常 请重新登录") String shUserId,
+                                    @RequestParam Long targetUserId,
+                                    @RequestParam(required = false) Long idleId) {
         return ResultVo.success(
                 chatMessageService.getChatDetail(Long.valueOf(shUserId), targetUserId, idleId)
         );
+    }
+
+    /**
+     * 获取未读消息总数（私信）
+     */
+    @GetMapping("/unread/count")
+    public ResultVo<Integer> getUnreadCount(@CookieValue("shUserId")
+                                       @NotNull(message = "登录异常 请重新登录")
+                                       @NotEmpty(message = "登录异常 请重新登录") String shUserId) {
+        int count = chatMessageService.getUnreadMessageCount(Long.valueOf(shUserId));
+        return ResultVo.success(count);
     }
 }
 

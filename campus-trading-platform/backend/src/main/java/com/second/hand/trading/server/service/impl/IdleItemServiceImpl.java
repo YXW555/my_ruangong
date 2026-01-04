@@ -44,7 +44,12 @@ public class IdleItemServiceImpl implements IdleItemService {
         if (idleItemModel.getStock() == null || idleItemModel.getStock() <= 0) {
             idleItemModel.setStock(1);
         }
-        return idleItemDao.insert(idleItemModel) == 1;
+        boolean success = idleItemDao.insert(idleItemModel) == 1;
+        if (success) {
+            // 清除所有列表缓存
+            cacheService.evictAllProductListCache();
+        }
+        return success;
     }
 
     /**
@@ -170,7 +175,12 @@ public class IdleItemServiceImpl implements IdleItemService {
      * @return
      */
     public boolean updateIdleItem(IdleItemModel idleItemModel){
-        return idleItemDao.updateByPrimaryKeySelective(idleItemModel)==1;
+        boolean success = idleItemDao.updateByPrimaryKeySelective(idleItemModel) == 1;
+        if (success) {
+            // 清除详情和列表缓存
+            cacheService.evictProductCache(idleItemModel.getId());
+        }
+        return success;
     }
 
     public PageVo<IdleItemModel> adminGetIdleList(int status, int page, int nums) {

@@ -1,0 +1,24 @@
+# 注意：start-with-env.bat 和 start-with-env.ps1 包含敏感信息
+# 如果不想提交到Git，请取消下面的注释
+# backend/start-with-env.bat
+# backend/start-with-env.ps1
+
+# IDE
+.idea/
+*.iml
+
+# 编译输出
+target/
+*.class
+
+# 日志
+*.log
+
+# 临时文件
+*.tmp
+*.bak
+
+# 系统文件
+.DS_Store
+Thumbs.db
+

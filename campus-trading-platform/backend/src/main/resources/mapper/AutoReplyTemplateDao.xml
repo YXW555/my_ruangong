@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.second.hand.trading.server.dao.AutoReplyTemplateDao">
+  <resultMap id="BaseResultMap" type="com.second.hand.trading.server.entity.AutoReplyTemplateModel">
+    <id column="id" jdbcType="BIGINT" property="id"/>
+    <result column="user_id" jdbcType="BIGINT" property="userId"/>
+    <result column="keyword" jdbcType="VARCHAR" property="keyword"/>
+    <result column="reply_content" jdbcType="VARCHAR" property="replyContent"/>
+    <result column="is_enabled" jdbcType="TINYINT" property="isEnabled"/>
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, user_id, keyword, reply_content, is_enabled, create_time, update_time
+  </sql>
+
+  <insert id="insert" keyColumn="id" keyProperty="id"
+          parameterType="com.second.hand.trading.server.entity.AutoReplyTemplateModel"
+          useGeneratedKeys="true">
+    insert into sh_auto_reply_template (user_id, keyword, reply_content, is_enabled, create_time, update_time)
+    values (#{userId,jdbcType=BIGINT},
+            #{keyword,jdbcType=VARCHAR},
+            #{replyContent,jdbcType=VARCHAR},
+            #{isEnabled,jdbcType=TINYINT},
+            #{createTime,jdbcType=TIMESTAMP},
+            #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_auto_reply_template
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_auto_reply_template
+    where user_id = #{userId,jdbcType=BIGINT}
+    order by create_time desc
+  </select>
+
+  <select id="selectByUserIdAndKeyword" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_auto_reply_template
+    where user_id = #{userId,jdbcType=BIGINT}
+      and keyword = #{keyword,jdbcType=VARCHAR}
+    limit 1
+  </select>
+
+  <select id="selectEnabledByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from sh_auto_reply_template
+    where user_id = #{userId,jdbcType=BIGINT}
+      and is_enabled = 1
+    order by create_time desc
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.second.hand.trading.server.entity.AutoReplyTemplateModel">
+    update sh_auto_reply_template
+    <set>
+      <if test="keyword != null">
+        keyword = #{keyword,jdbcType=VARCHAR},
+      </if>
+      <if test="replyContent != null">
+        reply_content = #{replyContent,jdbcType=VARCHAR},
+      </if>
+      <if test="isEnabled != null">
+        is_enabled = #{isEnabled,jdbcType=TINYINT},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sh_auto_reply_template
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+</mapper>
+

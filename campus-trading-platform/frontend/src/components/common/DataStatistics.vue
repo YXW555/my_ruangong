@@ -56,6 +56,26 @@
 			</el-row>
 		</el-card>
 
+		<!-- 环境效益统计 -->
+		<el-card class="data-card environmental-card" shadow="hover" v-loading="isLoading">
+			<div slot="header" class="card-header">
+				<span class="card-title"><i class="el-icon-leaf"></i> 环境效益统计</span>
+			</div>
+			<el-row :gutter="20" class="data-row">
+				<el-col :xs="24" :sm="12" :md="6" v-for="(item, index) in environmentalDataList" :key="index">
+					<div class="stat-card" :class="item.class">
+						<div class="stat-icon">
+							<i :class="item.icon"></i>
+						</div>
+						<div class="stat-content">
+							<div class="stat-title">{{ item.title }}</div>
+							<div class="stat-value">{{ item.prefix }}{{ item.value }}{{ item.suffix }}</div>
+						</div>
+					</div>
+				</el-col>
+			</el-row>
+		</el-card>
+
 		<!-- 用户统计数据 -->
 <!--		<el-card class="data-card user-card" shadow="hover" v-loading="isLoading">-->
 <!--			<div slot="header" class="card-header">-->
@@ -136,6 +156,12 @@ export default {
 				premiumMemberCount: 0,
 				totalMemberCount: 0
 			},
+			environmentalData: {
+				co2Reduction: 0,
+				recycledItems: 0,
+				wasteReduction: 0,
+				treesEquivalent: 0
+			},
 			monthlyData: [],
 			categoryData: [],
 			monthlyChart: null,
@@ -214,6 +240,42 @@ export default {
 				}
 			];
 		},
+		environmentalDataList() {
+			return [
+				{
+					title: '减少碳排放',
+					value: this.environmentalData.co2Reduction,
+					icon: 'el-icon-cloudy',
+					prefix: '',
+					suffix: ' kg CO₂',
+					class: 'green-card'
+				},
+				{
+					title: '资源循环利用',
+					value: this.environmentalData.recycledItems,
+					icon: 'el-icon-refresh',
+					prefix: '',
+					suffix: ' 件',
+					class: 'blue-card'
+				},
+				{
+					title: '减少废弃物',
+					value: this.environmentalData.wasteReduction,
+					icon: 'el-icon-delete',
+					prefix: '',
+					suffix: ' kg',
+					class: 'orange-card'
+				},
+				{
+					title: '相当于植树',
+					value: this.environmentalData.treesEquivalent,
+					icon: 'el-icon-leaf',
+					prefix: '',
+					suffix: ' 棵',
+					class: 'green-card'
+				}
+			];
+		},
 		userDataList() {
 			return [
 				{
@@ -265,8 +327,10 @@ export default {
 				// 获取会员收入统计
 				this.$api.getMembershipRevenueStats({}),
 				// 获取会员数量统计
-				this.$api.getMembershipCountStats({})
-			]).then(([tradingRes, userRes, monthlyRes, categoryRes, pendingAppRes, revenueRes, countRes]) => {
+				this.$api.getMembershipCountStats({}),
+				// 获取环境效益统计
+				this.$api.getEnvironmentalBenefits({})
+			]).then(([tradingRes, userRes, monthlyRes, categoryRes, pendingAppRes, revenueRes, countRes, envRes]) => {
 				// 处理平台交易数据
 				if (tradingRes.status_code === 1) {
 					this.tradingData = tradingRes.data;
@@ -300,6 +364,11 @@ export default {
                 // 会员数量统计
                 if (countRes.status_code === 1) {
                     this.membershipCount = countRes.data;
+                }
+
+                // 环境效益统计
+                if (envRes.status_code === 1) {
+                    this.environmentalData = envRes.data;
                 }
 				
 				// 延迟初始化图表，确保DOM已经渲染

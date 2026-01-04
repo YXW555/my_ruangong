@@ -48,6 +48,8 @@ class OrderServiceTest {
         idleItem.setIdleStatus((byte) 1); // 上架状态
         idleItem.setReleaseTime(new Date());
         idleItem.setStock(1);
+        idleItem.setIdleDetails("详情占位");
+        idleItem.setPictureList("[]");
         idleItemService.addIdleItem(idleItem);
         
         // 准备订单数据
@@ -82,6 +84,8 @@ class OrderServiceTest {
         idleItem.setIdleStatus((byte) 1);
         idleItem.setReleaseTime(new Date());
         idleItem.setStock(1);
+        idleItem.setIdleDetails("详情占位");
+        idleItem.setPictureList("[]");
         idleItemService.addIdleItem(idleItem);
         
         OrderModel orderModel = new OrderModel();
@@ -117,6 +121,8 @@ class OrderServiceTest {
         idleItem.setIdleStatus((byte) 1);
         idleItem.setReleaseTime(new Date());
         idleItem.setStock(1);
+        idleItem.setIdleDetails("详情占位");
+        idleItem.setPictureList("[]");
         idleItemService.addIdleItem(idleItem);
         
         Long userId = 2L;
@@ -152,6 +158,8 @@ class OrderServiceTest {
         idleItem.setIdleStatus((byte) 1);
         idleItem.setReleaseTime(new Date());
         idleItem.setStock(1);
+        idleItem.setIdleDetails("详情占位");
+        idleItem.setPictureList("[]");
         idleItemService.addIdleItem(idleItem);
         
         OrderModel orderModel = new OrderModel();
@@ -196,6 +204,8 @@ class OrderServiceTest {
         idleItem.setIdleStatus((byte) 1);
         idleItem.setReleaseTime(new Date());
         idleItem.setStock(1);
+        idleItem.setIdleDetails("详情占位");
+        idleItem.setPictureList("[]");
         idleItemService.addIdleItem(idleItem);
         
         OrderModel orderModel = new OrderModel();
@@ -230,6 +240,8 @@ class OrderServiceTest {
         idleItem.setIdleStatus((byte) 0); // 下架状态
         idleItem.setReleaseTime(new Date());
         idleItem.setStock(1);
+        idleItem.setIdleDetails("详情占位");
+        idleItem.setPictureList("[]");
         idleItemService.addIdleItem(idleItem);
         
         // 准备订单数据

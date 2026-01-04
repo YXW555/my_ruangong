@@ -86,4 +86,10 @@ public interface OrderService {
      * @return 包含月份和对应的订单数量及金额的列表
      */
     List<Map<String, Object>> getMonthlyOrderStatistics();
+
+    /**
+     * 释放订单资金给卖家（7天售后期结束后）
+     * @return 释放资金的订单数量
+     */
+    int releaseFundsToSellers();
 }

@@ -3,11 +3,19 @@ import Router from 'vue-router';
 
 const originalReplace = Router.prototype.replace;
 Router.prototype.replace = function replace(location) {
-    return originalReplace.call(this, location).catch(err => err);
+    console.log('Router.replace 被调用:', location);
+    return originalReplace.call(this, location).catch(err => {
+        console.error('Router.replace 错误:', err);
+        return err;
+    });
 };
 const originalPush = Router.prototype.push
 Router.prototype.push = function push(location) {
-    return originalPush.call(this, location).catch(err => err)
+    console.log('Router.push 被调用:', location);
+    return originalPush.call(this, location).catch(err => {
+        console.error('Router.push 错误:', err);
+        return err;
+    });
 };
 
 Vue.use(Router);
@@ -43,6 +51,20 @@ export default new Router({
             path: '/chat',
             component: () => import('../components/page/chat.vue'),
             meta: { title: '私聊 | 校园二手闲置物品交易平台' }
+        },
+        {
+            path: '/auto-reply',
+            component: () => {
+                console.log('开始加载 auto-reply-manage 组件');
+                return import('../components/page/auto-reply-manage.vue').catch(err => {
+                    console.error('组件加载失败:', err);
+                    // 如果组件加载失败，返回一个错误提示组件
+                    return {
+                        template: '<div>页面加载失败，请刷新重试</div>'
+                    };
+                });
+            },
+            meta: { title: '自动回复设置 | 校园二手闲置物品交易平台' }
         },
         {
             path: '/merchant/apply',

@@ -13,10 +13,12 @@
     <result column="payment_time" jdbcType="TIMESTAMP" property="paymentTime" />
     <result column="order_status" jdbcType="TINYINT" property="orderStatus" />
     <result column="is_deleted" jdbcType="TINYINT" property="isDeleted" />
+    <result column="finish_time" jdbcType="TIMESTAMP" property="finishTime" />
+    <result column="fund_status" jdbcType="TINYINT" property="fundStatus" />
   </resultMap>
   <sql id="Base_Column_List">
     id, order_number, user_id, idle_id, order_price, payment_status, payment_way, create_time,
-    payment_time, order_status, is_deleted
+    payment_time, order_status, is_deleted, finish_time, fund_status
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select
@@ -104,6 +106,12 @@
       <if test="isDeleted != null">
         is_deleted,
       </if>
+      <if test="finishTime != null">
+        finish_time,
+      </if>
+      <if test="fundStatus != null">
+        fund_status,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="orderNumber != null">
@@ -135,6 +143,12 @@
       </if>
       <if test="isDeleted != null">
         #{isDeleted,jdbcType=TINYINT},
+      </if>
+      <if test="finishTime != null">
+        #{finishTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="fundStatus != null">
+        #{fundStatus,jdbcType=TINYINT},
       </if>
     </trim>
   </insert>
@@ -171,6 +185,12 @@
       <if test="isDeleted != null">
         is_deleted = #{isDeleted,jdbcType=TINYINT},
       </if>
+      <if test="finishTime != null">
+        finish_time = #{finishTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="fundStatus != null">
+        fund_status = #{fundStatus,jdbcType=TINYINT},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -185,7 +205,9 @@
       create_time = #{createTime,jdbcType=TIMESTAMP},
       payment_time = #{paymentTime,jdbcType=TIMESTAMP},
       order_status = #{orderStatus,jdbcType=TINYINT},
-      is_deleted = #{isDeleted,jdbcType=TINYINT}
+      is_deleted = #{isDeleted,jdbcType=TINYINT},
+      finish_time = #{finishTime,jdbcType=TIMESTAMP},
+      fund_status = #{fundStatus,jdbcType=TINYINT}
     where id = #{id,jdbcType=BIGINT}
   </update>
   <select id="getTotalOrderAmount" resultType="java.math.BigDecimal">
@@ -200,5 +222,22 @@
   <select id="getOrderAmountByDateRange" resultType="java.math.BigDecimal">
     select IFNULL(sum(order_price), 0) from sh_order
     where create_time >= #{startDate} and create_time &lt; #{endDate} and payment_status = 1
+  </select>
+
+  <!-- 查询需要释放资金的订单：完成时间超过7天，资金状态为0（待释放），且没有活跃的售后申请 -->
+  <select id="selectOrdersForFundRelease" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from sh_order
+    where finish_time is not null
+      and finish_time &lt;= #{finishTimeThreshold}
+      and fund_status = 0
+      and order_status = 3
+      and payment_status = 1
+      and not exists (
+        select 1 from sh_after_sale
+        where sh_after_sale.order_id = sh_order.id
+          and sh_after_sale.application_status in (0, 1, 2, 3, 4)
+      )
   </select>
 </mapper>

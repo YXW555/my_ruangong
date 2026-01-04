@@ -100,6 +100,7 @@ CREATE TABLE `sh_chat_message`  (
   `content` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '消息内容',
   `create_time` datetime NOT NULL COMMENT '发送时间',
   `is_read` tinyint NOT NULL DEFAULT 0 COMMENT '是否已读（0-未读；1-已读）',
+  `image_url` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '图片地址',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `chat_from_user_index`(`from_user` ASC) USING BTREE,
   INDEX `chat_to_user_index`(`to_user` ASC) USING BTREE,
@@ -139,6 +140,33 @@ CREATE TABLE `sh_order_address`  (
   UNIQUE INDEX `orderId`(`order_id` ASC) USING BTREE,
   INDEX `order_id_index`(`order_id` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '订单地址表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for sh_after_sale
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_after_sale`;
+CREATE TABLE `sh_after_sale`  (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `order_id` bigint NOT NULL COMMENT '订单ID',
+  `buyer_id` bigint NOT NULL COMMENT '买家ID（申请人）',
+  `seller_id` bigint NOT NULL COMMENT '卖家ID',
+  `application_type` tinyint NOT NULL COMMENT '申请类型：1-质量问题，2-描述不符，3-未收到货，4-其他',
+  `problem_description` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '问题描述',
+  `evidence_images` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '证据图片（JSON格式）',
+  `refund_amount` decimal(10, 2) NOT NULL COMMENT '退款金额',
+  `application_status` tinyint NOT NULL DEFAULT 0 COMMENT '申请状态：0-待卖家审核，1-卖家已同意，2-卖家已拒绝，3-已完成退款，4-已取消',
+  `seller_review_time` datetime NULL DEFAULT NULL COMMENT '卖家审核时间',
+  `seller_review_result` tinyint NULL DEFAULT NULL COMMENT '卖家审核结果：1-同意，2-拒绝',
+  `seller_reject_reason` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '卖家拒绝原因',
+  `seller_evidence_images` varchar(1024) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '卖家举证图片（JSON格式）',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `order_id_index`(`order_id` ASC) USING BTREE,
+  INDEX `buyer_id_index`(`buyer_id` ASC) USING BTREE,
+  INDEX `seller_id_index`(`seller_id` ASC) USING BTREE,
+  INDEX `status_index`(`application_status` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '售后申请表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for sh_dispute
@@ -251,13 +279,13 @@ CREATE TABLE `sh_idle_item_pin`  (
 INSERT INTO `sh_admin` VALUES (1, 'admin', '123456', '超级管理员');
 
 -- 用户数据（简化版）
-INSERT INTO `sh_user` VALUES 
+INSERT INTO `sh_user` VALUES
 (1, '13800138000', '123456', '测试用户1', 'http://localhost:8080/image?imageName=default_avatar.jpg', NOW(), 0, 0, 0, NULL),
 (2, '13800138001', '123456', '测试用户2', 'http://localhost:8080/image?imageName=default_avatar.jpg', NOW(), 0, 0, 0, NULL),
 (3, '13800138002', '123456', '商家用户', 'http://localhost:8080/image?imageName=default_avatar.jpg', NOW(), 0, 1, 0, NULL);
 
 -- 商品数据（简化版）
-INSERT INTO `sh_idle_item` VALUES 
+INSERT INTO `sh_idle_item` VALUES
 (1, '二手笔记本电脑', '九成新，配置良好，适合学习办公', '[]', 2000.00, '14号楼', 1, NOW(), 1, 1, 1),
 (2, 'Java编程书籍', '经典教材，有笔记', '[]', 50.00, '11号楼', 4, NOW(), 1, 1, 1),
 (3, '机械键盘', '黑轴，手感好', '[]', 150.00, '9号楼', 1, NOW(), 1, 2, 1),
@@ -265,14 +293,31 @@ INSERT INTO `sh_idle_item` VALUES
 (5, '水壶', '即将毕业，低价出售', '[]', 15.00, '11号楼', 2, NOW(), 1, 3, 1);
 
 -- 地址数据
-INSERT INTO `sh_address` VALUES 
+INSERT INTO `sh_address` VALUES
 (1, '张三', '13800138000', '男生宿舍', '14号楼', '二层', '205宿舍', 1, 1),
 (2, '李四', '13800138001', '男生宿舍', '11号楼', '三层', '305宿舍', 1, 2);
 
 -- 收藏数据
-INSERT INTO `sh_favorite` VALUES 
+INSERT INTO `sh_favorite` VALUES
 (1, NOW(), 1, 1),
 (2, NOW(), 2, 3);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- ----------------------------
+-- Table structure for sh_auto_reply_template
+-- 自动回复模板表
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_auto_reply_template`;
+CREATE TABLE `sh_auto_reply_template`  (
+                                           `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+                                           `user_id` bigint NOT NULL COMMENT '用户id（卖家）',
+                                           `keyword` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '关键词（如：自提、价格）',
+                                           `reply_content` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '回复内容（如：自提点：3 栋楼下快递柜）',
+                                           `is_enabled` tinyint NOT NULL DEFAULT 1 COMMENT '是否启用（0-禁用；1-启用）',
+                                           `create_time` datetime NOT NULL COMMENT '创建时间',
+                                           `update_time` datetime NOT NULL COMMENT '更新时间',
+                                           PRIMARY KEY (`id`) USING BTREE,
+                                           INDEX `auto_reply_user_id_index`(`user_id` ASC) USING BTREE,
+                                           INDEX `auto_reply_keyword_index`(`keyword` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '自动回复模板表' ROW_FORMAT = DYNAMIC;

@@ -56,6 +56,11 @@ public class ChatMessageModel implements Serializable {
      */
     private UserModel toU;
 
+    /**
+     * 图片地址（可为空）
+     */
+    private String imageUrl;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -136,6 +141,14 @@ public class ChatMessageModel implements Serializable {
 
     public void setToU(UserModel toU) {
         this.toU = toU;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
 

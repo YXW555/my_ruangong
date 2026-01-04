@@ -45,6 +45,7 @@ class IdleItemServiceTest {
         idleItemModel.setReleaseTime(new Date());
         idleItemModel.setStock(1);
         idleItemModel.setIdleDetails("这是一个测试商品");
+        idleItemModel.setPictureList("[]");
         
         // 执行测试
         boolean result = idleItemService.addIdleItem(idleItemModel);
@@ -68,6 +69,8 @@ class IdleItemServiceTest {
         newItem.setIdleStatus((byte) 1);
         newItem.setReleaseTime(new Date());
         newItem.setStock(1);
+        newItem.setIdleDetails("这是一个测试商品");
+        newItem.setPictureList("[]");
         idleItemService.addIdleItem(newItem);
         
         // 执行测试
@@ -96,6 +99,8 @@ class IdleItemServiceTest {
         item1.setIdleStatus((byte) 1);
         item1.setReleaseTime(new Date());
         item1.setStock(1);
+        item1.setIdleDetails("详情占位");
+        item1.setPictureList("[]");
         idleItemService.addIdleItem(item1);
         
         IdleItemModel item2 = new IdleItemModel();
@@ -106,6 +111,8 @@ class IdleItemServiceTest {
         item2.setIdleStatus((byte) 1);
         item2.setReleaseTime(new Date());
         item2.setStock(1);
+        item2.setIdleDetails("详情占位");
+        item2.setPictureList("[]");
         idleItemService.addIdleItem(item2);
         
         // 执行测试
@@ -130,6 +137,8 @@ class IdleItemServiceTest {
         item.setIdleStatus((byte) 1);
         item.setReleaseTime(new Date());
         item.setStock(1);
+        item.setIdleDetails("详情占位");
+        item.setPictureList("[]");
         idleItemService.addIdleItem(item);
         
         // 执行测试

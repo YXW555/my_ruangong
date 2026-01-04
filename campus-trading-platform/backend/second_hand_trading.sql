@@ -539,15 +539,33 @@ CREATE TABLE `sh_idle_item_pin`  (
 
 -- 添加会员字段（如果字段已存在会报错，可以忽略）
 -- 执行前请先检查表结构，如果字段已存在请注释掉这两条ALTER TABLE语句
-ALTER TABLE `sh_user` 
+ALTER TABLE `sh_user`
 ADD COLUMN `membership_type` tinyint NOT NULL DEFAULT 0 COMMENT '会员类型（0-普通用户，1-基础会员，2-高级会员）' AFTER `user_role`;
 
-ALTER TABLE `sh_user` 
+ALTER TABLE `sh_user`
 ADD COLUMN `membership_expire_time` datetime NULL DEFAULT NULL COMMENT '会员到期时间' AFTER `membership_type`;
 
 -- 补齐旧数据的会员字段
-UPDATE `sh_user` 
+UPDATE `sh_user`
 SET    `membership_type` = 0, `membership_expire_time` = NULL
 WHERE  `membership_type` IS NULL;
-  
+
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for sh_auto_reply_template
+-- 自动回复模板表
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_auto_reply_template`;
+CREATE TABLE `sh_auto_reply_template`  (
+                                           `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+                                           `user_id` bigint NOT NULL COMMENT '用户id（卖家）',
+                                           `keyword` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '关键词（如：自提、价格）',
+                                           `reply_content` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '回复内容（如：自提点：3 栋楼下快递柜）',
+                                           `is_enabled` tinyint NOT NULL DEFAULT 1 COMMENT '是否启用（0-禁用；1-启用）',
+                                           `create_time` datetime NOT NULL COMMENT '创建时间',
+                                           `update_time` datetime NOT NULL COMMENT '更新时间',
+                                           PRIMARY KEY (`id`) USING BTREE,
+                                           INDEX `auto_reply_user_id_index`(`user_id` ASC) USING BTREE,
+                                           INDEX `auto_reply_keyword_index`(`keyword` ASC) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '自动回复模板表' ROW_FORMAT = DYNAMIC;

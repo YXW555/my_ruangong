@@ -45,8 +45,10 @@
                             <span slot="title">商家认证审核</span>
                         </el-menu-item>
                         <el-menu-item index="6">
-                            <i class="el-icon-warning-outline"></i>
-                            <span slot="title">交易纠纷管理</span>
+                            <el-badge :value="disputePendingCount>0?disputePendingCount:''" class="item-badge">
+                                <i class="el-icon-warning-outline"></i>
+                            </el-badge>
+                            <span slot="title">交易纠纷与售后管理</span>
                         </el-menu-item>
 					</el-menu>
 				</el-aside>
@@ -56,7 +58,7 @@
 					<userList v-if="mode == 3"></userList>
 					<DataStatistics v-if="mode == 4"></DataStatistics>
 					<MerchantApplicationAdmin v-if="mode == 5"></MerchantApplicationAdmin>
-					<DisputeManagement v-if="mode == 6"></DisputeManagement>
+					<DisputeManagement v-if="mode == 6" @pending-count-change="handleDisputePendingCountChange"></DisputeManagement>
 				</el-main>
 			</el-container>
 		</el-container>
@@ -94,6 +96,7 @@
                     nickname: '',
                 },
                 pendingCount: 0,
+                disputePendingCount: 0,
             }
         },
         created() {
@@ -126,6 +129,9 @@
             }
         },
         methods: {
+            handleDisputePendingCountChange(count) {
+                this.disputePendingCount = count;
+            },
             loadPendingCount() {
                 this.$api.adminGetPendingApplicationCount().then(res => {
                     if (res.status_code === 1) {

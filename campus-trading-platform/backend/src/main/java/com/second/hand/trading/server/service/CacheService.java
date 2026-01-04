@@ -97,8 +97,8 @@ public class CacheService {
         // 删除详情缓存
         redisUtil.delete(PRODUCT_DETAIL_KEY + productId);
         
-        // 删除所有列表缓存（简单处理，实际可以用更精细的缓存策略）
-        // 这里可以选择删除特定key，或者使用通配符删除
+        // 删除所有列表缓存（全部失效）
+        evictAllProductListCache();
     }
 
     /**
@@ -136,8 +136,9 @@ public class CacheService {
      * 删除所有商品列表缓存
      */
     public void evictAllProductListCache() {
-        // 实际项目中可以使用Redis的keys或scan命令删除匹配的key
-        // 这里简化处理，只删除常用的几个
+        // 使用前缀匹配删除所有商品列表相关的缓存
+        redisUtil.deleteByPrefix(PRODUCT_LIST_KEY);
+        redisUtil.deleteByPrefix(PRODUCT_LIST_BY_LABEL_KEY);
     }
 }
 

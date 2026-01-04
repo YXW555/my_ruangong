@@ -108,4 +108,44 @@ public class StatisticsController {
 
         return ResultVo.success(userData);
     }
+
+    /**
+     * 获取环境效益统计数据（碳排放减少等）
+     */
+    @GetMapping("/environmental-benefits")
+    public ResultVo getEnvironmentalBenefits(HttpSession session) {
+        if (session.getAttribute("admin") == null) {
+            return ResultVo.fail(ErrorMsg.COOKIE_ERROR);
+        }
+
+        Map<String, Object> envData = new HashMap<>();
+
+        // 获取总交易金额
+        BigDecimal totalAmount = orderService.getTotalOrderAmount();
+        int totalOrders = orderService.getTotalOrderCount();
+
+        // 环境效益计算逻辑：
+        // 1. 碳排放减少：假设每100元二手交易额相当于减少1kg CO2排放（避免新商品生产）
+        // 2. 资源循环：每笔交易代表一件商品被重复利用
+        // 3. 废弃物减少：假设每笔交易减少0.5kg废弃物产生
+
+        // 碳排放减少（kg CO2）
+        // 公式：交易金额(元) / 100 * 1kg = CO2减少量
+        double co2Reduction = totalAmount.doubleValue() / 100.0;
+        envData.put("co2Reduction", Math.round(co2Reduction * 100.0) / 100.0); // 保留2位小数
+
+        // 资源循环利用次数（件）
+        envData.put("recycledItems", totalOrders);
+
+        // 废弃物减少（kg）
+        // 假设每笔交易减少0.5kg废弃物
+        double wasteReduction = totalOrders * 0.5;
+        envData.put("wasteReduction", Math.round(wasteReduction * 100.0) / 100.0);
+
+        // 相当于种植树木数量（假设1kg CO2 ≈ 0.05棵树）
+        int treesEquivalent = (int) Math.round(co2Reduction * 0.05);
+        envData.put("treesEquivalent", treesEquivalent);
+
+        return ResultVo.success(envData);
+    }
 }

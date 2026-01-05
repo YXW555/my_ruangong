@@ -398,3 +398,126 @@ export function openNavigation(location, mode = 'car') {
     window.open(url, '_blank');
 }
 
+/**
+ * 绘制驾驶路线（从start到end）
+ * @param {AMap.Map} map 地图实例
+ * @param {Object} start {lng, lat}
+ * @param {Object} end {lng, lat}
+ * @returns {Promise} resolve(routeInfo)
+ */
+export function drawDrivingRoute(map, start, end) {
+    return new Promise((resolve, reject) => {
+        if (!window.AMap) {
+            reject(new Error('高德地图API未加载'));
+            return;
+        }
+        if (!map || !start || !end) {
+            reject(new Error('drawDrivingRoute: 参数不足'));
+            return;
+        }
+
+        try {
+            // 清理已有路线
+            clearRoute(map);
+
+            const driving = new AMap.Driving({
+                // 使用默认策略
+            });
+
+            const origin = [start.lng, start.lat];
+            const destination = [end.lng, end.lat];
+
+            driving.search(origin, destination, (status, result) => {
+                if (status !== 'complete' || !result || !result.routes || result.routes.length === 0) {
+                    reject(new Error('路线搜索失败'));
+                    return;
+                }
+
+                const route = result.routes[0];
+                // 合并所有路径点
+                const path = [];
+                if (route && route.steps) {
+                    route.steps.forEach(step => {
+                        if (step.path && step.path.length > 0) {
+                            step.path.forEach(p => path.push(p));
+                        }
+                    });
+                }
+
+                // 创建折线
+                const polyline = new AMap.Polyline({
+                    path: path,
+                    strokeColor: '#3366FF',
+                    strokeWeight: 5,
+                    strokeOpacity: 0.8,
+                    showDir: true
+                });
+
+                // 起终点标记
+                const startMarker = new AMap.Marker({
+                    position: origin,
+                    title: '起点',
+                    icon: new AMap.Icon({
+                        image: 'https://webapi.amap.com/theme/v1.3/markers/n/start.png',
+                        size: new AMap.Size(24, 34),
+                        imageSize: new AMap.Size(24, 34)
+                    })
+                });
+                const endMarker = new AMap.Marker({
+                    position: destination,
+                    title: '终点',
+                    icon: new AMap.Icon({
+                        image: 'https://webapi.amap.com/theme/v1.3/markers/n/end.png',
+                        size: new AMap.Size(24, 34),
+                        imageSize: new AMap.Size(24, 34)
+                    })
+                });
+
+                // 将覆盖物添加到地图并保存引用以便清理
+                map.add(polyline);
+                map.add(startMarker);
+                map.add(endMarker);
+
+                if (!map.__routeOverlays) map.__routeOverlays = [];
+                map.__routeOverlays.push(polyline, startMarker, endMarker);
+
+                // 适配视野
+                try {
+                    map.setFitView([polyline], false, [50, 50, 50, 50]);
+                } catch (e) {
+                    // fallback: fit bounds by points
+                    try {
+                        map.setFitView();
+                    } catch (e2) {}
+                }
+
+                resolve({
+                    distance: route.distance || null,
+                    duration: route.duration || null,
+                    path
+                });
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+/**
+ * 清除当前地图上的路线覆盖物（如果存在）
+ * @param {AMap.Map} map
+ */
+export function clearRoute(map) {
+    if (!map) return;
+    if (map.__routeOverlays && Array.isArray(map.__routeOverlays)) {
+        try {
+            map.__routeOverlays.forEach(ov => {
+                try {
+                    map.remove(ov);
+                } catch (e) {}
+            });
+        } catch (e) {}
+        map.__routeOverlays = [];
+    }
+}
+

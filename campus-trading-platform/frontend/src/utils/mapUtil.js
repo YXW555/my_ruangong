@@ -120,26 +120,30 @@ export function geocodeAddress(address) {
         
         // 如果地址看起来不完整（比如只有学校名称），尝试添加"大学"或"学院"等关键词
         // 或者使用POI搜索
+        console.log('开始解析地址:', cleanAddress);
+
+        // 如果地址过短或不包含城市/区/省等关键词，优先使用POI搜索（对学校名、宿舍等更友好）
+        const shortAddressPattern = /^.{0,6}$|(?:大学|学院|宿舍|校区|教室|寝室)/i;
+        const containsCityPattern = /(市|省|区|县|县级|自治州|市辖区)/i;
+
+        const tryPlaceSearchFirst = shortAddressPattern.test(cleanAddress) && !containsCityPattern.test(cleanAddress);
+
         const geocoder = new AMap.Geocoder({
             city: '全国', // 全国范围搜索
             timeout: 10000 // 10秒超时
         });
-        
-        console.log('开始解析地址:', cleanAddress);
-        
-        geocoder.getLocation(cleanAddress, (status, result) => {
+
+        // helper to handle geocoder callback
+        const handleGeocoderResult = (status, result) => {
             console.log('地址解析结果:', status, result);
-            
             if (status === 'complete' && result.geocodes && result.geocodes.length > 0) {
                 const location = result.geocodes[0].location;
                 const formattedAddress = result.geocodes[0].formattedAddress || cleanAddress;
-                
                 console.log('地址解析成功:', {
                     original: cleanAddress,
                     formatted: formattedAddress,
                     location: [location.lng, location.lat]
                 });
-                
                 resolve({
                     lng: location.lng,
                     lat: location.lat,
@@ -147,14 +151,56 @@ export function geocodeAddress(address) {
                     formattedAddress: formattedAddress
                 });
             } else {
-                // 如果地理编码失败，尝试使用POI搜索
                 console.warn('地理编码失败，尝试POI搜索:', cleanAddress);
-                searchByPOI(cleanAddress).then(resolve).catch(() => {
-                    console.error('地址解析失败:', cleanAddress, '状态:', status);
-                    reject(new Error(`地址解析失败: "${cleanAddress}"。请确保地址包含城市和详细位置，例如："北京市清华大学"或"上海市复旦大学"`));
+                searchByPOI(cleanAddress).then(resolve).catch((err) => {
+                    console.error('地址解析失败:', cleanAddress, '状态:', status, 'err:', err && err.message);
+                    reject(new Error(`地址解析失败: "${cleanAddress}"。请确保地址包含城市和详细位置，例如："北京市清华大学"`));
                 });
             }
-        });
+        };
+
+        // 优先尝试后端代理（可以绕过前端 Referer 白名单问题）
+        const proxyUrl = `/api/geocode?address=${encodeURIComponent(cleanAddress)}`;
+        console.log('先尝试后端代理解析地址:', proxyUrl);
+        fetch(proxyUrl, { method: 'GET' })
+            .then(res => res.json())
+            .then(data => {
+                try {
+                    console.log('后端代理返回:', data);
+                    if (data && data.status_code === 1 && data.data) {
+                        const d = data.data;
+                        if (d.lng && d.lat) {
+                            resolve({
+                                lng: Number(d.lng),
+                                lat: Number(d.lat),
+                                address: cleanAddress,
+                                formattedAddress: d.formattedAddress || cleanAddress
+                            });
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('解析后端代理响应异常，继续使用前端SDK解析', e);
+                }
+                // 如果代理失败，再使用前端策略（先POI或geocoder）
+                if (tryPlaceSearchFirst) {
+                    console.log('代理未命中，优先尝试POI搜索:', cleanAddress);
+                    searchByPOI(cleanAddress).then(resolve).catch((err) => {
+                        console.warn('POI搜索未命中，回退地理编码:', err && err.message);
+                        geocoder.getLocation(cleanAddress, handleGeocoderResult);
+                    });
+                } else {
+                    geocoder.getLocation(cleanAddress, handleGeocoderResult);
+                }
+            })
+            .catch(err => {
+                console.warn('后端代理调用失败，使用客户端解析:', err);
+                if (tryPlaceSearchFirst) {
+                    searchByPOI(cleanAddress).then(resolve).catch(() => geocoder.getLocation(cleanAddress, handleGeocoderResult));
+                } else {
+                    geocoder.getLocation(cleanAddress, handleGeocoderResult);
+                }
+            });
     });
 }
 

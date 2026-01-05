@@ -122,6 +122,21 @@ export default new Router({
             meta: { title: '后台管理' }
         },
         {
+            path: '/admin/announcement',
+            component: () => import('../components/page/admin-announcement.vue'),
+            meta: { title: '发布公告 | 管理后台' }
+        },
+        {
+            path: '/announcement/detail',
+            component: () => import('../components/page/announcement-detail.vue'),
+            meta: { title: '公告详情' }
+        },
+        {
+            path: '/announcements',
+            component: () => import('../components/page/announcement-list.vue'),
+            meta: { title: '平台公告' }
+        },
+        {
             path: '*',
             redirect: '/'
         }

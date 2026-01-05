@@ -50,6 +50,10 @@
                             </el-badge>
                             <span slot="title">交易纠纷与售后管理</span>
                         </el-menu-item>
+                        <el-menu-item index="7">
+                            <i class="el-icon-document"></i>
+                            <span slot="title">发布公告</span>
+                        </el-menu-item>
 					</el-menu>
 				</el-aside>
 				<el-main>
@@ -59,6 +63,7 @@
 					<DataStatistics v-if="mode == 4"></DataStatistics>
 					<MerchantApplicationAdmin v-if="mode == 5"></MerchantApplicationAdmin>
 					<DisputeManagement v-if="mode == 6" @pending-count-change="handleDisputePendingCountChange"></DisputeManagement>
+                    <AdminAnnouncement v-if="mode == 7"></AdminAnnouncement>
 				</el-main>
 			</el-container>
 		</el-container>
@@ -77,6 +82,7 @@
     import DataStatistics from '../common/DataStatistics.vue'
     import MerchantApplicationAdmin from '../common/MerchantApplicationAdmin.vue'
     import DisputeManagement from '../common/DisputeManagement.vue'
+    import AdminAnnouncement from './admin-announcement.vue'
 
     export default {
         name: "platform-admin",
@@ -88,6 +94,7 @@
             DataStatistics,
             MerchantApplicationAdmin,
             DisputeManagement,
+                AdminAnnouncement,
         },
         data() {
             return {

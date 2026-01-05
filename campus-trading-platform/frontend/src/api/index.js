@@ -247,6 +247,42 @@ const api = {
             params: query
         });
     },
+    // Announcements
+    addAnnouncement(data) {
+        return request({
+            url: '/announcement/add',
+            method: 'post',
+            data
+        });
+    },
+    listAnnouncements(query) {
+        return request({
+            url: '/announcement/list',
+            method: 'get',
+            params: query
+        });
+    },
+    updateAnnouncement(data) {
+        return request({
+            url: '/announcement/update',
+            method: 'post',
+            data
+        });
+    },
+    deleteAnnouncement(query) {
+        return request({
+            url: '/announcement/delete',
+            method: 'get',
+            params: query
+        });
+    },
+    getAnnouncement(query) {
+        return request({
+            url: '/announcement/get',
+            method: 'get',
+            params: query
+        });
+    },
     deleteMessage(query) {
         return request({
             url: '/message/delete',

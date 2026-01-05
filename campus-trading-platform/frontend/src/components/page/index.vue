@@ -166,6 +166,8 @@
                 </div>
                 </div>
 
+                <!-- 公告横幅（已移除，公告展示集成到“公告展示”标签内） -->
+
                 <!-- 分类标签 -->
                 <div class="category-tabs">
                     <el-tabs v-model="labelName" type="border-card" @tab-click="handleClick" class="custom-tabs">
@@ -190,8 +192,10 @@
                     </el-tabs>
                 </div>
 
+                <!-- 公告展示: 改为与其他分类统一使用商品卡片展示（不再直接渲染 announcement-list） -->
+
                 <!-- 视图切换 -->
-                <div class="view-switch-container">
+                <div v-if="labelName !== '5'" class="view-switch-container">
                     <div class="view-left">
                         <span class="view-title">共 <strong>{{totalItem}}</strong> 件商品</span>
                         <el-tag v-if="labelName !== '0'" type="success" size="small" style="margin-left: 10px;">
@@ -358,6 +362,11 @@
             AppBody,
             AppFoot
         },
+        components: {
+            AppHead,
+            AppBody,
+            AppFoot
+        },
         data() {
             return {
                 labelName: '0',
@@ -405,6 +414,35 @@
                         nums: 8
                     }).then(res => {
                         let list = res.data.list;
+                        // 如果是公告分类（5），合并来自公告表的公告
+                        if (this.labelName === '5') {
+                            this.$api.listAnnouncements().then(ar => {
+                                if (ar.status_code === 1 && Array.isArray(ar.data)) {
+                                    const ann = ar.data.map(a => {
+                                        // extract first image from content
+                                        let img = '';
+                                        if (a.content) {
+                                            const m = a.content.match(/<img\s+[^>]*src=["']([^"']+)["'][^>]*>/i);
+                                            img = m ? m[1] : '';
+                                        }
+                                        return {
+                                            id: 'ann-' + a.id,
+                                            idleName: a.title,
+                                            idleDetails: a.content,
+                                            pictureList: JSON.stringify(img ? [img] : []),
+                                            idlePrice: 0,
+                                            idlePlace: '',
+                                            idleLabel: 5,
+                                            releaseTime: a.createTime,
+                                            isPinned: a.isPinned === 1,
+                                            imgUrl: img,
+                                            user: { nickname: a.creatorRole === 2 ? '管理员' : '公告发布者', avatar: '' }
+                                        };
+                                    });
+                                    list = list.concat(ann);
+                                }
+                            }).catch(()=>{});
+                        }
                         for (let i = 0; i < list.length; i++) {
                             list[i].timeStr = list[i].releaseTime.substring(0, 10) + " " + list[i].releaseTime.substring(11, 19);
                             let pictureList = JSON.parse(list[i].pictureList);
@@ -413,22 +451,70 @@
                                 list[i].isPinned = false;
                             }
                         }
+                            // 如果是公告分类（5），同时加载 admin 发布的公告并合并显示
+                            if (this.labelName === '5') {
+                                // load announcements and merge
+                                this.$api.listAnnouncements().then(ar => {
+                                    const annList = (ar && ar.data) ? ar.data : [];
+                                    // map announcements to item-like objects
+                                    const mappedAnn = annList.map(a => {
+                                        // extract first image src from content
+                                        let img = '';
+                                        if (a.content) {
+                                            const m = a.content.match(/<img\s+[^>]*src=["']([^"']+)["'][^>]*>/i);
+                                            img = m ? m[1] : '';
+                                        }
+                                        return {
+                                            id: 'ann-' + a.id,
+                                            idleName: a.title,
+                                            idleDetails: a.content,
+                                            pictureList: JSON.stringify(img ? [img] : []),
+                                            imgUrl: img,
+                                            idlePrice: 0,
+                                            idlePlace: '',
+                                            releaseTime: a.createTime,
+                                            timeStr: a.createTime ? a.createTime.substring(0, 16) : '',
+                                            isPinned: a.isPinned === 1,
+                                            user: { nickname: (a.creatorRole === 2 ? '管理员' : '商家') }
+                                        };
+                                    });
 
-                        // 排序：置顶商品优先，然后按发布时间倒序
-                        this.idleList = list.sort((a, b) => {
-                            // 置顶商品始终排在前面
-                            if (a.isPinned && !b.isPinned) return -1;
-                            if (!a.isPinned && b.isPinned) return 1;
-
-                            // 同等置顶状态下，按发布时间倒序
-                            const timeA = new Date(a.releaseTime || 0).getTime();
-                            const timeB = new Date(b.releaseTime || 0).getTime();
-                            return timeB - timeA;
-                        });
-
-                        this.totalItem=res.data.count;
-                        // 更新轮播图商品数据
-                        this.updateBannerItems(list);
+                                    const merged = mappedAnn.concat(list);
+                                    // sort merged by isPinned then time
+                                    merged.sort((a, b) => {
+                                        if (a.isPinned && !b.isPinned) return -1;
+                                        if (!a.isPinned && b.isPinned) return 1;
+                                        const ta = new Date(a.releaseTime || 0).getTime();
+                                        const tb = new Date(b.releaseTime || 0).getTime();
+                                        return tb - ta;
+                                    });
+                                    this.idleList = merged;
+                                    this.totalItem = (res.data.count || 0) + annList.length;
+                                    this.updateBannerItems(merged);
+                                }).catch(() => {
+                                    // if announcements fail, fallback to only list
+                                    this.idleList = list.sort((a, b) => {
+                                        if (a.isPinned && !b.isPinned) return -1;
+                                        if (!a.isPinned && b.isPinned) return 1;
+                                        const timeA = new Date(a.releaseTime || 0).getTime();
+                                        const timeB = new Date(b.releaseTime || 0).getTime();
+                                        return timeB - timeA;
+                                    });
+                                    this.totalItem = res.data.count;
+                                    this.updateBannerItems(list);
+                                });
+                            } else {
+                                // 非公告分类，正常处理
+                                this.idleList = list.sort((a, b) => {
+                                    if (a.isPinned && !b.isPinned) return -1;
+                                    if (!a.isPinned && b.isPinned) return 1;
+                                    const timeA = new Date(a.releaseTime || 0).getTime();
+                                    const timeB = new Date(b.releaseTime || 0).getTime();
+                                    return timeB - timeA;
+                                });
+                                this.totalItem = res.data.count;
+                                this.updateBannerItems(list);
+                            }
                     }).catch(e => {
                         console.log(e)
                         this.$message.error('获取数据失败，请稍后重试');
@@ -473,12 +559,26 @@
                 }
             },
             handleClick(tab, event) {
-                this.$router.replace({query: {page: 1,labelName:this.labelName}});
+                const newQuery = { page: '1', labelName: this.labelName };
+                const cur = this.$route && this.$route.query ? this.$route.query : {};
+                if (cur.page !== newQuery.page || cur.labelName !== newQuery.labelName) {
+                    this.$router.replace({ query: newQuery }).catch(() => {});
+                }
             },
             handleCurrentChange(val) {
-                this.$router.replace({query: {page: val,labelName:this.labelName}});
+                const newQuery = { page: String(val), labelName: this.labelName };
+                const cur = this.$route && this.$route.query ? this.$route.query : {};
+                if (cur.page !== newQuery.page || cur.labelName !== newQuery.labelName) {
+                    this.$router.replace({ query: newQuery }).catch(() => {});
+                }
             },
             toDetails(idle) {
+                // If this is a mapped announcement (we prefix id with 'ann-'), open announcement detail
+                if (idle && typeof idle.id === 'string' && idle.id.startsWith('ann-')) {
+                    const annId = idle.id.replace(/^ann-/, '');
+                    this.$router.push({ path: '/announcement/detail', query: { id: annId }});
+                    return;
+                }
                 this.$router.push({path: '/details', query: {id: idle.id}});
             },
             getItemCategory(label) {
@@ -630,7 +730,7 @@
                 // 添加轮换的置顶商品到轮播图
                 for (const item of currentRotationItems) {
                     const categoryName = this.getItemCategory(item.idleLabel) || '精选商品';
-                    this.bannerList.push({
+                        this.bannerList.push({
                         title: item.idleName,
                         subtitle: `来自${categoryName} · 会员置顶`,
                         tags: [categoryName, '置顶', '精品', '轮换展示'],

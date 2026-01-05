@@ -4,8 +4,11 @@
         <app-body>
             <div class="merchant-manage-container">
                 <el-card class="manage-card" shadow="hover">
-                    <div slot="header" class="card-header">
+                    <div slot="header" class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
                         <span><i class="el-icon-s-shop"></i> 店铺管理</span>
+                        <div>
+                            <el-button v-if="isPrivileged" type="primary" size="small" @click="goToPublish" icon="el-icon-document"> 发布公告</el-button>
+                        </div>
                     </div>
 
                     <el-tabs v-model="activeTab" @tab-click="handleTabClick">
@@ -285,6 +288,7 @@
             return {
                 activeTab: 'statistics',
                 statistics: null,
+                isPrivileged: false,
                 shopItems: [],
                 shopOrders: [],
                 batchForm: {
@@ -295,6 +299,13 @@
         },
         created() {
             this.loadStatistics();
+            // load user info to determine if merchant/admin privileges exist
+            this.$api.getUserInfo().then(res => {
+                if (res && res.status_code === 1 && res.data) {
+                    const role = res.data.userRole !== undefined ? res.data.userRole : (res.data.userRole || this.$sta.user && this.$sta.user.userRole);
+                    this.isPrivileged = (role === 2 || role === 1);
+                }
+            }).catch(() => {});
         },
         methods: {
             handleTabClick(tab) {
@@ -393,6 +404,9 @@
                     path: '/order',
                     query: { id: order.id }
                 });
+            },
+            goToPublish() {
+                this.$router.push({ path: '/admin/announcement' });
             },
             getOrderStatusType(status) {
                 const types = ['warning', 'primary', 'info', 'success', 'danger'];

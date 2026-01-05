@@ -9,24 +9,22 @@
     <result column="content" jdbcType="VARCHAR" property="content"/>
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
     <result column="is_read" jdbcType="TINYINT" property="isRead"/>
-    <result column="image_url" jdbcType="VARCHAR" property="imageUrl"/>
   </resultMap>
 
   <sql id="Base_Column_List">
-    id, from_user, to_user, idle_id, content, create_time, is_read, image_url
+    id, from_user, to_user, idle_id, content, create_time, is_read
   </sql>
 
   <insert id="insert" keyColumn="id" keyProperty="id"
           parameterType="com.second.hand.trading.server.entity.ChatMessageModel"
           useGeneratedKeys="true">
-    insert into sh_chat_message (from_user, to_user, idle_id, content, create_time, is_read, image_url)
+    insert into sh_chat_message (from_user, to_user, idle_id, content, create_time, is_read)
     values (#{fromUser,jdbcType=BIGINT},
             #{toUser,jdbcType=BIGINT},
             #{idleId,jdbcType=BIGINT},
             #{content,jdbcType=VARCHAR},
             #{createTime,jdbcType=TIMESTAMP},
-            #{isRead,jdbcType=TINYINT},
-            #{imageUrl,jdbcType=VARCHAR})
+            #{isRead,jdbcType=TINYINT})
   </insert>
 
   <select id="getAllUserChat" parameterType="java.lang.Long" resultMap="BaseResultMap">

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.second.hand.trading.server.dao.AnnouncementDao">
+  <resultMap id="BaseResultMap" type="com.second.hand.trading.server.entity.AnnouncementModel">
+    <id column="id" jdbcType="BIGINT" property="id"/>
+    <result column="title" jdbcType="VARCHAR" property="title"/>
+    <result column="content" jdbcType="VARCHAR" property="content"/>
+    <result column="creator_id" jdbcType="BIGINT" property="creatorId"/>
+    <result column="creator_role" jdbcType="TINYINT" property="creatorRole"/>
+    <result column="is_pinned" jdbcType="TINYINT" property="isPinned"/>
+    <result column="pin_time" jdbcType="TIMESTAMP" property="pinTime"/>
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+  </resultMap>
+
+  <insert id="insert" parameterType="com.second.hand.trading.server.entity.AnnouncementModel" useGeneratedKeys="true" keyProperty="id">
+    insert into sh_announcement (title, content, creator_id, creator_role, is_pinned, pin_time, create_time)
+    values (#{title,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, #{creatorId,jdbcType=BIGINT},
+      #{creatorRole,jdbcType=TINYINT}, #{isPinned,jdbcType=TINYINT}, #{pinTime,jdbcType=TIMESTAMP}, #{createTime,jdbcType=TIMESTAMP})
+  </insert>
+
+  <select id="selectRecentAnnouncements" resultMap="BaseResultMap">
+    select id, title, content, creator_id, is_pinned, pin_time, create_time
+    from sh_announcement
+    order by is_pinned desc, pin_time desc, create_time desc
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, title, content, creator_id, is_pinned, pin_time, create_time
+    from sh_announcement
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.second.hand.trading.server.entity.AnnouncementModel">
+    update sh_announcement
+    <set>
+      <if test="title != null">title = #{title,jdbcType=VARCHAR},</if>
+      <if test="content != null">content = #{content,jdbcType=VARCHAR},</if>
+      <if test="isPinned != null">is_pinned = #{isPinned,jdbcType=TINYINT},</if>
+      <if test="pinTime != null">pin_time = #{pinTime,jdbcType=TIMESTAMP},</if>
+      <if test="creatorId != null">creator_id = #{creatorId,jdbcType=BIGINT},</if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sh_announcement where id = #{id,jdbcType=BIGINT}
+  </delete>
+</mapper>
+

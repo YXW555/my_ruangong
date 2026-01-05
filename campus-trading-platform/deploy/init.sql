@@ -366,6 +366,28 @@ INSERT INTO `sh_chat_message` (`id`,`from_user`,`to_user`,`idle_id`,`content`,`c
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ----------------------------
+-- Table structure for sh_announcement
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_announcement`;
+CREATE TABLE `sh_announcement` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `title` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公告标题',
+  `content` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公告内容（支持HTML）',
+  `creator_id` bigint NOT NULL COMMENT '发布者用户ID（管理员或经营性卖家）',
+  `creator_role` tinyint NOT NULL DEFAULT 0 COMMENT '发布者角色（0-普通,1-经营性卖家,2-管理员）',
+  `is_pinned` tinyint NOT NULL DEFAULT 0 COMMENT '是否置顶（1-置顶）',
+  `pin_time` datetime NULL DEFAULT NULL COMMENT '置顶时间',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci COMMENT='平台公告表';
+
+-- 示例公告
+INSERT INTO `sh_announcement` (`title`,`content`,`creator_id`,`creator_role`,`is_pinned`,`pin_time`,`create_time`)
+VALUES
+('系统维护通知','平台将于本周日凌晨2:00-4:00进行维护，期间服务可能不稳定。',1,2,1,NOW(),NOW());
+
+
+-- ----------------------------
 -- Table structure for sh_auto_reply_template
 -- 自动回复模板表
 -- ----------------------------
@@ -401,3 +423,20 @@ ADD COLUMN `fund_status` tinyint NULL DEFAULT 0 COMMENT '资金状态：0-待释
 -- ALTER TABLE sh_user CHANGE COLUMN membership_type_temp membership_type TINYINT DEFAULT 0;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for sh_announcement
+-- ----------------------------
+DROP TABLE IF EXISTS `sh_announcement`;
+CREATE TABLE `sh_announcement` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+  `title` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公告标题',
+  `content` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公告内容（支持HTML）',
+  `creator_id` bigint NOT NULL COMMENT '发布者用户ID（管理员或经营性卖家）',
+  `creator_role` tinyint NOT NULL COMMENT '发布者角色（0-用户，1-经营性卖家，2-管理员）',
+  `is_pinned` tinyint NOT NULL DEFAULT 0 COMMENT '是否置顶（1-置顶）',
+  `pin_time` datetime NULL DEFAULT NULL COMMENT '置顶时间',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci COMMENT='平台公告表';
+

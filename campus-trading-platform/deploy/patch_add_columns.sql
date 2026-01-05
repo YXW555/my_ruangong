@@ -10,6 +10,14 @@
 ALTER TABLE sh_chat_message
   ADD COLUMN image_url VARCHAR(1024) NULL DEFAULT NULL COMMENT '消息图片URL';
 
+-- 1b) Ensure sh_message has reply linking columns used by the application
+-- Add to_user and to_message if they are missing (link replies)
+ALTER TABLE sh_message
+  ADD COLUMN to_user BIGINT NULL DEFAULT NULL COMMENT '所回复的用户' ;
+
+ALTER TABLE sh_message
+  ADD COLUMN to_message BIGINT NULL DEFAULT NULL COMMENT '所回复的留言';
+
 -- 2) Ensure sh_order contains fields used by order logic
 -- Add is_deleted if missing (used to mark soft-deleted orders)
 ALTER TABLE sh_order

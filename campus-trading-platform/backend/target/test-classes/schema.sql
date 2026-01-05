@@ -68,6 +68,7 @@ CREATE TABLE `sh_chat_message`  (
   `to_user` bigint NOT NULL COMMENT '接收方用户id',
   `idle_id` bigint NULL DEFAULT NULL COMMENT '关联的闲置id（可为空）',
   `content` varchar(512) NOT NULL COMMENT '消息内容',
+  `image_url` varchar(256) NULL DEFAULT NULL COMMENT '消息图片URL',
   `create_time` datetime NOT NULL COMMENT '发送时间',
   `is_read` tinyint NOT NULL DEFAULT 0 COMMENT '是否已读（0-未读；1-已读）',
   PRIMARY KEY (`id`)

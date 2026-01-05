@@ -239,8 +239,8 @@
                                                         placeholder="请输入商品详情"></el-input>
                                                 </el-form-item>
                                                 <el-form-item label="商品图片">
-                                                    <el-upload
-                                                        action="/file/"
+                                                <el-upload
+                                                        action="/api/file"
                                                         :on-success="(res) => handleBatchImageSuccess(res, index)"
                                                         :file-list="item.pictureList || []"
                                                         list-type="picture-card"

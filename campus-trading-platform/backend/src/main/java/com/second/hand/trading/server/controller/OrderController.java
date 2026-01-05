@@ -34,6 +34,10 @@ public class OrderController {
         orderModel.setUserId(Long.valueOf(shUserId));
         orderModel.setOrderStatus((byte) 0);
         orderModel.setPaymentStatus((byte)0);
+        // 保证数据库的 NOT NULL 字段有默认值，避免因 isDeleted 为 null 导致插入失败
+        if (orderModel.getIsDeleted() == null) {
+            orderModel.setIsDeleted((byte)0);
+        }
         if(orderService.addOrder(orderModel)){
             return ResultVo.success(orderModel);
         }

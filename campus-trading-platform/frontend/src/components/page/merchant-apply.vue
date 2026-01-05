@@ -57,7 +57,7 @@
 
                         <el-form-item label="身份证正面" prop="idCardFront">
                             <el-upload
-                                action="/file/"
+                                action="/api/file"
                                 :on-success="(res) => handleImageSuccess(res, 'idCardFront')"
                                 :show-file-list="false"
                                 accept="image/*"
@@ -75,7 +75,7 @@
 
                         <el-form-item label="身份证反面" prop="idCardBack">
                             <el-upload
-                                action="/file/"
+                                action="/api/file"
                                 :on-success="(res) => handleImageSuccess(res, 'idCardBack')"
                                 :show-file-list="false"
                                 accept="image/*"
@@ -93,7 +93,7 @@
 
                         <el-form-item label="营业执照" prop="businessLicense">
                             <el-upload
-                                action="/file/"
+                                action="/api/file"
                                 :on-success="(res) => handleImageSuccess(res, 'businessLicense')"
                                 :show-file-list="false"
                                 accept="image/*"

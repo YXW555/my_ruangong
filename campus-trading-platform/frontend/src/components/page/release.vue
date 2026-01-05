@@ -114,7 +114,7 @@
                             </div>
                             
                             <el-upload
-                                action="/file/"
+                                action="/api/file"
                                 :on-preview="fileHandlePreview"
                                 :on-remove="fileHandleRemove"
                                 :on-success="fileHandleSuccess"

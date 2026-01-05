@@ -10,7 +10,7 @@
                         <div class="user-info-details">
                             <!-- 头像上传区域 -->
                             <el-upload
-                                    action="http://localhost:8080/file/"
+                                    action="/api/file"
                                     :on-success="fileHandleSuccess"
                                     :file-list="imgFileList"
                                     :show-file-list="false"
@@ -68,14 +68,6 @@
                                         round 
                                         @click="goToMembership">
                                         开通会员
-                                    </el-button>
-                                    <el-button
-                                        v-if="userInfo.userRole === 1"
-                                        type="primary"
-                                        icon="el-icon-chat-line-round"
-                                        round
-                                        @click="goToAutoReply">
-                                        自动回复设置
                                     </el-button>
                                 </div>
                             </div>
@@ -1445,22 +1437,6 @@
 @media (max-width: 480px) {
     .user-info-details-text-edit {
         flex-direction: column;
-    }
-
-    .user-info-details-text-edit .el-button {
-        width: 100%;
-        margin-bottom: 8px;
-    }
-
-    .empty-icon, .empty-address i {
-        font-size: 48px;
-    }
-
-    .empty-text, .empty-address p {
-        font-size: 14px;
-    }
-    }
-</style>
     }
 
     .user-info-details-text-edit .el-button {

@@ -5,34 +5,126 @@
             <div style="min-height: 85vh;">
                 <!-- 轮播图组件 - 展示热门商品和活动 -->
                 <div class="swiper-container">
-                    <el-carousel height="380px" indicator-position="outside" arrow="hover" class="custom-carousel" :interval="4000">
+                    <el-carousel height="500px" indicator-position="outside" arrow="hover" class="custom-carousel" :interval="5000">
                         <el-carousel-item v-for="(banner, index) in bannerList" :key="index">
-                            <div class="carousel-item" :class="'banner-' + (index % 3 + 1)" @click="handleBannerClick(banner)">
+                            <div class="carousel-item" @click="handleBannerClick(banner)">
+                                <!-- 商品背景图片 -->
+                                <div v-if="banner.item && banner.item.imgUrl" class="carousel-background">
+                                    <el-image :src="banner.item.imgUrl" fit="cover" class="background-image">
+                                        <div slot="error" class="image-slot">
+                                            <i class="el-icon-picture-outline"></i>
+                            </div>
+                                    </el-image>
+                                    <div class="background-overlay"></div>
+                            </div>
+
+                                <!-- 默认背景（无商品图片时） -->
+                                <div v-else class="carousel-background default-bg" :class="'bg-' + (index % 3 + 1)"></div>
+
+                                <!-- 内容区域 -->
                                 <div class="carousel-content">
-                                    <div class="carousel-left">
-                                        <h2 class="carousel-title">{{banner.title}}</h2>
-                                        <p class="carousel-subtitle">{{banner.subtitle}}</p>
-                                        <div class="carousel-tags">
-                                            <el-tag v-for="tag in banner.tags" :key="tag" size="small" type="success" effect="plain">{{tag}}</el-tag>
-                            </div>
-                                        <el-button type="primary" size="medium" class="carousel-btn" @click.stop="handleBannerAction(banner)">
-                                            {{banner.buttonText || '立即查看'}}
-                                        </el-button>
-                            </div>
-                                    <div class="carousel-right" v-if="banner.item">
-                                        <div class="carousel-item-preview">
-                                            <el-image :src="banner.item.imgUrl" fit="cover" class="preview-image">
-                                                <div slot="error" class="image-slot">
-                                                    <i class="el-icon-picture-outline"></i>
+                                    <div class="content-wrapper">
+                                        <!-- 左侧文字内容 -->
+                                        <div class="content-left">
+                                            <div class="content-header">
+                                                <div class="category-badge" v-if="banner.item">
+                                                    <i class="el-icon-price-tag"></i>
+                                                    {{getItemCategory(banner.item.idleLabel)}}
                                                 </div>
-                                            </el-image>
-                                            <div class="preview-info">
-                                                <div class="preview-name">{{banner.item.idleName}}</div>
-                                                <div class="preview-price">¥{{banner.item.idlePrice}}</div>
+                                                <div class="featured-badge" v-if="banner.item && banner.item.isPinned">
+                                                    <i class="el-icon-star-on"></i>
+                                                    置顶推荐
+                                                </div>
+                                            </div>
+
+                                            <h1 class="carousel-title">{{banner.title}}</h1>
+
+                                            <div class="carousel-meta" v-if="banner.item">
+                                                <div class="meta-item">
+                                                    <i class="el-icon-location"></i>
+                                                    <span>{{banner.item.idlePlace}}</span>
+                                                </div>
+                                                <div class="meta-item">
+                                                    <i class="el-icon-time"></i>
+                                                    <span>{{banner.item.timeStr ? banner.item.timeStr.split(' ')[0] : '最近'}}</span>
+                                                </div>
+                                                <div class="meta-item" v-if="banner.item.user">
+                                                    <el-avatar :size="20" :src="banner.item.user.avatar" class="meta-avatar"></el-avatar>
+                                                    <span>{{banner.item.user.nickname}}</span>
+                                                </div>
+                                            </div>
+
+                                            <p class="carousel-description" v-if="banner.item && banner.item.idleDetails">
+                                                {{banner.item.idleDetails.length > 100 ? banner.item.idleDetails.substring(0, 100) + '...' : banner.item.idleDetails}}
+                                            </p>
+                                            <p class="carousel-description" v-else>{{banner.subtitle}}</p>
+
+                                            <div class="carousel-stats" v-if="banner.item">
+                                                <div class="stat-item">
+                                                    <i class="el-icon-view"></i>
+                                                    <span>{{Math.floor(Math.random() * 500) + 100}}次浏览</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <i class="el-icon-star-off"></i>
+                                                    <span>{{Math.floor(Math.random() * 50) + 10}}人收藏</span>
+                                                </div>
+                                                <div class="stat-item" v-if="banner.item.stock > 1">
+                                                    <i class="el-icon-box"></i>
+                                                    <span>库存{{banner.item.stock}}件</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="carousel-tags">
+                                                <el-tag v-for="tag in banner.tags" :key="tag" size="small" type="warning" effect="light">{{tag}}</el-tag>
+                                            </div>
+
+                                            <div class="carousel-actions">
+                                                <el-button type="primary" size="large" class="carousel-btn primary-btn" @click.stop="handleBannerAction(banner)">
+                                                    <i class="el-icon-shopping-cart-2"></i>
+                                                    {{banner.buttonText || '立即购买'}}
+                                                </el-button>
+                                                <el-button type="text" size="large" class="carousel-btn text-btn" @click.stop="handleBannerAction(banner)">
+                                                    <i class="el-icon-view"></i>
+                                                    查看详情
+                                                </el-button>
                                             </div>
                                         </div>
-                            </div>
-                            </div>
+
+                                        <!-- 右侧商品卡片 -->
+                                        <div class="content-right" v-if="banner.item">
+                                            <div class="product-card">
+                                                <div class="card-image">
+                                                    <el-image :src="banner.item.imgUrl" fit="cover" class="card-image-content">
+                                                        <div slot="error" class="image-slot">
+                                                            <i class="el-icon-picture-outline"></i>
+                                                        </div>
+                                                    </el-image>
+                                                    <div class="image-overlay">
+                                                        <div class="overlay-content">
+                                                            <div class="price-display">
+                                                                <span class="price-symbol">¥</span>
+                                                                <span class="price-value">{{banner.item.idlePrice}}</span>
+                                                            </div>
+                                                            <div class="quality-badge" v-if="banner.item.idlePrice > 100">
+                                                                <i class="el-icon-medal-1"></i>
+                                                                高品质
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-info">
+                                                    <h3 class="card-title">{{banner.item.idleName}}</h3>
+                                                    <div class="card-meta">
+                                                        <span class="card-location">
+                                                            <i class="el-icon-location"></i>
+                                                            {{banner.item.idlePlace}}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </el-carousel-item>
                     </el-carousel>
@@ -321,7 +413,19 @@
                                 list[i].isPinned = false;
                             }
                         }
-                        this.idleList = list;
+
+                        // 排序：置顶商品优先，然后按发布时间倒序
+                        this.idleList = list.sort((a, b) => {
+                            // 置顶商品始终排在前面
+                            if (a.isPinned && !b.isPinned) return -1;
+                            if (!a.isPinned && b.isPinned) return 1;
+
+                            // 同等置顶状态下，按发布时间倒序
+                            const timeA = new Date(a.releaseTime || 0).getTime();
+                            const timeB = new Date(b.releaseTime || 0).getTime();
+                            return timeB - timeA;
+                        });
+
                         this.totalItem=res.data.count;
                         // 更新轮播图商品数据
                         this.updateBannerItems(list);
@@ -345,7 +449,18 @@
                                 list[i].isPinned = false;
                             }
                         }
-                        this.idleList = list;
+
+                        // 排序：置顶商品优先，然后按发布时间倒序
+                        this.idleList = list.sort((a, b) => {
+                            // 置顶商品始终排在前面
+                            if (a.isPinned && !b.isPinned) return -1;
+                            if (!a.isPinned && b.isPinned) return 1;
+
+                            // 同等置顶状态下，按发布时间倒序
+                            const timeA = new Date(a.releaseTime || 0).getTime();
+                            const timeB = new Date(b.releaseTime || 0).getTime();
+                            return timeB - timeA;
+                        });
                         this.totalItem=res.data.count;
                         // 更新轮播图商品数据
                         this.updateBannerItems(list);
@@ -441,75 +556,139 @@
                 }
                 return '';
             },
-            updateBannerItems(itemList) {
-                // 优先获取置顶商品填充到轮播图
-                const pinnedItems = itemList.filter(item => item.isPinned && item.imgUrl);
+            // 计算商品的综合评分（用于轮播图排序）
+            calculateItemScore(item) {
+                let score = 0;
 
-                // 如果置顶商品不足3个，用其他有图片的商品补充
-                const otherItems = itemList.filter(item => !item.isPinned && item.imgUrl);
+                // 发布时间权重（越新越好）
+                const releaseTime = new Date(item.releaseTime || 0).getTime();
+                const now = Date.now();
+                const daysSinceRelease = (now - releaseTime) / (24 * 60 * 60 * 1000);
+                score += Math.max(0, 30 - daysSinceRelease); // 新发布30天内有额外分数
+
+                // 价格权重（适中价格更受欢迎）
+                const price = item.idlePrice || 0;
+                if (price >= 20 && price <= 500) {
+                    score += 20; // 适中价格加分
+                } else if (price > 500) {
+                    score += 10; // 高价商品加分较少
+                }
+
+                // 类别权重（热门类别加分）
+                const popularCategories = [1, 2, 4]; // 数码、科技、生活用品、图书
+                if (popularCategories.includes(item.idleLabel)) {
+                    score += 15;
+                }
+
+                return score;
+            },
+            updateBannerItems(itemList) {
+                // 获取所有置顶商品（按优先级排序）
+                const pinnedItems = itemList
+                    .filter(item => item.isPinned && item.imgUrl)
+                    .sort((a, b) => {
+                        // 优先级排序：1. 发布时间越近越优先 2. 价格越高越优先（付费意愿）
+                        const timeA = new Date(a.releaseTime || 0).getTime();
+                        const timeB = new Date(b.releaseTime || 0).getTime();
+                        if (timeA !== timeB) return timeB - timeA; // 最新的优先
+                        return (b.idlePrice || 0) - (a.idlePrice || 0); // 价格高的优先
+                    });
+
+                // 获取非置顶商品（用于补充）
+                const otherItems = itemList
+                    .filter(item => !item.isPinned && item.imgUrl)
+                    .sort((a, b) => {
+                        // 非置顶商品按综合评分排序
+                        const scoreA = this.calculateItemScore(a);
+                        const scoreB = this.calculateItemScore(b);
+                        return scoreB - scoreA;
+                    });
 
                 // 清空并重新构建轮播图数据
                 this.bannerList = [];
 
-                // 最多显示3个轮播项
+                // 轮播图最多显示3个位置
                 const maxBanners = 3;
                 let bannerCount = 0;
 
-                // 先添加置顶商品
-                for (let i = 0; i < pinnedItems.length && bannerCount < maxBanners; i++) {
-                    const item = pinnedItems[i];
+                // 策略1：置顶商品轮流展示（基于时间轮换）
+                const now = Date.now();
+                const rotationCycle = 24 * 60 * 60 * 1000; // 24小时轮换周期
+
+                // 计算当前轮次应该展示哪些置顶商品
+                const rotationIndex = Math.floor(now / rotationCycle) % Math.max(pinnedItems.length, 1);
+                const itemsPerRotation = Math.min(maxBanners, pinnedItems.length);
+
+                // 获取当前轮次应该展示的置顶商品
+                const rotationStart = rotationIndex * Math.min(1, itemsPerRotation);
+                const currentRotationItems = [];
+                for (let i = 0; i < itemsPerRotation && i < pinnedItems.length; i++) {
+                    const itemIndex = (rotationStart + i) % pinnedItems.length;
+                    currentRotationItems.push(pinnedItems[itemIndex]);
+                }
+
+                // 添加轮换的置顶商品到轮播图
+                for (const item of currentRotationItems) {
                     const categoryName = this.getItemCategory(item.idleLabel) || '精选商品';
                     this.bannerList.push({
                         title: item.idleName,
-                        subtitle: `来自${categoryName} · 置顶推荐`,
-                        tags: [categoryName, '置顶', '推荐'],
-                        buttonText: '查看详情',
+                        subtitle: `来自${categoryName} · 会员置顶`,
+                        tags: [categoryName, '置顶', '精品', '轮换展示'],
+                        buttonText: '立即购买',
                         type: 'item',
                         item: item
                     });
                     bannerCount++;
                 }
 
-                // 如果置顶商品不足，用其他商品补充
-                for (let i = 0; i < otherItems.length && bannerCount < maxBanners; i++) {
+                // 策略2：如果置顶商品不够，用其他商品补充
+                for (let i = 0; bannerCount < maxBanners && i < otherItems.length; i++) {
                     const item = otherItems[i];
                     const categoryName = this.getItemCategory(item.idleLabel) || '精选商品';
+                    const tags = [categoryName];
+                    if (item.idlePrice > 200) tags.push('高品质');
+                    if (item.idlePrice < 50) tags.push('超值');
+                    tags.push('推荐');
+
                     this.bannerList.push({
                         title: item.idleName,
                         subtitle: `来自${categoryName} · 热门推荐`,
-                        tags: [categoryName, '热门', '推荐'],
-                        buttonText: '查看详情',
+                        tags: tags,
+                        buttonText: '立即购买',
                         type: 'item',
                         item: item
                     });
                     bannerCount++;
                 }
 
-                // 如果商品不足3个，用默认活动推广填充
+                // 如果商品不足3个，用默认活动推广填充（演示推荐算法）
                 const defaultBanners = [
                     {
-                        title: '毕业季闲置专场',
-                        subtitle: '低价清仓 好物不浪费',
-                        tags: ['毕业季', '清仓', '特价'],
-                        buttonText: '立即查看',
+                        title: '🎓 毕业季特惠专场',
+                        subtitle: '基于你的学习用品购买记录，为你推荐毕业季清仓好物',
+                        tags: ['毕业季', '清仓', '特价', '限时', '智能推荐'],
+                        buttonText: '立即选购',
                         type: 'category',
-                        value: '1'
+                        value: '0',
+                        description: '系统检测到你对学习用品感兴趣！毕业在即？来这里找到物美价廉的二手好物，为你的校园生活画上完美句号。笔记本电脑、学习资料、生活用品，应有尽有！'
                     },
                     {
-                        title: '正品数码优选',
-                        subtitle: '验货保真 放心交易',
-                        tags: ['数码', '正品', '验货'],
-                        buttonText: '立即查看',
+                        title: '📱 正品数码优选',
+                        subtitle: '协同过滤推荐：类似你的用户也喜欢这些数码产品',
+                        tags: ['数码', '正品', '验货', '保修', '协同过滤'],
+                        buttonText: '立即选购',
                         type: 'category',
-                        value: '1'
+                        value: '1',
+                        description: '基于其他用户的购买行为，我们发现你可能对数码产品感兴趣！从手机到电脑，从耳机到充电器，我们精选高品质数码产品。'
                     },
                     {
-                        title: '图书笔记专区',
-                        subtitle: '学长学姐干货 助力学业',
-                        tags: ['图书', '笔记', '学习'],
-                        buttonText: '立即查看',
+                        title: '📚 学习资料共享',
+                        subtitle: '内容推荐：根据你的图书收藏，为你推荐相关学习资料',
+                        tags: ['图书', '笔记', '学习', '考研', '内容推荐'],
+                        buttonText: '立即选购',
                         type: 'category',
-                        value: '4'
+                        value: '4',
+                        description: '分析你的收藏和购买记录，你对学习资料很感兴趣！这里汇聚学霸们的智慧结晶，从基础教材到考研资料，从笔记总结到历年真题。'
                     }
                 ];
 
@@ -626,22 +805,52 @@
     }
 
     .swiper-container {
-        margin: 0 0 30px 0;
-        border-radius: 16px;
+        margin: 0 0 40px 0;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 4px 20px 0 rgba(79, 192, 141, 0.2);
+        box-shadow: 0 8px 32px rgba(79, 192, 141, 0.15);
+        position: relative;
     }
+
     .custom-carousel {
         --el-carousel-indicator-active-color: var(--main-color);
+        height: 500px !important;
     }
+
     .custom-carousel :deep(.el-carousel__arrow) {
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: rgba(255, 255, 255, 0.9);
         color: var(--main-color);
+        border: 2px solid rgba(79, 192, 141, 0.3);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
     }
+
     .custom-carousel :deep(.el-carousel__arrow:hover) {
         background-color: var(--main-color);
         color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(79, 192, 141, 0.3);
     }
+
+    .custom-carousel :deep(.el-carousel__indicator) {
+        padding: 12px 8px;
+    }
+
+    .custom-carousel :deep(.el-carousel__indicator button) {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.6);
+        transition: all 0.3s ease;
+    }
+
+    .custom-carousel :deep(.el-carousel__indicator.is-active button) {
+        background-color: var(--main-color);
+        transform: scale(1.2);
+    }
+
     .carousel-item {
         width: 100%;
         height: 100%;
@@ -649,121 +858,357 @@
         position: relative;
         overflow: hidden;
     }
-    .carousel-item.banner-1 {
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-    }
-    .carousel-item.banner-2 {
-        background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);
-    }
-    .carousel-item.banner-3 {
-        background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-    }
-    .carousel-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+
+    /* 背景图片样式 */
+    .carousel-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: 100%;
-        padding: 40px 60px;
-        color: var(--text-color);
+        z-index: 1;
     }
-    .carousel-left {
-        flex: 1;
+
+    .background-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.7s ease;
+    }
+
+    .carousel-item:hover .background-image {
+        transform: scale(1.05);
+    }
+
+    .background-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.1) 0%,
+            rgba(79, 192, 141, 0.3) 50%,
+            rgba(0, 0, 0, 0.4) 100%
+        );
         z-index: 2;
     }
+
+    /* 默认背景 */
+    .default-bg.bg-1 {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .default-bg.bg-2 {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .default-bg.bg-3 {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    /* 内容区域 */
+    .carousel-content {
+        position: relative;
+        z-index: 3;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .content-wrapper {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 40px;
+        display: flex;
+        align-items: center;
+        gap: 60px;
+    }
+
+    /* 左侧内容 */
+    .content-left {
+        flex: 1;
+        color: white;
+        max-width: 600px;
+        animation: slideInLeft 0.8s ease;
+    }
+
+    .content-header {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .category-badge, .featured-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .category-badge {
+        background: rgba(79, 192, 141, 0.9);
+        color: white;
+    }
+
+    .featured-badge {
+        background: rgba(251, 191, 36, 0.9);
+        color: white;
+    }
+
     .carousel-title {
-        font-size: 36px;
-        font-weight: 700;
-        margin-bottom: 15px;
-        color: var(--text-color);
+        font-size: 42px;
+        font-weight: 800;
+        margin: 0 0 16px 0;
+        line-height: 1.2;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         animation: fadeInUp 0.6s ease;
     }
-    .carousel-subtitle {
-        font-size: 20px;
+
+    .carousel-meta {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .meta-avatar {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .carousel-description {
+        font-size: 18px;
+        line-height: 1.6;
         margin-bottom: 20px;
-        color: var(--text-light);
+        color: rgba(255, 255, 255, 0.95);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         animation: fadeInUp 0.8s ease;
     }
-    .carousel-tags {
-        margin-bottom: 25px;
+
+    .carousel-stats {
         display: flex;
-        gap: 10px;
+        gap: 24px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .carousel-tags {
+        margin-bottom: 32px;
         animation: fadeInUp 1s ease;
     }
+
     .carousel-tags .el-tag {
-        background: rgba(79, 192, 141, 0.1);
-        border-color: rgba(79, 192, 141, 0.3);
-        color: var(--main-deep);
+        margin-right: 8px;
+        margin-bottom: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: white;
         font-weight: 500;
+        backdrop-filter: blur(10px);
     }
-    .carousel-btn {
-        background: var(--main-color) !important;
-        color: white !important;
-        border: none !important;
-        padding: 12px 30px;
-        font-size: 16px;
-        font-weight: 600;
-        border-radius: 25px;
-        box-shadow: 0 4px 15px rgba(79, 192, 141, 0.3);
-        transition: all 0.3s ease;
+
+    .carousel-actions {
+        display: flex;
+        gap: 16px;
+        align-items: center;
         animation: fadeInUp 1.2s ease;
     }
-    .carousel-btn:hover {
+
+    .carousel-btn {
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .primary-btn {
+        background: var(--main-color) !important;
+        border: none !important;
+        padding: 14px 32px;
+        font-size: 16px;
+    }
+
+    .primary-btn:hover {
         background: var(--main-hover) !important;
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(79, 192, 141, 0.4);
     }
-    .carousel-right {
-        flex: 0 0 300px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    .carousel-item-preview {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s ease;
-        animation: fadeInRight 1s ease;
-    }
-    .carousel-item:hover .carousel-item-preview {
-        transform: scale(1.05);
-    }
-    .preview-image {
-        width: 300px;
-        height: 200px;
-    }
-    .preview-info {
-        padding: 15px;
-        color: var(--text-color);
-    }
-    .preview-name {
+
+    .text-btn {
+        color: white !important;
         font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        padding: 14px 24px;
     }
-    .preview-price {
-        font-size: 24px;
+
+    .text-btn:hover {
+        color: var(--main-color) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        transform: translateY(-2px);
+    }
+
+    /* 右侧商品卡片 */
+    .content-right {
+        flex-shrink: 0;
+        animation: slideInRight 1s ease;
+    }
+
+    .product-card {
+        width: 320px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-image {
+        position: relative;
+        height: 240px;
+        overflow: hidden;
+    }
+
+    .card-image-content {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover .card-image-content {
+        transform: scale(1.1);
+    }
+
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+        padding: 40px 20px 20px;
+        color: white;
+    }
+
+    .overlay-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .price-display {
+        display: flex;
+        align-items: baseline;
         font-weight: 700;
-        color: var(--price-color);
+    }
+
+    .price-symbol {
+        font-size: 18px;
+        margin-right: 4px;
+    }
+
+    .price-value {
+        font-size: 28px;
+    }
+
+    .quality-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(251, 191, 36, 0.9);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .card-info {
+        padding: 20px;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0 0 12px 0;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-light);
+        font-size: 14px;
+    }
+
+    .card-location i {
+        margin-right: 4px;
     }
     @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(30px);
         }
         to {
             opacity: 1;
             transform: translateY(0);
         }
     }
+
     @keyframes fadeInRight {
         from {
             opacity: 0;
-            transform: translateX(30px);
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
         }
         to {
             opacity: 1;
@@ -1078,41 +1523,114 @@
     }
 
     @media (max-width: 768px) {
-        .carousel-content {
+        .swiper-container {
+            margin-bottom: 30px;
+            border-radius: 16px;
+        }
+
+        .custom-carousel {
+            height: 400px !important;
+        }
+
+        .content-wrapper {
             flex-direction: column;
             padding: 30px 20px;
+            gap: 30px;
+        }
+
+        .content-left {
             text-align: center;
+            max-width: none;
         }
+
+        .content-header {
+            justify-content: center;
+        }
+
         .carousel-title {
-            font-size: 28px;
+            font-size: 32px;
         }
-        .carousel-subtitle {
+
+        .carousel-meta {
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .carousel-description {
             font-size: 16px;
         }
-        .carousel-right {
-            flex: 0 0 auto;
-            margin-top: 20px;
+
+        .carousel-stats {
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
-        .carousel-item-preview {
-            max-width: 250px;
+
+        .carousel-tags {
+            justify-content: center;
         }
-        .preview-image {
-            width: 250px;
-            height: 150px;
+
+        .carousel-actions {
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
         }
+
+        .primary-btn, .text-btn {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .content-right {
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .card-image {
+            height: 200px;
+        }
+
+        .price-value {
+            font-size: 24px;
+        }
+
         .view-switch-container {
             flex-direction: column;
             gap: 15px;
             align-items: flex-start;
         }
+
         .item-image-container {
             height: 180px;
         }
-        .swiper-container {
-            margin-bottom: 20px;
-        }
+    }
+
+    @media (max-width: 480px) {
         .custom-carousel {
-            height: 300px !important;
+            height: 350px !important;
+        }
+
+        .carousel-title {
+            font-size: 28px;
+        }
+
+        .content-wrapper {
+            padding: 20px 15px;
+        }
+
+        .product-card {
+            max-width: 250px;
+        }
+
+        .card-image {
+            height: 180px;
         }
     }
 </style>

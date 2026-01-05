@@ -130,28 +130,43 @@ export default {
             this.adminComment = '';
             this.dialogVisible = true;
         },
-        review(status) {
+        async review(status) {
             if (status === 2 && !this.adminComment) {
                 this.$message.warning('拒绝申请必须填写理由');
                 return;
             }
-            this.$api.adminReviewApplication({
-                applicationId: this.currentApplication.id,
-                status: status,
-                adminComment: this.adminComment
-            }).then(res => {
+
+            try {
+                const res = await this.$api.adminReviewApplication({
+                    applicationId: this.currentApplication.id,
+                    status: status,
+                    adminComment: this.adminComment
+                });
+
                 if (res.status_code === 1) {
                     this.$message.success('操作成功');
                     this.dialogVisible = false;
-                    this.loadApplications(); // 刷新列表
-                    // 调用父组件方法刷新角标
-                    this.$parent.loadPendingCount();
+                    // 刷新列表（忽略其内部错误）
+                    try {
+                        this.loadApplications();
+                    } catch (e) {
+                        console.error('刷新列表失败', e);
+                    }
+                    // 刷新父组件的角标（如果存在）
+                    try {
+                        if (this.$parent && typeof this.$parent.loadPendingCount === 'function') {
+                            this.$parent.loadPendingCount();
+                        }
+                    } catch (e) {
+                        console.error('刷新待审核数量失败', e);
+                    }
                 } else {
                     this.$message.error(res.msg || '操作失败');
                 }
-            }).catch(() => {
+            } catch (e) {
+                console.error('审核请求失败', e);
                 this.$message.error('操作失败');
-            });
+            }
         }
     },
     filters: {

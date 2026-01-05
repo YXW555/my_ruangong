@@ -279,28 +279,34 @@ CREATE TABLE `sh_idle_item_pin`  (
 INSERT INTO `sh_admin` VALUES (1, 'admin', '123456', '超级管理员');
 
 -- 用户数据（简化版）
-INSERT INTO `sh_user` VALUES
-(1, '13800138000', '123456', '测试用户1', 'http://localhost:8080/image?imageName=default_avatar.jpg', NOW(), 0, 0, 0, NULL),
-(2, '13800138001', '123456', '测试用户2', 'http://localhost:8080/image?imageName=default_avatar.jpg', NOW(), 0, 0, 0, NULL),
-(3, '13800138002', '123456', '商家用户', 'http://localhost:8080/image?imageName=default_avatar.jpg', NOW(), 0, 1, 0, NULL);
+-- 新的用户样本（头像指向 /images/items/ 目录）
+INSERT INTO `sh_user` (`id`,`account_number`,`user_password`,`nickname`,`avatar`,`sign_in_time`,`user_status`,`user_role`,`membership_type`,`membership_expire_time`) VALUES
+(1,'13800138000','123456','测试用户A','/images/items/avatar_user_1.jpg',NOW(),0,0,0,NULL),
+(2,'13900139000','123456','测试用户B','/images/items/avatar_user_2.jpg',NOW(),0,0,0,NULL),
+(3,'15100000001','123456','商家小刘','/images/items/avatar_user_3.jpg',NOW(),0,1,0,NULL);
 
--- 商品数据（简化版）
-INSERT INTO `sh_idle_item` VALUES
-(1, '二手笔记本电脑', '九成新，配置良好，适合学习办公', '[]', 2000.00, '14号楼', 1, NOW(), 1, 1, 1),
-(2, 'Java编程书籍', '经典教材，有笔记', '[]', 50.00, '11号楼', 4, NOW(), 1, 1, 1),
-(3, '机械键盘', '黑轴，手感好', '[]', 150.00, '9号楼', 1, NOW(), 1, 2, 1),
-(4, '篮球', '八成新，质量好', '[]', 80.00, '14号楼', 3, NOW(), 1, 2, 1),
-(5, '水壶', '即将毕业，低价出售', '[]', 15.00, '11号楼', 2, NOW(), 1, 3, 1);
+-- 新的商品样本（图片使用 /images/items/ 静态路径）
+INSERT INTO `sh_idle_item` (`id`,`idle_name`,`idle_details`,`picture_list`,`idle_price`,`idle_place`,`idle_label`,`release_time`,`idle_status`,`user_id`,`stock`) VALUES
+(1001,'轻薄笔记本','九成新，i5/8GB/256GB，适合学生办公','[\"/images/items/laptop_01.jpg\",\"/images/items/laptop_02.jpg\"]',2200.00,'图书馆东侧',1,NOW(),1,3,1),
+(1002,'机械键盘（黑轴）','RGB 背光，黑轴，成色95%','[\"/images/items/keyboard_01.jpg\",\"/images/items/keyboard_02.jpg\"]',320.00,'11号楼',1,NOW(),1,3,1),
+(1003,'篮球','专业比赛用球，皮质良好','[\"/images/items/ball_01.jpg\"]',80.00,'操场',3,NOW(),1,2,1),
+(1004,'Java编程书籍（含笔记）','系统学习Java，含大量手写笔记','[\"/images/items/book_java_01.jpg\",\"/images/items/book_java_02.jpg\"]',45.00,'11号楼',4,NOW(),1,1,3),
+(1005,'保温水壶','500ml，保温效果良好，健康材质','[\"/images/items/thermos_01.jpg\"]',25.00,'宿舍',2,NOW(),1,2,5),
+(1006,'二手iPhone','屏幕完好，运行流畅，带原装充电器','[\"/images/items/phone_01.jpg\",\"/images/items/phone_02.jpg\"]',1800.00,'电子城',1,NOW(),1,1,1),
+(1007,'篮球鞋（耐克）','9成新，限量款','[\"/images/items/shoes_01.jpg\"]',260.00,'校内跳蚤市场',3,NOW(),1,2,1),
+(1008,'平板电脑','10英寸，适合阅读与笔记','[\"/images/items/tablet_01.jpg\"]',650.00,'图书馆',1,NOW(),1,3,1),
+(1009,'学习台灯','无极调光，良好护眼','[\"/images/items/lamp_01.jpg\"]',40.00,'宿舍',2,NOW(),1,1,4),
+(1010,'二手吉他','民谣吉他，带包和备用弦','[\"/images/items/guitar_01.jpg\",\"/images/items/guitar_02.jpg\"]',300.00,'音乐教室',5,NOW(),1,2,1);
 
--- 地址数据
-INSERT INTO `sh_address` VALUES
-(1, '张三', '13800138000', '男生宿舍', '14号楼', '二层', '205宿舍', 1, 1),
-(2, '李四', '13800138001', '男生宿舍', '11号楼', '三层', '305宿舍', 1, 2);
+-- 地址示例（收货）
+INSERT INTO `sh_address` (`id`,`consignee_name`,`consignee_phone`,`province_name`,`city_name`,`region_name`,`detail_address`,`default_flag`,`user_id`) VALUES
+(3001,'张三','13800000001','天津市','天津市','北辰区','北辰校区东区7号楼305',1,1),
+(3002,'李四','13800000002','天津市','天津市','北辰区','北辰校区东区2号楼102',1,2);
 
--- 收藏数据
-INSERT INTO `sh_favorite` VALUES
-(1, NOW(), 1, 1),
-(2, NOW(), 2, 3);
+-- 收藏示例
+INSERT INTO `sh_favorite` (`id`,`create_time`,`user_id`,`idle_id`) VALUES
+(5001,NOW(),1,1004),
+(5002,NOW(),2,1003);
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -321,3 +327,22 @@ CREATE TABLE `sh_auto_reply_template`  (
                                            INDEX `auto_reply_user_id_index`(`user_id` ASC) USING BTREE,
                                            INDEX `auto_reply_keyword_index`(`keyword` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '自动回复模板表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- 合并补丁：添加售后资金字段与会员字段迁移建议
+-- 注意：下面 ALTER 语句在已有生产库上执行前请确保已备份并人工审核
+-- ----------------------------
+-- 添加订单完成时间与资金状态字段（平台定时释放资金使用）
+ALTER TABLE `sh_order`
+ADD COLUMN `finish_time` datetime NULL DEFAULT NULL COMMENT '订单完成时间（买家确认收货时）' AFTER `order_status`;
+
+ALTER TABLE `sh_order`
+ADD COLUMN `fund_status` tinyint NULL DEFAULT 0 COMMENT '资金状态：0-待释放，1-已释放给卖家' AFTER `finish_time`;
+
+-- 会员字段修复建议（如果 production 的 membership_type 是 VARCHAR，请使用下面步骤；执行前务必备份）
+-- ALTER TABLE sh_user ADD COLUMN membership_type_temp TINYINT DEFAULT 0;
+-- UPDATE sh_user SET membership_type_temp = CASE WHEN membership_type = '普通会员' OR membership_type = '0' OR membership_type IS NULL THEN 0 WHEN membership_type = '基础会员' OR membership_type = '1' THEN 1 WHEN membership_type = '高级会员' OR membership_type = '2' THEN 2 ELSE 0 END;
+-- ALTER TABLE sh_user DROP COLUMN membership_type;
+-- ALTER TABLE sh_user CHANGE COLUMN membership_type_temp membership_type TINYINT DEFAULT 0;
+
+SET FOREIGN_KEY_CHECKS = 1;

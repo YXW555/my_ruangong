@@ -30,6 +30,19 @@ module.exports = {
                 onProxyReq: function(proxyReq, req, res) {
                     console.log('代理请求:', req.method, req.url, '->', proxyReq.path);
                 }
+            },
+            '/images': {
+                target: 'http://localhost:8080',  // 后端服务地址
+                changeOrigin: true,
+                pathRewrite: {
+                    '^/images': '/images'  // 保持 /images 前缀，直接转发到后端
+                },
+                onError: function(err, req, res) {
+                    console.log('图片代理错误:', err.message);
+                },
+                onProxyReq: function(proxyReq, req, res) {
+                    console.log('图片代理请求:', req.method, req.url);
+                }
             }
         }
     }

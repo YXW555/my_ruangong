@@ -223,13 +223,14 @@
         left: 0;
         right: 0;
         width: 100%;
-        height: 60px;
-        background: #ffffff;
+        height: 64px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
         display: flex;
         justify-content: center;
-        border-bottom: 1px solid #ebeef5;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        border-bottom: 2px solid rgba(79, 192, 141, 0.2);
+        box-shadow: 0 4px 20px rgba(79, 192, 141, 0.1);
         z-index: 1000;
+        backdrop-filter: blur(10px);
     }
 
     .header-container {
@@ -247,22 +248,41 @@
     }
 
     .app-name a {
-        color: #409EFF;
-        font-size: 20px;
-        font-weight: 600;
+        background: linear-gradient(135deg, #2d8259 0%, #4fc08d 50%, #66d19e 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 22px;
+        font-weight: 700;
         text-decoration: none;
         display: flex;
         align-items: center;
         transition: all 0.3s;
+        text-shadow: 0 2px 4px rgba(79, 192, 141, 0.3);
+        letter-spacing: 1px;
     }
 
     .app-name a:hover {
-        color: #66b1ff;
+        background: linear-gradient(135deg, #3ba674 0%, #5fd19f 50%, #7ae8b2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        transform: translateY(-1px);
+        text-shadow: 0 3px 8px rgba(79, 192, 141, 0.4);
     }
 
     .app-name i {
-        margin-right: 8px;
-        font-size: 24px;
+        margin-right: 10px;
+        font-size: 28px;
+        color: #4fc08d;
+        filter: drop-shadow(0 2px 4px rgba(79, 192, 141, 0.3));
+        transition: all 0.3s;
+    }
+
+    .app-name a:hover i {
+        color: #5fd19f;
+        transform: scale(1.1) rotate(5deg);
+        filter: drop-shadow(0 3px 6px rgba(79, 192, 141, 0.4));
     }
     .app-name-text {
         white-space: nowrap;
@@ -283,7 +303,8 @@
         transition: all 0.3s ease;
     }
     .search-wrapper:focus-within {
-        box-shadow: 0 4px 12px rgba(79, 192, 141, 0.2);
+        box-shadow: 0 4px 16px rgba(79, 192, 141, 0.3);
+        border: 1px solid rgba(79, 192, 141, 0.3);
     }
     .search-input {
         flex: 1;
@@ -340,7 +361,7 @@
     .suggestion-item i {
         color: #4fc08d;
         margin-right: 10px;
-        font-size: 16px;
+        font-size: 18px;
     }
     .suggestion-text {
         color: #606266;
@@ -356,15 +377,51 @@
     .message-badge {
         margin-right: 10px;
     }
-    .publish-btn, .message-btn {
+    .publish-btn {
         margin-right: 10px;
         border-radius: 20px;
+        background: linear-gradient(135deg, #2d8259, #4fc08d) !important;
+        border: none !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .publish-btn:hover {
+        background: linear-gradient(135deg, #3ba674, #5fd19f) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 192, 141, 0.3);
+    }
+
+    .publish-btn i {
+        font-size: 16px;
+        margin-right: 6px;
+    }
+
+    .message-btn {
+        margin-right: 10px;
+        border-radius: 20px;
+        border: 2px solid #4fc08d !important;
+        background: #fff !important;
+        color: #4fc08d !important;
+        transition: all 0.3s ease;
+    }
+
+    .message-btn:hover {
+        background: #4fc08d !important;
+        color: #fff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(79, 192, 141, 0.2);
+    }
+
+    .message-btn i {
+        font-size: 16px;
+        margin-right: 6px;
     }
 
     .user-name-text {
         font-size: 16px;
         font-weight: 600;
-        color: #409EFF;
+        color: #4fc08d;
         cursor: pointer;
         text-decoration: none;
         display: flex;
@@ -373,11 +430,13 @@
     }
 
     .user-name-text:hover {
-        color: #66b1ff;
+        color: #5fd19f;
     }
 
     .login-btn i {
-        margin-right: 5px;
+        margin-right: 8px;
+        color: #4fc08d;
+        font-size: 18px;
     }
 
     .user-dropdown {
@@ -398,8 +457,9 @@
 
     .user-name {
         font-size: 15px;
-        color: #409EFF;
+        color: #4fc08d;
         margin-right: 8px;
+        font-weight: 600;
     }
 
     .user-avatar {
@@ -417,7 +477,9 @@
     }
 
     .dropdown-item i {
-        margin-right: 5px;
+        margin-right: 8px;
+        color: #4fc08d;
+        font-size: 16px;
     }
 
     .logout {
@@ -426,41 +488,57 @@
 
     /* 响应式调整 */
     @media (max-width: 992px) {
-        .app-name a {
-            font-size: 18px;
+        .header {
+            height: 60px;
         }
-        
+
+        .app-name a {
+            font-size: 20px;
+        }
+
+        .app-name i {
+            font-size: 26px;
+        }
+
         .search-container {
             max-width: 300px;
         }
-        
+
         .publish-btn, .message-btn {
             padding: 9px 12px;
         }
     }
 
     @media (max-width: 768px) {
+        .header {
+            height: 56px;
+        }
+
         .app-name a span {
             display: none;
         }
-        
+
         .app-name i {
             margin-right: 0;
-            font-size: 22px;
+            font-size: 24px;
         }
-        
+
         .search-container {
             max-width: 200px;
         }
-        
+
         .publish-btn, .message-btn {
-            padding: 7px 10px;
-            font-size: 12px;
+            padding: 8px 12px;
+            font-size: 13px;
         }
-        
+
         .user-name {
             font-size: 14px;
             margin-right: 5px;
+        }
+
+        .user-name-text {
+            font-size: 14px;
         }
     }
 </style>

@@ -107,16 +107,16 @@
                         </el-tag>
                     </div>
                     <el-button-group size="small">
-                        <el-button
-                            icon="el-icon-grid"
-                            type="primary"
+                        <el-button 
+                            icon="el-icon-grid" 
+                            type="primary" 
                             :plain="viewMode !== 'card'"
                             :disabled="viewMode === 'card'"
                             @click="viewMode = 'card'"
                         >卡片视图</el-button>
-                        <el-button
+                        <el-button 
                             icon="el-icon-menu"
-                            type="primary"
+                            type="primary" 
                             :plain="viewMode !== 'table'"
                             :disabled="viewMode === 'table'"
                             @click="viewMode = 'table'"
@@ -178,9 +178,9 @@
 
                 <!-- 商品表格视图 -->
                 <div class="table-container" v-else>
-                    <el-table
-                        :data="idleList"
-                        border
+                    <el-table 
+                        :data="idleList" 
+                        border 
                         stripe
                         style="width: 100%;"
                         @row-click="toDetails"

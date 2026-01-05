@@ -10,6 +10,7 @@ VALUES
 -- 插入测试商品数据（每条 picture_list 为 JSON 字符串数组，指向静态目录 /images/items/）
 INSERT INTO sh_idle_item (id, user_id, idle_name, idle_details, picture_list, idle_price, idle_place, idle_label, release_time, idle_status, stock)
 VALUES
+  (1, 3, '测试单品', '用于单元测试的占位商品', '["/images/items/test_item.jpg"]', 9.90, '测试地点', 1, CURRENT_TIMESTAMP, 1, 1),
   (1001, 3, '轻薄笔记本', '九成新，i5/8GB/256GB，适合学生办公', '["/images/items/laptop_01.jpg","/images/items/laptop_02.jpg"]', 2200.00, '图书馆东侧', 1, CURRENT_TIMESTAMP, 1, 1),
   (1002, 3, '机械键盘（黑轴）', 'RGB 背光，黑轴，成色95%', '["/images/items/keyboard_01.jpg","/images/items/keyboard_02.jpg"]', 320.00, '11号楼', 1, CURRENT_TIMESTAMP, 1, 1),
   (1003, 2, '篮球', '专业比赛用球，皮质良好', '["/images/items/ball_01.jpg"]', 80.00, '操场', 3, CURRENT_TIMESTAMP, 1, 1),
@@ -24,11 +25,13 @@ VALUES
 -- 插入测试订单数据示例
 INSERT INTO sh_order (id, order_number, user_id, idle_id, order_price, payment_status, payment_way, create_time, payment_time, order_status, is_deleted)
 VALUES
+  (1, 'ORD00001', 1, 1, 9.90, 1, '在线', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 0),
   (2001, 'ORD10001', 1, 1004, 45.00, 1, '在线', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 0),
   (2002, 'ORD10002', 2, 1003, 80.00, 0, NULL, CURRENT_TIMESTAMP, NULL, 0, 0);
 
 -- 地址示例（收货）
 INSERT INTO sh_address (id, consignee_name, consignee_phone, province_name, city_name, region_name, detail_address, default_flag, user_id)
 VALUES
+  (1, '默认地址', '13900000000', '天津市', '天津市', '北辰区', '北辰校区测试楼1层101', 1, 1),
   (3001, '张三', '13800000001', '天津市', '天津市', '北辰区', '北辰校区东区7号楼305', 1, 1),
   (3002, '李四', '13800000002', '天津市', '天津市', '北辰区', '北辰校区东区2号楼102', 1, 2);

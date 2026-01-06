@@ -168,4 +168,32 @@ public class IdleItemController {
         }
         return ResultVo.fail(ErrorMsg.SYSTEM_ERROR);
     }
+
+    /**
+     * 取消置顶（立即使当前有效的置顶记录失效）
+     */
+    @PostMapping("/unpin")
+    public ResultVo unpinItem(@CookieValue(value = "shUserId", required = false) String shUserId,
+                              @RequestParam Long idleItemId) {
+        if (shUserId == null || shUserId.trim().isEmpty()) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "登录异常 请重新登录");
+        }
+        Long userId = Long.valueOf(shUserId);
+
+        // 检查商品是否属于当前用户
+        IdleItemModel item = idleItemService.getIdleItem(idleItemId);
+        if (item == null || !item.getUserId().equals(userId)) {
+            return ResultVo.fail(ErrorMsg.PARAM_ERROR);
+        }
+
+        // 当前时间，用于设置置顶结束时间为当前，立即生效
+        java.util.Date now = new java.util.Date();
+        int updated = idleItemPinDao.expireActivePinByItemId(idleItemId, now);
+        if (updated > 0) {
+            return ResultVo.success();
+        } else {
+            // 如果没有更新，说明当前没有有效的置顶记录
+            return ResultVo.fail(ErrorMsg.PARAM_ERROR);
+        }
+    }
 }

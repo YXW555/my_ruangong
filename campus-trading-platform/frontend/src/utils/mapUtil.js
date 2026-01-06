@@ -35,8 +35,8 @@ export function loadAmapApi() {
         // 开始加载
         mapApiLoading = true;
         
-        // 从环境变量获取API Key，如果没有则使用默认值
-        const apiKey = process.env.VUE_APP_AMAP_KEY || 'YOUR_AMAP_KEY';
+        // 从环境变量获取API Key，如果没有则使用本地测试 Key（仅用于本地开发）
+        const apiKey = process.env.VUE_APP_AMAP_KEY || 'b2e5855e71acf8f3156a6409b5247086';
         
         console.log('读取到的API Key:', apiKey ? apiKey.substring(0, 8) + '...' : '未配置');
         
@@ -160,47 +160,96 @@ export function geocodeAddress(address) {
         };
 
         // 优先尝试后端代理（可以绕过前端 Referer 白名单问题）
-        const proxyUrl = `/api/geocode?address=${encodeURIComponent(cleanAddress)}`;
-        console.log('先尝试后端代理解析地址:', proxyUrl);
-        fetch(proxyUrl, { method: 'GET' })
-            .then(res => res.json())
-            .then(data => {
+        // 构建候选尝试：优先原始地址+可能的城市，再尝试学校名或去掉口语化后缀的版本
+        const cityMatch = cleanAddress.match(/(.+?市)/);
+        const cityCandidate = cityMatch ? cityMatch[1] : null;
+
+        // 提取学校名（与searchByPOI的pattern一致）
+        let schoolName = null;
+        for (const pattern of [
+            /^(.+?)(?:校区|宿舍|东区|西区|南区|北区|.*?宿舍)/,
+            /^(.+?大学)/,
+            /^(.+?学院)/,
+            /^(.+?学校)/
+        ]) {
+            const m = cleanAddress.match(pattern);
+            if (m && m[1]) {
+                schoolName = m[1].trim();
+                break;
+            }
+        }
+
+        const attempts = [];
+        attempts.push({ address: cleanAddress, city: cityCandidate });
+        if (schoolName) {
+            attempts.push({ address: schoolName, city: cityCandidate });
+            if (cityCandidate) attempts.push({ address: `${cityCandidate}${schoolName}`, city: cityCandidate });
+        }
+        // 尝试去掉诸如"浴室旁边"、"学生公寓5号楼"等后缀（常见干扰词）
+        const noisySuffixPattern = /(浴室|旁边|学生公寓|学生宿舍|楼|号楼|寝室|教室|旁|附近|旁边)$/;
+        const shortClean = cleanAddress.replace(noisySuffixPattern, '').trim();
+        if (shortClean && shortClean !== cleanAddress) {
+            attempts.push({ address: shortClean, city: cityCandidate });
+        }
+
+        // Deduplicate attempts by address+city
+        const seen = new Set();
+        const uniqueAttempts = [];
+        for (const a of attempts) {
+            const key = `${a.address}||${a.city || ''}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueAttempts.push(a);
+            }
+        }
+
+        const tryProxyAttempts = async () => {
+            for (const attempt of uniqueAttempts) {
+                const q = `/api/geocode?address=${encodeURIComponent(attempt.address)}${attempt.city ? `&city=${encodeURIComponent(attempt.city)}` : ''}`;
+                console.log('尝试后端代理解析地址:', q);
                 try {
-                    console.log('后端代理返回:', data);
-                    if (data && data.status_code === 1 && data.data) {
-                        const d = data.data;
-                        if (d.lng && d.lat) {
-                            resolve({
-                                lng: Number(d.lng),
-                                lat: Number(d.lat),
-                                address: cleanAddress,
-                                formattedAddress: d.formattedAddress || cleanAddress
-                            });
-                            return;
-                        }
+                    const res = await fetch(q, { method: 'GET' });
+                    const data = await res.json();
+                    console.log('后端代理返回（尝试）:', attempt, data);
+                    if (data && data.status_code === 1 && data.data && data.data.lng && data.data.lat) {
+                        return {
+                            lng: Number(data.data.lng),
+                            lat: Number(data.data.lat),
+                            address: attempt.address,
+                            formattedAddress: data.data.formattedAddress || attempt.address
+                        };
                     }
                 } catch (e) {
-                    console.warn('解析后端代理响应异常，继续使用前端SDK解析', e);
+                    console.warn('后端代理调用异常，尝试下一个候选:', e);
                 }
-                // 如果代理失败，再使用前端策略（先POI或geocoder）
-                if (tryPlaceSearchFirst) {
-                    console.log('代理未命中，优先尝试POI搜索:', cleanAddress);
-                    searchByPOI(cleanAddress).then(resolve).catch((err) => {
-                        console.warn('POI搜索未命中，回退地理编码:', err && err.message);
-                        geocoder.getLocation(cleanAddress, handleGeocoderResult);
-                    });
-                } else {
+            }
+            return null;
+        };
+
+        tryProxyAttempts().then(proxyResult => {
+            if (proxyResult) {
+                resolve(proxyResult);
+                return;
+            }
+
+            // 代理未命中，继续使用前端 SDK 的策略（先POI或geocoder）
+            if (tryPlaceSearchFirst) {
+                console.log('代理未命中，优先尝试POI搜索:', cleanAddress);
+                searchByPOI(cleanAddress, cityCandidate).then(resolve).catch((err) => {
+                    console.warn('POI搜索未命中，回退地理编码:', err && err.message);
                     geocoder.getLocation(cleanAddress, handleGeocoderResult);
-                }
-            })
-            .catch(err => {
-                console.warn('后端代理调用失败，使用客户端解析:', err);
-                if (tryPlaceSearchFirst) {
-                    searchByPOI(cleanAddress).then(resolve).catch(() => geocoder.getLocation(cleanAddress, handleGeocoderResult));
-                } else {
-                    geocoder.getLocation(cleanAddress, handleGeocoderResult);
-                }
-            });
+                });
+            } else {
+                geocoder.getLocation(cleanAddress, handleGeocoderResult);
+            }
+        }).catch(err => {
+            console.warn('后端代理批量尝试失败，使用客户端解析:', err);
+            if (tryPlaceSearchFirst) {
+                searchByPOI(cleanAddress, cityCandidate).then(resolve).catch(() => geocoder.getLocation(cleanAddress, handleGeocoderResult));
+            } else {
+                geocoder.getLocation(cleanAddress, handleGeocoderResult);
+            }
+        });
     });
 }
 
@@ -209,7 +258,7 @@ export function geocodeAddress(address) {
  * @param {String} keyword 搜索关键词
  * @returns {Promise} 返回Promise，resolve包含{lng, lat, address}
  */
-function searchByPOI(keyword) {
+function searchByPOI(keyword, city) {
     return new Promise((resolve, reject) => {
         if (!window.AMap) {
             reject(new Error('高德地图API未加载'));
@@ -237,8 +286,8 @@ function searchByPOI(keyword) {
         }
         
         const placeSearch = new AMap.PlaceSearch({
-            city: '全国',
-            citylimit: false,
+            city: city || '全国',
+            citylimit: !!city,
             type: '高等院校|科教文化服务' // 优先搜索学校
         });
         
@@ -441,6 +490,21 @@ export function openNavigation(location, mode = 'car') {
     
     const toName = location.address || location.formattedAddress || '目的地';
     const url = `https://uri.amap.com/navigation?to=${location.lng},${location.lat}&toName=${encodeURIComponent(toName)}&mode=${mode}&policy=1&src=mypage&callnative=1`;
+    window.open(url, '_blank');
+}
+
+/**
+ * 在高德地图中打开从 start 到 end 的路线页面（在页面上会展示两点和路线并包含距离信息）
+ * start / end 格式: {lng, lat, address}
+ */
+export function openRouteInAmap(start, end, mode = 'car') {
+    if (!start || !end || !start.lng || !start.lat || !end.lng || !end.lat) {
+        throw new Error('起点或终点信息不完整');
+    }
+    const fromName = start.address || start.formattedAddress || '起点';
+    const toName = end.address || end.formattedAddress || '终点';
+    // 使用 amap uri scheme 的 route 接口展示驾车/步行/公交路线
+    const url = `https://uri.amap.com/route?from=${start.lng},${start.lat},${encodeURIComponent(fromName)}&to=${end.lng},${end.lat},${encodeURIComponent(toName)}&policy=1&src=mypage&callnative=1`;
     window.open(url, '_blank');
 }
 

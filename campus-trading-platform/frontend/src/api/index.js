@@ -126,6 +126,20 @@ const api = {
             params: data
         });
     },
+    unpinItem(data) {
+        return request({
+            url: '/idle/unpin',
+            method: 'post',
+            params: data
+        });
+    },
+    geocodeProxy(query) {
+        return request({
+            url: '/api/geocode',
+            method: 'get',
+            params: query
+        });
+    },
 
     // 个人中心的功能  ordercontroller
     addOrder(data) {
@@ -140,6 +154,19 @@ const api = {
             url: '/order/info',
             method: 'get',
             params: query
+        });
+    },
+    getOrderCarbon(query) {
+        return request({
+            url: '/order/carbon',
+            method: 'get',
+            params: query
+        });
+    },
+    getMyCarbon() {
+        return request({
+            url: '/order/my-carbon',
+            method: 'get'
         });
     },
     updateOrder(data) {

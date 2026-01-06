@@ -132,6 +132,19 @@
 
                 <!-- 内容卡片 -->
                 <el-card class="user-content-card" shadow="hover">
+                    <div style="margin-bottom:16px;">
+                        <el-card shadow="never" style="background:#fbfdff;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <i class="el-icon-s-opportunity" style="font-size:20px;color:#67C23A"></i>
+                                <div>
+                                    <div style="font-weight:700;font-size:16px">我的低碳贡献</div>
+                                    <div style="color:#909399;margin-top:6px;">
+                                        累计参与二手交易：<strong>{{ carbonSummary ? carbonSummary.orderCount : '—' }}</strong> 笔 · 累计减少碳排放：<strong>{{ carbonSummary ? carbonSummary.totalCarbonKg : '—' }}</strong> kg · 相当于节约用电：<strong>{{ carbonSummary ? carbonSummary.equivalentKwh : '—' }}</strong> 度
+                                    </div>
+                                </div>
+                            </div>
+                        </el-card>
+                    </div>
                     <div class="idle-container">
                         <!-- 标签页 -->
                         <el-tabs v-model="activeName" @tab-click="handleClick" type="border-card" class="custom-tabs">
@@ -387,6 +400,7 @@
                     userRole: 0,
                 },
             addressData: [],
+            carbonSummary: null,
             // 表单验证规则
             addressRules: {
                 consigneeName: [
@@ -412,6 +426,7 @@
             this.getMyOrder();
             this.getMySoldIdle();
             this.getMyFavorite();
+            this.loadMyCarbon();
         },
         methods: {
         // 头像上传前验证
@@ -450,6 +465,15 @@
                 }).catch(() => {
                     // 如果获取失败，尝试从全局数据加载，以防万一
                     this.userInfo = this.$globalData.userInfo;
+                });
+            },
+            loadMyCarbon() {
+                this.$api.getMyCarbon().then(res => {
+                    if (res.status_code === 1 && res.data) {
+                        this.carbonSummary = res.data;
+                    }
+                }).catch(() => {
+                    this.carbonSummary = null;
                 });
             },
             getEmptyIcon(tabName) {

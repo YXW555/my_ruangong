@@ -46,5 +46,13 @@
         where user_id = #{userId,jdbcType=BIGINT}
         order by create_time desc
     </select>
+    
+    <update id="expireActivePinByItemId" parameterType="map">
+        update sh_idle_item_pin
+        set pin_end_time = #{currentTime,jdbcType=TIMESTAMP}
+        where idle_item_id = #{idleItemId,jdbcType=BIGINT}
+        and pin_start_time &lt;= #{currentTime,jdbcType=TIMESTAMP}
+        and pin_end_time &gt; #{currentTime,jdbcType=TIMESTAMP}
+    </update>
 </mapper>
 

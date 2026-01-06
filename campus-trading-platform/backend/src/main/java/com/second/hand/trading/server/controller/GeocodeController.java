@@ -22,7 +22,7 @@ public class GeocodeController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @GetMapping(value = "/api/geocode", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = {"/api/geocode", "/geocode"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> geocode(@RequestParam("address") String address) {
         Map<String, Object> resp = new HashMap<>();
         if (address == null || address.trim().isEmpty()) {

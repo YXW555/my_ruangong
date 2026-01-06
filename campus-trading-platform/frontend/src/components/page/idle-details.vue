@@ -556,12 +556,31 @@
                         // 关闭对话框
                         this.addressDialogVisible = false;
                         this.pendingBuyItem = null;
-                        
-                        console.log('订单创建成功，跳转到订单页面，订单ID:', orderRes.data.id);
-                        this.$message.success('订单创建成功！');
-                        this.$router.push({path: '/order', query: {id: orderRes.data.id}}).catch(err => {
-                            console.error('路由跳转失败:', err);
-                            this.$message.error('跳转失败，请刷新页面重试');
+
+                        // 请求单订单碳减排估算并弹窗提示（弱提示）
+                        this.$api.getOrderCarbon({ orderId: orderRes.data.id }).then(carRes => {
+                            if (carRes.status_code === 1 && carRes.data) {
+                                const kg = carRes.data.carbonKg || carRes.data.carbonKg === 0 ? carRes.data.carbonKg : null;
+                                const kwh = carRes.data.equivalentKwh || carRes.data.equivalentKwh === 0 ? carRes.data.equivalentKwh : null;
+                                if (kg !== null) {
+                                    this.$message({
+                                        message: `交易成功！本次交易减少碳排放约 ${kg} kg（约 ${kwh} kWh）`,
+                                        type: 'success'
+                                    });
+                                } else {
+                                    this.$message.success('订单创建成功！');
+                                }
+                            } else {
+                                this.$message.success('订单创建成功！');
+                            }
+                        }).catch(() => {
+                            this.$message.success('订单创建成功！');
+                        }).finally(() => {
+                            console.log('订单创建成功，跳转到订单页面，订单ID:', orderRes.data.id);
+                            this.$router.push({path: '/order', query: {id: orderRes.data.id}}).catch(err => {
+                                console.error('路由跳转失败:', err);
+                                this.$message.error('跳转失败，请刷新页面重试');
+                            });
                         });
                     } else {
                         console.error('订单创建失败:', orderRes);
@@ -594,8 +613,31 @@
                 }
 
                 if (this.idleItemInfo.isPinned) {
-                    // 取消置顶（这里需要后端支持取消置顶的接口）
-                    this.$message.info('取消置顶功能开发中，置顶将在到期后自动取消');
+                    // 取消置顶：调用后端 unpin 接口
+                    this.$confirm('确认取消置顶吗？', '取消置顶', {
+                        confirmButtonText: '确认',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        this.$api.unpinItem({ idleItemId: this.idleItemInfo.id }).then(res => {
+                            if (res.status_code === 1) {
+                                this.$message.success('已取消置顶');
+                                // 刷新商品信息
+                                this.$api.getIdleItem({ id: this.idleItemInfo.id }).then(refreshRes => {
+                                    if (refreshRes.data) {
+                                        refreshRes.data.pictureList = JSON.parse(refreshRes.data.pictureList);
+                                        this.idleItemInfo = refreshRes.data;
+                                    }
+                                });
+                                // 刷新会员状态
+                                this.loadMembershipStatus();
+                            } else {
+                                this.$message.error(res.msg || '取消置顶失败');
+                            }
+                        }).catch(() => {
+                            this.$message.error('网络错误，请稍后重试');
+                        });
+                    }).catch(() => {});
                     return;
                 }
 

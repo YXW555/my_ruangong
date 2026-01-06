@@ -1319,48 +1319,127 @@
             },
             // 导航到卖家位置
             navigateToSeller() {
-                // 优先使用解析后的位置
-                if (this.sellerLocation) {
-                    try {
-                        openNavigation(this.sellerLocation, 'car');
-                        return;
-                    } catch (e) {
-                        console.error('使用解析位置导航失败:', e);
-                    }
-                }
-                
-                // 如果解析失败，使用原始地址
+                // 如果同时有卖家和买家解析后的位置，打开高德路线页面，展示两点与距离
                 const sellerAddress = this.orderInfo.idleItem && this.orderInfo.idleItem.idlePlace;
-                if (sellerAddress) {
-                    // 直接使用原始地址进行导航（高德地图会尝试搜索）
-                    const url = `https://uri.amap.com/navigation?to=${encodeURIComponent(sellerAddress)}&mode=car&policy=1&src=mypage&callnative=1`;
-                    window.open(url, '_blank');
-                    this.$message.info('正在使用原始地址进行导航');
-                } else {
-                    this.$message.warning('卖家地址未填写');
-                }
+                const buyerAddressText = this.buyerAddressText;
+
+                const tryOpenRoute = async () => {
+                    try {
+                        let start = this.buyerLocation;
+                        let end = this.sellerLocation;
+
+                        // 如果买家位置尚未解析但有文本，尝试用后端代理解析
+                        if (!start && buyerAddressText) {
+                            const res = await this.$api.geocodeProxy({ address: buyerAddressText });
+                            if (res && res.status_code === 1 && res.data) {
+                                start = { lng: res.data.lng, lat: res.data.lat, address: res.data.formattedAddress || buyerAddressText };
+                                this.buyerLocation = start;
+                            }
+                        }
+
+                        // 如果卖家位置尚未解析但有文本，尝试用后端代理解析
+                        if (!end && sellerAddress) {
+                            const res2 = await this.$api.geocodeProxy({ address: sellerAddress });
+                            if (res2 && res2.status_code === 1 && res2.data) {
+                                end = { lng: res2.data.lng, lat: res2.data.lat, address: res2.data.formattedAddress || sellerAddress };
+                                this.sellerLocation = end;
+                            }
+                        }
+
+                        if (start && end) {
+                            // 两点均可用，打开路线页面（高德会显示距离和路线）
+                            openRouteInAmap(start, end, 'car');
+                            return true;
+                        }
+                    } catch (e) {
+                        console.error('尝试使用route打开高德地图失败:', e);
+                    }
+                    return false;
+                };
+
+                (async () => {
+                    const ok = await tryOpenRoute();
+                    if (ok) return;
+
+                    // 回退：如果有解析后的卖家位置，直接导航到卖家
+                    if (this.sellerLocation) {
+                        try {
+                            openNavigation(this.sellerLocation, 'car');
+                            return;
+                        } catch (e) {
+                            console.error('使用解析位置导航失败:', e);
+                        }
+                    }
+
+                    // 最后回退到使用原始地址打开高德导航
+                    if (sellerAddress) {
+                        const url = `https://uri.amap.com/navigation?to=${encodeURIComponent(sellerAddress)}&mode=car&policy=1&src=mypage&callnative=1`;
+                        window.open(url, '_blank');
+                        this.$message.info('正在使用原始地址进行导航');
+                    } else {
+                        this.$message.warning('卖家地址未填写');
+                    }
+                })();
             },
             // 导航到买家位置
             navigateToBuyer() {
-                // 优先使用解析后的位置
-                if (this.buyerLocation) {
+                // 当卖家发起导航到买家时，优先尝试打开高德路线页面，展示两点与距离
+                const sellerAddress = this.orderInfo.idleItem && this.orderInfo.idleItem.idlePlace;
+                const buyerAddressText = this.buyerAddressText;
+
+                const tryOpenRoute = async () => {
                     try {
-                        openNavigation(this.buyerLocation, 'car');
-                        return;
+                        let start = this.sellerLocation;
+                        let end = this.buyerLocation;
+
+                        if (!start && sellerAddress) {
+                            const res = await this.$api.geocodeProxy({ address: sellerAddress });
+                            if (res && res.status_code === 1 && res.data) {
+                                start = { lng: res.data.lng, lat: res.data.lat, address: res.data.formattedAddress || sellerAddress };
+                                this.sellerLocation = start;
+                            }
+                        }
+
+                        if (!end && buyerAddressText) {
+                            const res2 = await this.$api.geocodeProxy({ address: buyerAddressText });
+                            if (res2 && res2.status_code === 1 && res2.data) {
+                                end = { lng: res2.data.lng, lat: res2.data.lat, address: res2.data.formattedAddress || buyerAddressText };
+                                this.buyerLocation = end;
+                            }
+                        }
+
+                        if (start && end) {
+                            openRouteInAmap(start, end, 'car');
+                            return true;
+                        }
                     } catch (e) {
-                        console.error('使用解析位置导航失败:', e);
+                        console.error('尝试使用route打开高德地图失败:', e);
                     }
-                }
-                
-                // 如果解析失败，使用原始地址
-                if (this.buyerAddressText) {
-                    // 直接使用原始地址进行导航（高德地图会尝试搜索）
-                    const url = `https://uri.amap.com/navigation?to=${encodeURIComponent(this.buyerAddressText)}&mode=car&policy=1&src=mypage&callnative=1`;
-                    window.open(url, '_blank');
-                    this.$message.info('正在使用原始地址进行导航');
-                } else {
-                    this.$message.warning('买家地址未填写');
-                }
+                    return false;
+                };
+
+                (async () => {
+                    const ok = await tryOpenRoute();
+                    if (ok) return;
+
+                    // 回退：如果解析后有买家位置，直接导航到买家
+                    if (this.buyerLocation) {
+                        try {
+                            openNavigation(this.buyerLocation, 'car');
+                            return;
+                        } catch (e) {
+                            console.error('使用解析位置导航失败:', e);
+                        }
+                    }
+
+                    if (this.buyerAddressText) {
+                        const url = `https://uri.amap.com/navigation?to=${encodeURIComponent(this.buyerAddressText)}&mode=car&policy=1&src=mypage&callnative=1`;
+                        window.open(url, '_blank');
+                        this.$message.info('正在使用原始地址进行导航');
+                    } else {
+                        this.$message.warning('买家地址未填写');
+                    }
+                })();
             },
             // 刷新地图
             refreshMap() {
